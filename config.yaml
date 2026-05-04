@@ -1,0 +1,110 @@
+# Research collator config — what to scrape, what to skip.
+# Pure data; no LLM calls anywhere in the stripper.
+
+roots:
+  # Local research dirs, ordered roughly chronologically (Feb -> May 2026).
+  - path: /home/frosty40/ml-lab
+    label: ml-lab
+    git_remote: newjordan/ml-lab
+    period_hint: "2026-02-24 .. 2026-03-23"
+  - path: /home/frosty40/parameter-golf-lab
+    label: parameter-golf-lab
+    git_remote: newjordan/parameter-golf
+    period_hint: "2026-03-18 .. 2026-05-01"
+  - path: /home/frosty40/parameter-golf-cross-repo
+    label: parameter-golf-cross-repo
+    git_remote: null
+    period_hint: "2026-04-06 (one day)"
+  - path: /home/frosty40/sota_nueral
+    label: sota_nueral
+    git_remote: newjordan/sota_nueral
+    period_hint: "2026-04-01 .. 2026-04-26"
+  - path: /home/frosty40/sota_nueral_archive
+    label: sota_nueral_archive
+    git_remote: null
+    period_hint: "2026-04-01 .. 2026-04-06"
+  - path: /home/frosty40/sota_crawler
+    label: sota_crawler
+    git_remote: newjordan/parameter-golf
+    period_hint: "2026-04-08 .. 2026-04-23"
+  - path: /home/frosty40/SOTA_FINAL
+    label: SOTA_FINAL
+    git_remote: newjordan/Fartmagic
+    period_hint: "2026-04-12 .. 2026-05-04"
+  - path: /home/frosty40/sota_rascal
+    label: sota_rascal
+    git_remote: newjordan/rascal
+    period_hint: "2026-04-03 .. 2026-05-04"
+  # Codex daily-grind narrative rollups (ml-intern phase + others)
+  - path: /home/frosty40/.codex/memories/rollout_summaries
+    label: codex_rollouts
+    git_remote: null
+    period_hint: "daily codex rollups"
+
+# Directory components to skip (matched at any depth).
+exclude_dir_names:
+  - .git
+  - .venv
+  - venv
+  - env
+  - node_modules
+  - __pycache__
+  - site-packages
+  - dist
+  - build
+  - .pytest_cache
+  - .mypy_cache
+  - .ruff_cache
+  - .ipynb_checkpoints
+  - .tox
+  - .nox
+  - .cache
+
+# Extensions and which handler runs on them.
+ext_handler_map:
+  ".md": markdown
+  ".markdown": markdown
+  ".json": json_summary
+  ".py": python_module
+  ".csv": csv_meta
+  ".tsv": csv_meta
+  ".pt": checkpoint_meta
+  ".pth": checkpoint_meta
+  ".safetensors": checkpoint_meta
+  # Training-run logs — STRICT patterns only (step:N val_bpb:X / final_*).
+  # Skipping .txt because in this corpus many .txt files are train_gpt.py
+  # source-code copies that mention val_loss in Python assignments — not
+  # training output. Re-add .txt later if a content-sniffing variant is built.
+  ".log": training_log
+  ".out": training_log
+
+# Per-file size caps (bytes). Files larger than this get a "too_large=true"
+# stamp and skip the deep parse — only filesystem metadata is recorded.
+max_md_bytes: 1048576       # 1 MB — anything bigger is logs, not notes
+max_json_bytes: 5242880     # 5 MB
+max_py_bytes: 524288        # 512 KB
+max_csv_bytes: 10485760     # 10 MB — header + nrows only anyway
+max_log_bytes: 10485760     # 10 MB — typical training log is 10–500KB
+max_pt_bytes: 0             # 0 means "always treat as metadata-only"
+
+
+# Git repos to walk for commits — author-date is the ground-truth activity
+# signal that mtime doesn't capture. Each commit becomes one record.
+git_repos:
+  - {path: /home/frosty40/parameter-golf-lab, label: "git:parameter-golf-lab"}
+  - {path: /home/frosty40/ml-lab,             label: "git:ml-lab"}
+  - {path: /home/frosty40/sota_crawler,       label: "git:sota_crawler"}
+  - {path: /home/frosty40/sota_nueral,        label: "git:sota_nueral"}
+  - {path: /home/frosty40/SOTA_FINAL,         label: "git:SOTA_FINAL"}
+  - {path: /home/frosty40/sota_rascal,        label: "git:sota_rascal"}
+
+# Claude Code session JSONLs — these capture the user-Claude collaboration
+# work-stream that mtime doesn't show.
+claude_projects_root: /home/frosty40/.claude/projects
+
+# Codex session JSONLs (broader than just rollout_summaries we already have)
+codex_sessions_root: /home/frosty40/.codex/sessions
+
+# Output
+sqlite_path: /home/frosty40/research_collator/index.sqlite
+extraction_version: "stripper_v2"

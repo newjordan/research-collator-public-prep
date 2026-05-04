@@ -1,0 +1,22 @@
+# Generated index — regenerable from stripper.py + enrich.py + classify.py.
+# Contains user filesystem paths and contents from scraped research repos.
+index.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Rendered output — large, regenerable. Keep one sample under demo/ instead.
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
