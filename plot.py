@@ -24,24 +24,29 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+try:
+    from adjustText import adjust_text
+    _HAVE_ADJUST_TEXT = True
+except ImportError:
+    _HAVE_ADJUST_TEXT = False
 
 # Validity floor: any val_bpb measurement below this is a known eval/loader bug
 # in the parameter-golf benchmark, not a real result. Plotted as a dotted red
 # line; tests below it are marked invalid and excluded from running-min.
 INVALID_VAL_BPB_FLOOR = 1.06
 
-# Strict palette — matches the HTML report. ONE black, ONE ink, accent green,
-# warn red, two data colors. No greys: rules use accent at low alpha.
-DARK_BG       = "#0a0d0a"   # THE black, used for both figure and axes
-DARK_AXIS_BG  = "#0a0d0a"   # same
-DARK_TEXT     = "#c8d4c0"
-DARK_TEXT_HI  = "#f0f4ed"
-DARK_RULE     = "#7dff7d33"   # accent green at ~20% alpha for grid
-DARK_RULE_HI  = "#7dff7d66"   # accent green at ~40% alpha for axis spines
-DARK_GRID     = "#7dff7d22"
-DARK_ACCENT   = "#7dff7d"
-DARK_INVALID  = "#ff5c4a"
-DARK_INVALID_FILL = "#ff5c4a"
+# Palette — matches the clean US-Graphics-style HTML report (charcoal dark).
+# Neutral greys, single yellow accent, neutral whites. No green tinting.
+DARK_BG       = "#111315"   # page bg (matches HTML --bg)
+DARK_AXIS_BG  = "#111315"   # same — chart sits on the page bg
+DARK_TEXT     = "#d6d8db"   # primary ink
+DARK_TEXT_HI  = "#f4f5f7"   # emphasized
+DARK_RULE     = "#2a2d31"   # hairline dividers
+DARK_RULE_HI  = "#3a3e44"   # axis spines / stronger rules
+DARK_GRID     = "#2a2d31"
+DARK_ACCENT   = "#e3b341"   # yellow accent (used sparingly — crash flag)
+DARK_INVALID  = "#e25a4a"   # warn red
+DARK_INVALID_FILL = "#e25a4a"
 
 plt.rcParams.update({
     "figure.dpi": 130,
@@ -95,9 +100,9 @@ plt.rcParams.update({
 })
 
 CAMP_COLOR = {
-    "neural":       "#6196c4",  # muted slate — competitive lane (data color)
-    "experimental": "#d8a040",  # muted gold — exploration (data color)
-    "daily_grind":  "#6a766a",  # muted gray-green
+    "neural":       "#6fbf6f",  # lighter green — neural minority (data color)
+    "experimental": "#3a6e3a",  # dark green — experimental majority
+    "daily_grind":  "#8a8d92",  # neutral muted
 }
 CAMP_MARKER = {
     "neural":       "o",
@@ -185,8 +190,8 @@ def day_chart(out_path: str | Path,
                    [it["value"] for it in items],
                    color=CAMP_COLOR.get(camp, "#888"),
                    marker=CAMP_MARKER.get(camp, "o"),
-                   s=46, alpha=0.95,
-                   edgecolors=DARK_BG, linewidths=0.7,
+                   s=140, alpha=0.95,
+                   edgecolors=DARK_BG, linewidths=0.9,
                    label=f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}",
                    zorder=3)
 
@@ -203,50 +208,82 @@ def day_chart(out_path: str | Path,
             cur = min(cur, v)
             running_min.append(cur)
         ax.step(valid_times, running_min, where="post",
-                color=DARK_ACCENT, linewidth=1.4, alpha=1.0, zorder=2,
+                color=DARK_TEXT_HI, linewidth=1.6, alpha=1.0, zorder=2,
                 label="BEST VALID")
 
-    # Numbered annotations — dark-bg badges with light text
-    for p in pts:
-        ax.annotate(str(p["n"]), xy=(p["time"], p["value"]),
-                    xytext=(0, 8), textcoords="offset points",
-                    fontsize=7.0, color=DARK_TEXT, ha="center", va="bottom",
-                    zorder=4,
-                    bbox=dict(boxstyle="square,pad=0.16",
-                              facecolor=DARK_BG,
-                              edgecolor=DARK_RULE_HI, linewidth=0.5, alpha=0.95))
-
-    # Tighter y-clip focused on the day's actual curve.
-    # Three zones of values:
-    #   < 1.06               = invalid (eval error) — keep visible inside red zone
-    #   1.06 ≤ v ≤ 3.0       = real measurements — chart's main focus
-    #   > 3.0                = crashed-early runs (random-init step:0 values) —
-    #                          off-scale, indicated with a top-edge marker
+    # Tighter y-clip focused on the day's actual curve, with a label gutter
+    # reserved ABOVE the data zone so the numbered badges have clear airspace.
     CRASH_THRESHOLD = 3.0
     real_values = [v for v in values if v <= CRASH_THRESHOLD]
     if real_values:
-        # Bottom: floor of red zone. Show some red below the lowest invalid pt.
         below_floor = [v for v in values if v < INVALID_VAL_BPB_FLOOR]
         if below_floor:
             y_lo = max(0.4, min(below_floor) - 0.08)
         else:
             y_lo = INVALID_VAL_BPB_FLOOR - 0.15
-        # Top: just above the worst real measurement, with breathing room
-        y_hi = max(real_values) + 0.18
+        data_max = max(real_values)
+        data_range = max(0.4, data_max - y_lo)
+        label_gutter = 0.22 * data_range
+        y_hi = data_max + 0.05 + label_gutter
         ax.set_ylim(y_lo, y_hi)
-        # Crash indicator — top-right corner of the canvas, accent green
         crashes = [v for v in values if v > CRASH_THRESHOLD]
         if crashes:
+            # Bottom-right corner — top is reserved for the badge gutter now.
             ax.annotate(
                 f"▲ {len(crashes)} CRASH RUN{'S' if len(crashes) != 1 else ''} "
                 f"OFF-SCALE  (max={max(crashes):.2f})",
-                xy=(1.0, 1.0), xycoords="axes fraction",
-                xytext=(-6, -6), textcoords="offset points",
-                fontsize=7.5, color=DARK_ACCENT, ha="right", va="top",
+                xy=(1.0, 0.0), xycoords="axes fraction",
+                xytext=(-6, 6), textcoords="offset points",
+                fontsize=7.5, color=DARK_ACCENT, ha="right", va="bottom",
                 fontweight="bold",
                 bbox=dict(boxstyle="square,pad=0.3",
                           facecolor=DARK_BG,
                           edgecolor=DARK_ACCENT, linewidth=0.6))
+
+    # Numbered badges with leader lines — packed into the gutter we just
+    # reserved above the data zone. Done AFTER set_ylim so the packing math
+    # uses the locked axes range, not auto-scale (which would include the
+    # off-scale crashes and stretch the layout).
+    sorted_pts_for_labels = sorted(pts, key=lambda p: p["time"])
+    xs_num = [mdates.date2num(p["time"]) for p in sorted_pts_for_labels]
+    if xs_num:
+        ax.set_xlim(min(xs_num) - 0.01, max(xs_num) + 0.01)
+        cur_ylim = ax.get_ylim()
+        xlim_ = ax.get_xlim()
+        xspan = xlim_[1] - xlim_[0]
+        yspan = cur_ylim[1] - cur_ylim[0]
+        min_gap_x = xspan / 30.0
+        placed_x: list[float] = []
+        for x in xs_num:
+            if not placed_x:
+                placed_x.append(x)
+                continue
+            placed_x.append(max(x, placed_x[-1] + min_gap_x))
+        # Two-row gutter inside the axes (just below the top edge).
+        y_top  = cur_ylim[1] - 0.05 * yspan
+        y_alt  = cur_ylim[1] - 0.12 * yspan
+        was_pushed = [False]
+        for i in range(1, len(xs_num)):
+            was_pushed.append(placed_x[i] > xs_num[i] + 1e-9)
+        ys: list[float] = []
+        for i in range(len(xs_num)):
+            local_pressure = was_pushed[i] or (i + 1 < len(xs_num) and was_pushed[i + 1])
+            ys.append(y_alt if (local_pressure and (i % 2 == 1)) else y_top)
+        # Leader lines first (behind badges)
+        for i, p in enumerate(sorted_pts_for_labels):
+            ax.plot([xs_num[i], placed_x[i]],
+                    [p["value"], ys[i] - 0.012 * yspan],
+                    color=DARK_RULE_HI, linewidth=0.5, alpha=0.75,
+                    solid_capstyle="round", zorder=4)
+        # Badges on top
+        for i, p in enumerate(sorted_pts_for_labels):
+            ax.text(placed_x[i], ys[i], str(p["n"]),
+                    fontsize=9.0, fontweight="bold",
+                    color=DARK_TEXT_HI, ha="center", va="center",
+                    zorder=5,
+                    bbox=dict(boxstyle="square,pad=0.30",
+                              facecolor=DARK_BG,
+                              edgecolor=DARK_RULE_HI, linewidth=0.7, alpha=0.97))
 
     # Baseline-to-beat — paper-white dashed (this is reference info, not
     # "active state", so it stays neutral, not accent-green).

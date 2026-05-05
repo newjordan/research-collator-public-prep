@@ -65,3 +65,10 @@ embedded — works offline).
 ## License
 
 Private working tree.
+
+## Master template
+
+[`TEMPLATE.md`](TEMPLATE.md) is the canonical specification: locked
+palette, layout, chart contract, scraper contract, invariants. Any
+change to the per-day report must update `TEMPLATE.md` first; code is
+downstream of the spec.

@@ -510,6 +510,23 @@ def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
     return "  ·  ".join(parts)
 
 
+_FROSTED_FLAKE_PATH = "/home/frosty40/research_collator/assets/frosted_flake.png"
+_FROSTED_FLAKE_DATA_URI: str | None = None
+
+
+def _frosted_flake_data_uri() -> str:
+    """Inline the H1 mark image as base64 so the HTML stays self-contained."""
+    global _FROSTED_FLAKE_DATA_URI
+    if _FROSTED_FLAKE_DATA_URI is None:
+        try:
+            with open(_FROSTED_FLAKE_PATH, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode("ascii")
+            _FROSTED_FLAKE_DATA_URI = f"data:image/png;base64,{b64}"
+        except OSError:
+            _FROSTED_FLAKE_DATA_URI = ""
+    return _FROSTED_FLAKE_DATA_URI
+
+
 def compute_day_index(conn: sqlite3.Connection, date: str) -> int | None:
     """Position of `date` in the chronological list of all dates with activity.
     Day 1 = earliest activity in the corpus. Returns None if not found."""
@@ -526,17 +543,193 @@ def compute_day_index(conn: sqlite3.Connection, date: str) -> int | None:
     return sorted(dates).index(date) + 1
 
 
-def make_report_header_html(fields: list[tuple[str, str]]) -> str:
-    """USGC-machine-report-style document header. Dot-leader rows in a
-    bordered block, monospace, ALL CAPS keys."""
-    rows = []
-    for k, v in fields:
-        rows.append(
-            f'<div class="rh-row"><span class="rh-key">{html.escape(k.upper())}</span>'
-            f'<span class="rh-dots"></span>'
-            f'<span class="rh-val">{html.escape(v)}</span></div>'
-        )
+def make_report_header_html(fields: list[tuple[str, str]],
+                            alloc_bar: str | None = None) -> str:
+    """Flat bordered block of key/value rows. If `alloc_bar` is given, the
+    LAST field's value is replaced with an inline allocation bar (the
+    CLASSIFICATION row). Dot-leader spans are emitted but display:none in CSS."""
+    rows: list[str] = []
+    for i, (k, v) in enumerate(fields):
+        is_last_alloc = (alloc_bar is not None and i == len(fields) - 1)
+        if is_last_alloc:
+            rows.append(
+                f'<div class="rh-row rh-row-alloc">'
+                f'<span class="rh-key">{html.escape(k.upper())}</span>'
+                f'<span class="rh-dots"></span>'
+                f'<span class="rh-val rh-alloc">{alloc_bar}</span></div>'
+            )
+        else:
+            rows.append(
+                f'<div class="rh-row">'
+                f'<span class="rh-key">{html.escape(k.upper())}</span>'
+                f'<span class="rh-dots"></span>'
+                f'<span class="rh-val">{html.escape(v)}</span></div>'
+            )
     return '<div class="report-header">' + "".join(rows) + "</div>"
+
+
+def make_alloc_bar_html(by_camp: dict[str, int]) -> str:
+    """Inline 240×30 allocation bar — experimental dark-green block + neural
+    striped lighter-green block + a label string after the bar."""
+    exp = by_camp.get("experimental", 0)
+    neu = by_camp.get("neural", 0)
+    total = exp + neu
+    if total == 0:
+        return ""
+    exp_pct = 100.0 * exp / total
+    neu_pct = 100.0 * neu / total
+    return (
+        '<span class="alloc-bar">'
+          f'<span class="alloc-seg-exp" style="width:{exp_pct:.2f}%"></span>'
+          f'<span class="alloc-seg-neu" style="width:{neu_pct:.2f}%"></span>'
+        '</span>'
+        '<span class="alloc-text">'
+          f'<span class="alloc-text-exp">EXPERIMENTAL {exp_pct:.0f}% ({exp})</span>'
+          '<span class="alloc-sep">/</span>'
+          f'<span class="alloc-text-neu">NEURAL {neu_pct:.0f}% ({neu})</span>'
+        '</span>'
+    )
+
+
+def make_daily_summary_html(date: str, day_index: int | None,
+                            n_tests: int, valid_count: int,
+                            invalid_count: int, headline_metric: str,
+                            chart_baseline: float | None,
+                            test_rows: list[dict],
+                            arch_families: list[tuple[str, int]],
+                            by_camp: dict[str, int]) -> str:
+    """Two-paragraph callout that sits between SECTION 1.0 and the chart.
+    Generated deterministically from the day's numbers — no LLM."""
+    metric = (headline_metric or "metric").upper()
+    floor = INVALID_VAL_BPB_FLOOR
+    exp = by_camp.get("experimental", 0)
+    neu = by_camp.get("neural", 0)
+    total = max(exp + neu, 1)
+    exp_pct = 100.0 * exp / total
+    neu_pct = 100.0 * neu / total
+
+    # Allocation tone
+    if exp_pct >= 80:
+        allocation_tone = "skewed hard experimental"
+    elif neu_pct >= 80:
+        allocation_tone = "skewed hard neural"
+    elif abs(exp_pct - neu_pct) < 15:
+        allocation_tone = "balanced experimental/neural"
+    else:
+        side = "experimental" if exp_pct > neu_pct else "neural"
+        allocation_tone = f"{side}-leaning"
+
+    # Top architectures
+    top_arch_names = [name for name, _ in arch_families[:2] if name != "Other"]
+    if top_arch_names:
+        arch_phrase = (f"the day was about hammering "
+                       f"{' + '.join(name.upper() for name in top_arch_names)} variants")
+    else:
+        arch_phrase = "the day was a mixed-architecture sweep"
+
+    para1 = (
+        f"Day {day_index:03d} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
+        f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} eval-error floor "
+        f"and <strong>{invalid_count} below-floor</strong> readings discarded. "
+        f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+        f"{arch_phrase}."
+    )
+
+    # Para 2: best-of-day, PB comparison
+    valid_rows = [r for r in test_rows if r["value"] >= floor]
+    if valid_rows:
+        best = min(valid_rows, key=lambda r: r["value"])
+        best_value = best["value"]
+        best_title = best.get("title", "(unknown)")
+        if chart_baseline is not None and best_value < chart_baseline:
+            pb_line = (f"<strong>NEW PERSONAL BEST.</strong> Best valid "
+                       f"<strong>{best_value:.4f}</strong> beats prior bar "
+                       f"<strong>{chart_baseline:.4f}</strong>.")
+        elif chart_baseline is not None:
+            pb_line = (f"No new personal best. Best valid of the day = "
+                       f"<strong>{best_value:.4f}</strong> "
+                       f"({html.escape(best_title[:60])}); "
+                       f"best-before-today = <strong>{chart_baseline:.4f}</strong> still stands.")
+        else:
+            pb_line = (f"Best valid of the day = <strong>{best_value:.4f}</strong> "
+                       f"({html.escape(best_title[:60])}). "
+                       f"No prior baseline to compare against.")
+    else:
+        pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
+
+    # Crash flag
+    crash_count = sum(1 for r in test_rows if r["value"] > 3.0)
+    if crash_count:
+        crash_values = sorted([r["value"] for r in test_rows if r["value"] > 3.0],
+                              reverse=True)[:2]
+        crash_str = ", ".join(f"{v:.2f}" for v in crash_values)
+        pb_line += (f" {crash_count} crash-class outlier{'s' if crash_count > 1 else ''} "
+                    f"({crash_str}) excluded.")
+
+    return (
+        '<aside class="day-summary">'
+          '<div class="ds-key">DAILY SUMMARY</div>'
+          f'<div class="ds-body"><p>{para1}</p><p>{pb_line}</p></div>'
+        '</aside>'
+    )
+
+
+def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
+                             arch_families: list[tuple[str, int]]) -> str:
+    """VAL_BPB spread per architecture family — n / min / median / max,
+    valid runs only. Returns rendered HTML directly (custom .bpb-table class)."""
+    valid = [r for r in test_rows if r["value"] >= INVALID_VAL_BPB_FLOOR]
+    if not valid:
+        return ""
+
+    def family_of(title: str) -> str:
+        for fam_name, pat in ARCH_FAMILIES:
+            if re.search(pat, title or "", re.IGNORECASE):
+                return fam_name
+        return "Other"
+
+    by_fam: dict[str, list[float]] = {}
+    for r in valid:
+        fam = family_of(r.get("title", ""))
+        by_fam.setdefault(fam, []).append(r["value"])
+    # Order rows by overall arch_families ranking (count descending)
+    ordered_fams = [f for f, _ in arch_families if f in by_fam]
+    for f in by_fam:
+        if f not in ordered_fams:
+            ordered_fams.append(f)
+
+    metric = (headline_metric or "metric").upper()
+    rows = [f'<table class="bpb-table"><thead><tr>'
+            f'<th>{metric} SPREAD</th><th>n</th><th>min</th>'
+            f'<th>median</th><th>max</th></tr></thead><tbody>']
+    for fam in ordered_fams:
+        vals = sorted(by_fam[fam])
+        n = len(vals)
+        if n == 0:
+            continue
+        mn = vals[0]
+        mx = vals[-1]
+        if n % 2 == 1:
+            med = vals[n // 2]
+        else:
+            med = (vals[n // 2 - 1] + vals[n // 2]) / 2.0
+        rows.append(
+            f'<tr><td>{html.escape(fam.upper())}</td>'
+            f'<td>{n}</td><td>{mn:.4f}</td>'
+            f'<td>{med:.4f}</td><td>{mx:.4f}</td></tr>'
+        )
+    # All-valid row
+    all_vals = sorted(v for vs in by_fam.values() for v in vs)
+    n = len(all_vals)
+    if n:
+        med = all_vals[n // 2] if n % 2 == 1 else (all_vals[n // 2 - 1] + all_vals[n // 2]) / 2.0
+        rows.append(
+            f'<tr><td>ALL VALID</td>'
+            f'<td>{n}</td><td>{all_vals[0]:.4f}</td>'
+            f'<td>{med:.4f}</td><td>{all_vals[-1]:.4f}</td></tr>'
+        )
+    rows.append('</tbody></table>')
+    return "\n".join(rows)
 
 
 def make_camp_bar_html(by_camp: dict[str, int]) -> str:
@@ -735,79 +928,94 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     invalid_count = sum(1 for r in test_rows if r["value"] < INVALID_VAL_BPB_FLOOR)
     valid_count = len(test_rows) - invalid_count
     # NOTE: validity floor is a project-wide convention shown only on the
-    # chart (the red zone) — not a per-day dot-leader field.
+    # chart (the red zone). TOP SOURCE and the standalone ALLOCATION row were
+    # dropped per design feedback — the experimental/neural % is now inline
+    # inside the LAST (CLASSIFICATION) row as a 30px allocation bar.
     arch_families = detect_arch_families(test_rows)
     header_fields = [
         ("DATE", date),
         ("DAY", f"{day_index:03d}" if day_index else "—"),
-        ("CLASSIFICATION", "PARAMETER-GOLF / RESEARCH"),
         ("PRIMARY METRIC", (headline_metric or "—").upper()),
-        ("TOP SOURCE", biggest_source.upper()),
         ("TESTS RUN", f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"),
-        ("ALLOCATION", alloc),
         ("ARCHITECTURE FAMILY", format_arch_families(arch_families)),
+        ("CLASSIFICATION", ""),  # placeholder — alloc bar replaces value cell
     ]
-    report_header = make_report_header_html(header_fields)
-    camp_bar = make_camp_bar_html(by_camp)
+    alloc_bar_html = make_alloc_bar_html(by_camp)
+    report_header = make_report_header_html(header_fields, alloc_bar=alloc_bar_html)
 
-    # Old-CRT phosphor-green status strip
-    n_test = len(test_rows)
-    pb_str = (f"PB BAR {chart_baseline:.4f}"
-              if chart_baseline is not None else "PB BAR —")
-    terminal_bar = (
-        '<div class="terminal-bar">'
-          '<span class="tb-led"></span>'
-          f'<span class="tb-text">SYSTEM ONLINE  ·  '
-          f'DAY {day_index:03d}'
-          f'  ·  {n_test} TESTS LOGGED  ·  '
-          f'{(headline_metric or "—").upper()} '
-          f'  ·  {pb_str}</span>'
-          '<span class="tb-tail">[READY]</span>'
-        '</div>'
+    # H1 with frosted-flake mark + date pinned right
+    h1_html = (
+        '<h1>'
+          '<span class="h1-title">'
+            '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
+            '<span>DAILY RESEARCH REPORT</span>'
+          '</span>'
+          f'<span class="h1-date">{html.escape(date)}</span>'
+        '</h1>'
     )
+
+    # Daily summary callout (between SECTION 1.0 and the chart)
+    daily_summary = make_daily_summary_html(
+        date=date, day_index=day_index, n_tests=len(test_rows),
+        valid_count=valid_count, invalid_count=invalid_count,
+        headline_metric=headline_metric or "metric",
+        chart_baseline=chart_baseline,
+        test_rows=test_rows, arch_families=arch_families,
+        by_camp=by_camp,
+    )
+
+    # VAL_BPB SPREAD per family (small table after the chart)
+    spread_table = make_bpb_spread_table_md(test_rows,
+                                            headline_metric or "metric",
+                                            arch_families)
+
     qmd_lines = [
-        f"# DAILY RESEARCH REPORT — {date}",
-        "",
-        terminal_bar,
+        h1_html,
         "",
         report_header,
         "",
-        camp_bar,
-        "",
         "## SECTION 1.0 — TRAJECTORY",
+        "",
+        daily_summary,
         "",
     ]
     if chart_path:
         relp = os.path.relpath(chart_path, QMD_DIR)
         qmd_lines.append(f"![{headline_metric} for {date}]({relp})")
         qmd_lines.append("")
-        if chart_baseline is not None:
-            qmd_lines.append(
-                f"_{chart_n} {headline_metric.upper()} measurements across the day. "
-                f"Best before today = {chart_baseline:.4f}. "
-                f"Red zone below {INVALID_VAL_BPB_FLOOR:.2f} = known eval errors "
-                f"(don't get excited about scores landing in the red)._"
-            )
-        else:
-            qmd_lines.append(f"_{chart_n} {headline_metric.upper()} measurements across the day._")
-        qmd_lines.append("")
+        if spread_table:
+            qmd_lines.append(spread_table)
+            qmd_lines.append("")
     else:
         qmd_lines.append("_NO HEADLINE METRIC (VAL_BPB / VAL_LOSS) RECORDED ON THIS DATE._")
         qmd_lines.append("")
 
     test_record_paths = {r["abs_path"] for r in test_rows}
+    # Section 3.0 — Daily Grind — removed per design intent (codex sessions
+    # still appear in Supporting Files via the camp-stripe list).
+    supporting_md = make_supporting_files_md(records, test_record_paths) \
+        .replace("## Supporting Files\n\n", "")
     qmd_lines += [
         "## SECTION 2.0 — TEST RUNS",
         "",
         test_table_md,
         "",
-        "## SECTION 3.0 — DAILY GRIND",
+        '<div class="supporting-section">',
         "",
-        grind_md,
+        "## SECTION 3.0 — SUPPORTING FILES",
         "",
-        "## SECTION 4.0 — SUPPORTING FILES",
+        supporting_md,
         "",
-        make_supporting_files_md(records, test_record_paths).replace("## Supporting Files\n\n", ""),
+        '</div>',
+        "",
+        # JS shim: tag each <li> in supporting-list with data-camp so the CSS
+        # pseudo-element renders the right colored stripe. Emitted as a single
+        # line so the markdown-to-HTML passthrough doesn't escape the body.
+        '<script>(function(){document.querySelectorAll(".supporting-list li")'
+        '.forEach(function(li){var s=li.querySelector("strong");'
+        'if(!s)return;var t=s.textContent.trim().toLowerCase();'
+        'if(t==="experimental"||t==="neural"||t==="daily_grind"){'
+        'li.setAttribute("data-camp",t);}});})();</script>',
     ]
     QMD_DIR.mkdir(parents=True, exist_ok=True)
     qmd_path = QMD_DIR / f"{date}.qmd"
@@ -906,170 +1114,218 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         return s
 
     style = """
-    /* COHESIVE LATE-80s / EARLY-90s LAB-PROTOCOL PALETTE — DARK CRT MODE
-       Strict five-token palette. ONE black, ONE ink, ONE accent (green),
-       ONE warning (red), TWO data colors (gold/slate). NO greys. Surface
-       differentiation comes from DITHER PATTERNS (45° hatch) on the same BG,
-       not subtly-different blacks.                                          */
+    /* CLEAN US-GRAPHICS-STYLE DARK MODE
+       Charcoal surfaces, neutral whites, single yellow accent. No dither,
+       no CRT, no green-tinted ink. Hairline rules; allocation bar inside the
+       last header row carries the experimental/neural visual. */
     :root {
       --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
               ui-monospace, "SF Mono", Consolas, "Cascadia Code",
               "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
-      --bg:       #0a0d0a;   /* THE black — used everywhere */
-      --ink:      #c8d4c0;   /* paper-white, slightly green */
-      --ink-hi:   #f0f4ed;   /* emphasized */
-      --accent:   #7dff7d;   /* phosphor green */
-      --warn:     #ff5c4a;   /* INVALID red */
-      --data-exp: #d8a040;   /* muted gold */
-      --data-neu: #6196c4;   /* muted slate */
-
-      /* Dither tokens — repeating diagonal lines for surface differentiation
-         without changing the base color. Built from the accent or warn at
-         very low alpha. */
-      --dither-faint:
-        repeating-linear-gradient(45deg,
-          transparent 0, transparent 3px,
-          rgba(125, 255, 125, 0.04) 3px, rgba(125, 255, 125, 0.04) 4px);
-      --dither-soft:
-        repeating-linear-gradient(45deg,
-          transparent 0, transparent 3px,
-          rgba(125, 255, 125, 0.07) 3px, rgba(125, 255, 125, 0.07) 4px);
-      --dither-counter:
-        repeating-linear-gradient(-45deg,
-          transparent 0, transparent 4px,
-          rgba(125, 255, 125, 0.05) 4px, rgba(125, 255, 125, 0.05) 5px);
-      --dither-warn:
-        repeating-linear-gradient(45deg,
-          transparent 0, transparent 3px,
-          rgba(255, 92, 74, 0.13) 3px, rgba(255, 92, 74, 0.13) 4px);
+      --bg:       #111315;
+      --surface:  #17191c;
+      --rule:     #2a2d31;
+      --rule-hi:  #3a3e44;
+      --ink:      #d6d8db;
+      --ink-hi:   #f4f5f7;
+      --ink-mute: #8a8d92;
+      --accent:   #e3b341;   /* yellow stripe accent */
+      --warn:     #e25a4a;
+      --link:     #7ab4ff;
+      --data-exp: #3a6e3a;
+      --data-neu: #6fbf6f;
     }
     * { box-sizing: border-box; }
     html, body { background: var(--bg); }
-    body { font-family: var(--mono); font-size: 13px; line-height: 1.45;
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
            color: var(--ink);
-           max-width: 1180px; margin: 0 auto; padding: 28px 28px 48px; }
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px; }
 
-    /* H1 banner: phosphor-green text on the same BG; differentiated by a
-       diagonal dither and a 1px green border. No alternate background. */
-    h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.05em;
-         text-transform: uppercase; margin: 0;
-         padding: 10px 14px;
-         border: 1px solid var(--accent);
-         border-bottom: none;
-         background-color: var(--bg);
-         background-image: var(--dither-counter);
-         color: var(--accent); }
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between;
+         gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 0.85; filter: brightness(1.1); }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
 
-    /* Phosphor-green CRT status bar */
-    .terminal-bar { display: flex; align-items: center;
-                    background-color: var(--bg);
-                    background-image: var(--dither-soft);
-                    border: 1px solid var(--accent);
-                    color: var(--accent);
-                    padding: 5px 14px;
-                    font-size: 11px; font-weight: 700;
-                    letter-spacing: 0.12em;
-                    text-transform: uppercase;
-                    margin: 0 0 16px; }
-    .tb-led { display: inline-block; width: 7px; height: 7px;
-              background: var(--accent);
-              margin-right: 10px; }
-    .tb-text { flex: 1; }
-    .tb-tail { opacity: 0.78; }
+    /* Legacy CRT terminal bar — kept in the markup for backwards-compat,
+       but suppressed in the clean layout. */
+    .terminal-bar { display: none; }
 
-    h2 { font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
-         text-transform: uppercase; margin: 28px 0 10px;
-         padding: 5px 0 5px 12px;
-         border-left: 3px solid var(--accent);
+    h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 0 0 8px;
+         border-bottom: 1px solid var(--rule-hi);
          color: var(--ink-hi); }
-    h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
-         text-transform: uppercase; margin: 14px 0 6px; color: var(--ink-hi); }
-    p { margin: 6px 0; color: var(--ink); }
-    code { font-family: var(--mono); background: var(--bg);
-           padding: 0 4px; border: 1px solid var(--accent);
-           color: var(--ink-hi); }
-    .muted { opacity: 0.55; }
-    em, i { font-style: normal; opacity: 0.6; }
-    figure { margin: 14px 0; text-align: center;
-             border: 1px solid var(--accent);
-             padding: 10px;
-             background-color: var(--bg); }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 14px;
+             background-color: transparent; }
     figure img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
 
-    /* Report header — dot-leader rows on dithered surface, no separate bg */
-    .report-header { border: 1px solid var(--accent); border-top: none;
-                     padding: 12px 16px;
-                     margin: 0 0 16px;
-                     background-color: var(--bg);
-                     background-image: var(--dither-faint); }
+    /* Report header — flat bordered block, no fill, no dot-leaders. */
+    .report-header { border: 1px solid var(--rule-hi);
+                     padding: 14px 18px;
+                     margin: 0 0 20px;
+                     background-color: transparent; }
     .rh-row { display: flex; align-items: baseline;
-              padding: 2px 0; font-size: 12.5px; color: var(--ink); }
-    .rh-key { white-space: nowrap; font-weight: 700;
-              letter-spacing: 0.05em; text-transform: uppercase;
-              min-width: 200px; opacity: 0.55; }
-    .rh-dots { flex: 1; min-width: 12px; margin: 0 8px;
-               border-bottom: 1px dotted var(--accent); opacity: 0.45;
-               transform: translateY(-3px); }
-    .rh-val { white-space: nowrap; font-weight: 700; color: var(--ink-hi); }
+              padding: 5px 0; font-size: 12.5px; color: var(--ink-hi); }
+    .rh-row + .rh-row { border-top: 1px solid var(--rule); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--ink-mute); }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--ink-hi); }
 
-    /* Camp ratio bar */
-    .camp-bar { display: flex; height: 16px; border: 1px solid var(--accent);
-                overflow: hidden; margin: 0 0 4px;
-                background: var(--bg); }
-    .camp-seg-exp { background: var(--data-exp); }
-    .camp-seg-neu { background: var(--data-neu); }
-    .camp-bar-labels { display: flex; justify-content: space-between;
-                       font-size: 11px; margin-bottom: 18px; font-weight: 700;
-                       letter-spacing: 0.06em; text-transform: uppercase; }
-    .camp-label-exp { color: var(--data-exp); }
-    .camp-label-neu { color: var(--data-neu); }
+    /* Inline allocation bar inside the CLASSIFICATION row. */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(0,0,0,0.55) 0,
+                       rgba(0,0,0,0.55) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-sep { color: var(--ink-mute); }
 
-    /* Tables — single bg, accent borders, dither-pattern alt rows. */
-    table { border-collapse: collapse; width: 100%; font-size: 11.5px;
-            margin: 8px 0 14px;
-            border: 1px solid var(--accent);
-            background-color: var(--bg); }
-    th { text-align: left; color: var(--bg); font-weight: 700;
-         text-transform: uppercase; letter-spacing: 0.06em;
-         padding: 6px 9px; background: var(--accent);
-         border-right: 1px solid var(--bg); }
-    th:last-child { border-right: none; }
-    td { padding: 5px 9px;
-         border-bottom: 1px solid var(--accent);
-         border-right: 1px solid var(--accent);
-         border-color: rgba(125, 255, 125, 0.18);
+    /* Tables — flat bordered, no fill */
+    table { border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--ink-mute); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: transparent;
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
          vertical-align: top;
          color: var(--ink);
-         background: var(--bg); }
-    td:last-child { border-right: none; }
-    /* Alt-row diagonal dither — same bg, just a hatch overlay */
-    tr:nth-child(even) td { background-image: var(--dither-faint); }
-    tr:hover td { background-image: var(--dither-soft); }
-    /* INVALID row — warn-color hatch, warn val cell, warn STATUS */
-    tr.invalid td { background-image: var(--dither-warn);
-                    opacity: 0.85; }
-    tr.invalid td:nth-child(5) code { background: var(--bg);
-                                       color: var(--warn);
-                                       border-color: var(--warn);
-                                       font-weight: 700; }
-    tr.invalid td:nth-child(6) strong { color: var(--warn); }
+         background: transparent; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
 
-    ul { padding-left: 18px; }
-    li { margin: 1px 0; font-size: 12px; color: var(--ink); }
+    /* Lists — wrapped flat bordered block, internal hairlines. */
+    ul { padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
 
-    /* Links — accent green, dotted underline, inverts on hover */
-    a { color: var(--accent); text-decoration: none;
-        border-bottom: 1px dotted var(--accent); }
-    a:hover { background: var(--accent); color: var(--bg);
-              border-bottom-color: var(--accent); }
+    /* Links — quiet blue, underline on hover */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
 
     ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Daily summary callout — between section heading and chart */
+    .day-summary { display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--data-exp);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: rgba(125,255,125,0.03); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--ink-mute); padding-top: 2px; }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    /* Supporting files — left camp indicator stripe + vertical guideline */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: ""; position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi); opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0;
+                       border: 1px solid var(--rule-hi); }
+    .supporting-list li {
+        position: relative;
+        padding: 9px 14px 9px 36px;
+        border-left: none;
+        border-bottom: 1px solid var(--rule);
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li:last-child { border-bottom: none; }
+    .supporting-list li::before {
+        content: ""; position: absolute;
+        left: 6px; top: 7px; bottom: 7px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(0,0,0,0.55) 0,
+            rgba(0,0,0,0.55) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
     """
+    body_html = md_to_html("\n".join(qmd_lines))
+    # Tag the auto-generated <ul> inside .supporting-section so the CSS
+    # `.supporting-list li::before` stripe rules match it.
+    body_html = re.sub(
+        r'(<div class="supporting-section">.*?)<ul>',
+        r'\1<ul class="supporting-list">',
+        body_html, count=1, flags=re.DOTALL,
+    )
     full_html = (
         f"<!doctype html><html><head><meta charset='utf-8'>"
         f"<title>{date} — Research Day</title>"
         f"<style>{style}</style></head><body>"
-        + md_to_html("\n".join(qmd_lines))
+        + body_html
         + "</body></html>"
     )
     html_path.write_text(full_html)
