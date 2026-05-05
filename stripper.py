@@ -316,6 +316,15 @@ def handle_json_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, A
             pv = _detect_provider(abs_path)
             if pv:
                 metrics["provider"] = pv
+        # Tag observed gpu_type so we can distinguish from the inferred fallback
+        if "gpu_type" in metrics and "gpu_type_source" not in metrics:
+            metrics["gpu_type_source"] = "observed"
+        # Binary local/rented inference when no explicit GPU model is found
+        if "gpu_type" not in metrics:
+            inferred = _infer_gpu_type(metrics.get("provider"), metrics.get("n_gpus"))
+            if inferred:
+                metrics["gpu_type"] = inferred
+                metrics["gpu_type_source"] = "inferred"
         # Tag val_bpb as JSON-derived (most reliable source for submissions)
         if "val_bpb" in metrics:
             metrics.setdefault("val_bpb_source", "json_top_level")
@@ -494,6 +503,29 @@ def _detect_provider(text: str) -> str | None:
     return None
 
 
+# Per user 2026-05-05: every training run in this corpus is either
+# (a) a small local probe on the DGX Spark = 1×GB10 Blackwell, or
+# (b) a rented H100 (single or multi). No A100 / L40 / 5090 / etc. show
+# up in real runs. Provider markers win; n_gpus is the tiebreaker.
+_CLOUD_PROVIDERS = {"runpod", "vast.ai", "lambda", "coreweave"}
+
+
+def _infer_gpu_type(provider: str | None, n_gpus: int | None) -> str | None:
+    """Binary inference rule: rented = H100, local = GB10. Returns None
+    when the signal is too thin (e.g. unknown provider, unknown n_gpus)."""
+    if provider in _CLOUD_PROVIDERS:
+        return "H100"
+    if provider == "local":
+        return "GB10"
+    # No provider known. Fall back to n_gpus: ≥2 ranks ≈ rented cluster
+    # (DGX Spark is single-GPU); 1 rank with no cloud marker ≈ local probe.
+    if isinstance(n_gpus, int) and n_gpus >= 2:
+        return "H100"
+    if n_gpus == 1:
+        return "GB10"
+    return None
+
+
 def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
     """Parse a training-run log. STRICT pattern matching: only counts val_bpb
     that appears in 'step:N val_loss:X val_bpb:Y' or 'final_* val_loss:X val_bpb:Y'
@@ -561,15 +593,26 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
         # do not emit `[rankN]` lines (single-process launchers, redirected
         # stderr, etc.). Trust that as the GPU count.
         metrics["n_gpus"] = int(ws.group(1))
-    # GPU type — search log content first, then path. Logs typically contain
-    # "NVIDIA H100 80GB HBM3" in the first ~1KB of GPU init output.
+    # GPU type — search log content first, then path. Most app logs do
+    # NOT contain "NVIDIA H100" — that string lives in nvidia-smi prelude
+    # which isn't captured here — but we try anyway for the rare ones
+    # that do, and tag the source so we can distinguish observation from
+    # inference in the renderer.
     gpu_type = _detect_gpu_type(text[:8192]) or _detect_gpu_type(abs_path)
     if gpu_type:
         metrics["gpu_type"] = gpu_type
+        metrics["gpu_type_source"] = "observed"
     # Provider — strongest signal is path (runpod_*, lambda_*, etc.)
     provider = _detect_provider(abs_path) or _detect_provider(text[:4096])
     if provider:
         metrics["provider"] = provider
+    # If we still don't have a GPU type, fall back to the binary
+    # local/rented mapping. Tag as inferred so downstream knows.
+    if "gpu_type" not in metrics:
+        inferred = _infer_gpu_type(provider, metrics.get("n_gpus"))
+        if inferred:
+            metrics["gpu_type"] = inferred
+            metrics["gpu_type_source"] = "inferred"
     # Tag the source of the val_bpb value so the renderer can prefer
     # log-derived measurements over commit-message claims.
     if "val_bpb" in metrics:
