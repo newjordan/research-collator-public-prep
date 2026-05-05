@@ -27,7 +27,7 @@ from pathlib import Path
 
 import yaml
 
-EXTRACTION_VERSION = "enrich_v2"
+EXTRACTION_VERSION = "enrich_v1"
 
 # Patterns to fish numeric metrics out of commit messages (BPB / val_loss)
 RE_BPB = re.compile(r"\b(\d+\.\d{2,5})\s*BPB\b", re.IGNORECASE)
@@ -171,7 +171,6 @@ def walk_git_repo(repo: dict) -> list[dict]:
             "file_kind": "git_commit",
             "file_size_bytes": len(blob),
             "mtime_iso": mtime_iso,
-            "content_sha256": sha,
             "title": subject[:300],
             "summary": (body[:1000] if body else shortstat) or shortstat,
             "metrics_json": json.dumps(metrics) if metrics else None,

@@ -98,8 +98,8 @@ re-ordered without a spec revision.
 3.3   VAL_BPB SPREAD        Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
-4. SECTION 2.0  TEST RUNS   9-column table:
-                              # | TIME | HW | ABLATION | METRIC | STATUS | Δ % | VERIFY | OPEN
+4. SECTION 2.0  TEST RUNS   8-column table:
+                              # | TIME | HW | ABLATION | VAL_BPB | STATUS | Δ % | OPEN
                             INVALID rows: muted text, red val_bpb cell, red STATUS.
 
 5. SECTION 3.0  SUPPORTING FILES
@@ -107,11 +107,6 @@ re-ordered without a spec revision.
                             guideline. Each `<li>` carries a left camp-stripe
                             (solid dark green for experimental, hatched
                             lighter green for neural, neutral for other).
-                            Must render only artifacts whose deterministic
-                            `best_date(record)` equals the report date.
-                            Exact copied worktree artifacts are collapsed by
-                            content hash / commit sha. High-volume machine
-                            output may be grouped by day-local folder.
 ```
 
 DAILY GRIND — explicitly **not** in the canonical layout. Codex/Claude
@@ -167,11 +162,18 @@ points may render there.
 
 ### 4.5 Numbered badges (the contract)
 
-The chart does not carry per-run labels. Dense days made badge placement
-look authoritative while crowding the evidence. The Test Runs table is the
-source of truth for run identity; the chart shows only the data signal
-(dots, journey line, best-valid step line, floor/crash indicators when the
-metric is `val_bpb`).
+Each test run gets a numbered badge in the **gutter**, packed left→right
+with a min-gap rule. Badges that would otherwise overlap a neighbor are
+pushed right; if pressure persists, every other badge alternates to a
+second sub-row. A thin grey leader line connects each badge to its
+anchor dot.
+
+Constraints:
+- Badge font: 9pt bold, white text on bg with grey border, `pad=0.30`.
+- Min horizontal gap: `xspan / 30` (≈ 30 badges fit in a single row).
+- Two sub-rows: `y_top = ymax - 0.05·yspan`, `y_alt = ymax - 0.12·yspan`.
+- Leader line: `--rule-hi`, lw 0.5, alpha 0.75.
+- Badge number = its row in the Test Runs table (1-indexed by run-time).
 
 ---
 
@@ -221,15 +223,14 @@ The renderer derives these from the records and a target date:
 
 - **`day_index`** — 1-based index of this date in the sorted list of dates
   that have any artifact (used for `DAY 022`).
-- **`headline_metric`** — first of
-  `["val_bpb", "val_loss", "val_bits_per_byte", "bpb", "loss",
-  "fb_mean_ms", "fwd_mean_ms", "mean_ms"]` that appears in ≥2 records.
+- **`headline_metric`** — first of `["val_bpb", "val_loss", …]` that
+  appears in ≥2 records.
 - **`chart_baseline`** — best (lowest) `headline_metric` value across all
   records strictly before this date.
 - **`test_rows`** — one row per unique title (collapsing seed replicas),
   sorted by run-time ascending. Each row: `n, time, hardware, title,
   value, n_runs, link_label, link_href, run_script, time_iso, camp,
-  delta_pct, verify`.
+  delta_pct`.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
 - **`valid_count` / `invalid_count`** — `value ≥/< INVALID_VAL_BPB_FLOOR`.
@@ -241,10 +242,8 @@ canonical keys:
 
 | Key                      | Source-of-truth                                          |
 |--------------------------|----------------------------------------------------------|
-| `val_bpb`                | bits-per-byte. Sanity floor: ≥ 0.1. Report-valid floor: ≥ 1.06 and ≤ 3.0. |
+| `val_bpb`                | bits-per-byte. Sanity floor: ≥ 0.1.                     |
 | `val_loss`               | natural-log loss.                                        |
-| `fb_mean_ms`             | kernel forward+backward timing, lower is better.         |
-| `fwd_mean_ms`            | kernel forward timing, lower is better.                  |
 | `val_bpb_int6_*`         | per-quantization variant from `final_*` lines.           |
 | `n_ranks`                | distinct rank IDs in training-log output (HW signal).    |
 | `train_time_seconds`     | last `train_time:Nms` in log content.                    |

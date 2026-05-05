@@ -25,7 +25,7 @@ import sqlite3
 import sys
 
 import yaml
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pathlib import Path
 
 import plot as plot_mod
@@ -59,49 +59,7 @@ HARDWARE_PATTERNS = (
     (r"\b4[\s_-]*x\b",     "4 GPU"),
 )
 
-INVALID_VAL_BPB_FLOOR = 1.06
-CRASH_THRESHOLD = 3.0
-BPB_METRICS = {"val_bpb", "val_bits_per_byte", "bpb"}
-KERNEL_METRICS = ("fb_mean_ms", "fwd_mean_ms", "mean_ms")
-MAX_KERNEL_TABLE_ROWS = 240
-HEADLINE_METRICS = (
-    "val_bpb", "val_loss", "val_bits_per_byte", "bpb", "loss",
-    *KERNEL_METRICS,
-)
-
-
-def metric_has_bpb_floor(metric: str | None) -> bool:
-    return (metric or "").lower() in BPB_METRICS
-
-
-def metric_value_status(metric: str | None, value: float) -> str:
-    """OK | INVALID | CRASH. The eval-error floor is val_bpb-specific."""
-    if metric_has_bpb_floor(metric):
-        if value < INVALID_VAL_BPB_FLOOR:
-            return "INVALID"
-        if value > CRASH_THRESHOLD:
-            return "CRASH"
-    return "OK"
-
-
-def is_valid_metric_value(metric: str | None, value: float) -> bool:
-    return metric_value_status(metric, value) == "OK"
-
-
-def _record_identity_key(rec: dict) -> str:
-    """Stable render-time dedup key.
-
-    SQLite keeps every path. Reports collapse exact copied artifacts across
-    worktrees so a day shows the research once, not once per checkout.
-    """
-    sha = rec.get("content_sha256")
-    if sha:
-        return f"sha:{sha}"
-    if rec.get("file_kind") == "git_commit":
-        m = re.match(r"git://[^/]+/([0-9a-f]{40})$", rec.get("abs_path") or "")
-        if m:
-            return f"git:{m.group(1)}"
-    return f"path:{rec.get('abs_path') or rec.get('rel_path') or id(rec)}"
+HEADLINE_METRICS = ("val_bpb", "val_loss", "val_bits_per_byte", "bpb", "loss")
 
 
 def best_date(rec: dict) -> str | None:
@@ -169,15 +127,16 @@ def fetch_day(conn: sqlite3.Connection, date: str) -> list[dict]:
         (date, f"%{date.replace('-', '')}%", f"%{date}%"),
     ).fetchall()
     out = []
-    seen_identity: set[str] = set()
+    seen_sha: set[str] = set()
     for r in rows:
         rec = dict(r)
         if best_date(rec) != date:
             continue
-        ident = _record_identity_key(rec)
-        if ident in seen_identity:
-            continue
-        seen_identity.add(ident)
+        sha = rec.get("content_sha256")
+        if sha:
+            if sha in seen_sha:
+                continue
+            seen_sha.add(sha)
         out.append(rec)
     return out
 
@@ -193,10 +152,7 @@ def extract_metric_for_record(metrics_json: str | None, metric_name: str) -> lis
     for k, v in md.items():
         if not isinstance(v, (int, float)) or isinstance(v, bool):
             continue
-        # Metrics from nested JSON can look like
-        # `results[0].backends.whale_fast.fb_mean_ms`; strip list indexes
-        # before taking the final dotted leaf.
-        leaf = re.sub(r"\[\d+\]", "", k).split(".")[-1]
+        leaf = k.split("[")[0].split(".")[-1]
         if leaf == metric_name:
             out.append(float(v))
     return out
@@ -239,8 +195,6 @@ def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | Non
         if md.get("is_reference_baseline"):
             continue
         for v in extract_metric_for_record(rec["metrics_json"], metric):
-            if not is_valid_metric_value(metric, v):
-                continue
             if best is None or v < best:
                 best = v
     return best
@@ -470,33 +424,6 @@ _VAL_BPB_SOURCE_RANK = {
     "unknown":          4,
 }
 
-_VERIFY_LABEL = {
-    "log_final_eval": "LOG-FINAL",
-    "log_step_best": "LOG-STEP",
-    "json_top_level": "JSON",
-    "commit_message": "CLAIM",
-    "unknown": "UNKNOWN",
-}
-
-
-def _verification_label(selected_source: str, selected_value: float,
-                        source_values: dict[str, list[float]]) -> str:
-    label = _VERIFY_LABEL.get(selected_source, selected_source.upper() or "UNKNOWN")
-    mismatches: list[str] = []
-    for src, vals in sorted(source_values.items(),
-                            key=lambda kv: _VAL_BPB_SOURCE_RANK.get(kv[0], 9)):
-        if src == selected_source:
-            continue
-        if {src, selected_source} <= {"log_final_eval", "log_step_best"}:
-            continue
-        for v in vals:
-            if abs(v - selected_value) > 1e-4:
-                mismatches.append(f"{_VERIFY_LABEL.get(src, src.upper())}={v:.4f}")
-                break
-    if mismatches:
-        return label + " / MISMATCH " + ", ".join(mismatches[:2])
-    return label
-
 
 def extract_test_rows(records: list[dict], metric: str,
                       reference_baseline: float | None) -> list[dict]:
@@ -537,8 +464,6 @@ def extract_test_rows(records: list[dict], metric: str,
         hardware = _hardware_from_record(rec)
         hw_priority = _hardware_priority_key(rec)
         bpb_source = _val_bpb_source(rec)
-        if bpb_source == "unknown" and rec.get("file_kind") == "json":
-            bpb_source = "json_top_level"
         bpb_priority = _VAL_BPB_SOURCE_RANK.get(bpb_source, 9)
 
         time_iso = _record_run_time_iso(rec)
@@ -568,19 +493,15 @@ def extract_test_rows(records: list[dict], metric: str,
                 "camp": rec["camp"],
                 "source_label": rec["source_label"],
                 "abs_path": rec["abs_path"],
-                "record_paths": {rec["abs_path"]},
                 "link_label": link_label,
                 "link_href": link_href,
                 "run_script": run_script,
                 "val_bpb_source": bpb_source,
                 "val_bpb_priority": bpb_priority,
-                "source_values": {bpb_source: [best_val]},
             }
             continue
 
         cur["n_runs"] += len(vals)
-        cur.setdefault("record_paths", set()).add(rec["abs_path"])
-        cur.setdefault("source_values", {}).setdefault(bpb_source, []).append(best_val)
         # Hardware: prefer the highest-priority source we've seen.
         if hardware and hw_priority < cur.get("hardware_priority", 99):
             cur["hardware"] = hardware
@@ -602,12 +523,6 @@ def extract_test_rows(records: list[dict], metric: str,
     rows = sorted(by_title.values(), key=lambda r: r.get("time_iso") or "")
     for i, r in enumerate(rows, start=1):
         r["n"] = i
-        r["status"] = metric_value_status(metric, r["value"])
-        r["verify"] = _verification_label(
-            r.get("val_bpb_source", "unknown"),
-            r["value"],
-            r.get("source_values", {}),
-        )
     if reference_baseline is not None and reference_baseline > 0:
         for r in rows:
             r["delta_vs_baseline"] = r["value"] - reference_baseline
@@ -645,117 +560,21 @@ def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
 
 # ---------- bibliography ----------------------------------------------------
 
-def _support_line_md(r: dict) -> str:
-    rel = r["abs_path"].replace("/home/frosty40/", "~/")
-    title = r["title"] or "(untitled)"
-    link_label, link_href = _build_link(r)
-    link_md = f" — [{link_label}]({link_href})" if link_href else ""
-    return (f"- **{r['camp']}** · `{r['source_label']}` · {r['file_kind']} · "
-            f"`{rel}` — {title}{link_md}")
-
-
-def _support_group_line_md(items: list[dict]) -> str:
-    first = items[0]
-    parent = str(Path(first["abs_path"]).parent)
-    rel_parent = parent.replace("/home/frosty40/", "~/")
-    names = [Path(r["abs_path"]).name for r in items]
-    examples = ", ".join(names[:3])
-    if len(names) > 3:
-        examples += f", +{len(names) - 3} more"
-    href = ""
-    if parent.startswith(HOME + "/"):
-        href = f"{SERVE_BASE}/{parent[len(HOME) + 1:]}/"
-    link_md = f" — [folder]({href})" if href else ""
-    return (f"- **{first['camp']}** · `{first['source_label']}` · "
-            f"{first['file_kind']} group · `{rel_parent}/` — "
-            f"{len(items)} day-local files ({examples}){link_md}")
-
-
-def _support_bulk_group_line_md(items: list[dict]) -> str:
-    first = items[0]
-    paths = [r["abs_path"] for r in items]
-    try:
-        common = os.path.commonpath(paths)
-    except ValueError:
-        common = str(Path(first["abs_path"]).parent)
-    if not os.path.isdir(common):
-        common = str(Path(common).parent)
-    rel_common = common.replace("/home/frosty40/", "~/")
-    names = [Path(p).name for p in paths]
-    examples = ", ".join(names[:3])
-    if len(names) > 3:
-        examples += f", +{len(names) - 3} more"
-    href = ""
-    if common.startswith(HOME + "/"):
-        href = f"{SERVE_BASE}/{common[len(HOME) + 1:]}/"
-    link_md = f" — [folder]({href})" if href else ""
-    return (f"- **{first['camp']}** · `{first['source_label']}` · "
-            f"{first['file_kind']} bulk group · `{rel_common}/` — "
-            f"{len(items)} day-local files ({examples}){link_md}")
-
-
-def make_supporting_files_md(records: list[dict], test_record_paths: set[str],
-                             date: str | None = None) -> str:
+def make_supporting_files_md(records: list[dict], test_record_paths: set[str]) -> str:
     """Everything that wasn't a numbered Test Run — supporting docs, codex
-    sessions, the leg's checkpoints/configs/etc.
-
-    Section 3.0 is intentionally date-strict. Even if a broad SQL prefetch
-    caught a record, it only renders here when best_date(record) equals the
-    report date. High-volume machine output is grouped by day-local folder so
-    dense days stay inspectable without hiding provenance.
-    """
+    sessions, the leg's checkpoints/configs/etc."""
     out = ["", "## Supporting Files", ""]
-    rest = []
-    for r in records:
-        if r["abs_path"] in test_record_paths:
-            continue
-        if date is not None and best_date(r) != date:
-            continue
-        rest.append(r)
+    rest = [r for r in records if r["abs_path"] not in test_record_paths]
     if not rest:
         out.append("_No supporting files._")
         return "\n".join(out)
-
-    grouped: dict[tuple[str, str, str, str], list[dict]] = defaultdict(list)
-    bulk_grouped: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
-    singles: list[dict] = []
-    groupable_kinds = {
-        "csv", "json", "py", "md", "training_log", "ckpt",
-        "claude_session", "codex_session",
-    }
-    json_counts = Counter(
-        (r["camp"], r["source_label"], r["file_kind"])
-        for r in rest if r.get("file_kind") == "json"
-    )
-    bulk_json_keys = {k for k, n in json_counts.items() if n >= 60}
-
-    for r in rest:
-        bulk_key = (r["camp"], r["source_label"], r["file_kind"])
-        if bulk_key in bulk_json_keys:
-            bulk_grouped[bulk_key].append(r)
-            continue
-        if r.get("file_kind") in groupable_kinds and r.get("abs_path", "").startswith(HOME + "/"):
-            key = (r["camp"], r["source_label"], r["file_kind"], str(Path(r["abs_path"]).parent))
-            grouped[key].append(r)
-        else:
-            singles.append(r)
-
-    lines: list[tuple[str, str]] = []
-    for _key, items in bulk_grouped.items():
-        items = sorted(items, key=lambda r: r["abs_path"])
-        lines.append((items[0]["mtime_iso"], _support_bulk_group_line_md(items)))
-    for _key, items in grouped.items():
-        items = sorted(items, key=lambda r: r["abs_path"])
-        if len(items) >= 12:
-            lines.append((items[0]["mtime_iso"], _support_group_line_md(items)))
-        else:
-            for r in items:
-                singles.append(r)
-    for r in sorted(singles, key=lambda r: (r["camp"], r["source_label"], r["mtime_iso"], r["abs_path"])):
-        lines.append((r["mtime_iso"], _support_line_md(r)))
-
-    for _mtime, line in sorted(lines, key=lambda x: x[0]):
-        out.append(line)
+    for r in sorted(rest, key=lambda r: (r["camp"], r["source_label"], r["mtime_iso"])):
+        rel = r["abs_path"].replace("/home/frosty40/", "~/")
+        title = r["title"] or "(untitled)"
+        link_label, link_href = _build_link(r)
+        link_md = f" — [{link_label}]({link_href})" if link_href else ""
+        out.append(f"- **{r['camp']}** · `{r['source_label']}` · {r['file_kind']} · "
+                   f"`{rel}` — {title}{link_md}")
     return "\n".join(out)
 
 
@@ -775,11 +594,7 @@ ARCH_FAMILIES = [
     ("Depth Recurrence",     r"\bdepth[\s_-]+recurrence\b"),
     ("Parallel Residuals",   r"\bparallel[\s_-]+residual"),
     ("Sliding Window",       r"\bsliding[\s_-]+window\b"),
-    ("Staged Hybrid Bench",  r"staged[\s_-]+(?:primary|fallback)\w*|hybrid[AB]\w*"),
-    ("Kernel Frontier Bench", r"frontier\w*|sentinel\w*|reconfirm\w*|recheck\w*"),
-    ("Kernel Playoff Bench", r"playoff\w*|replicate\w*"),
-    ("Hybrid Kernel Bench",  r"hybrid[\s_-]\w*"),
-    ("Fallback Kernel Bench", r"fallback[\s_-]\w*|primary[\s_-]\w*"),
+    ("Staged Hybrid Bench",  r"\bstaged[\s_-]+(?:primary|fallback)\b|\bhybrid[AB]\b"),
     ("Watch / Handoff",      r"\b(?:watch|handoff)(?:_daemon|_nohup|_logs|[\s_-]?\d{8})\b"),
     ("Spark Smoke Kit",      r"\b(?:SMK|spark[\s_-]?smoke)(?:[\s_-]\w*)?"),
     # Architecture / experiment family stems — match any suffix
@@ -827,30 +642,35 @@ ARCH_FAMILIES = [
 ]
 
 
-def detect_arch_family_for_row(row: dict) -> str:
-    """First matching architecture family for one rendered row.
-
-    Searches title first, then abs_path so generic-named logs
-    (run_s1337.log, train_seed444.log) inherit the architecture-named
-    directory they live in.
-    """
-    title = row.get("title") or ""
-    path = row.get("abs_path") or ""
-    for fam_name, pat in ARCH_FAMILIES:
-        if re.search(pat, title, re.IGNORECASE):
-            return fam_name
-    for fam_name, pat in ARCH_FAMILIES:
-        if re.search(pat, path, re.IGNORECASE):
-            return fam_name
-    return "Other"
-
-
 def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
-    """For each test row, find the FIRST matching family."""
+    """For each test row, find the FIRST matching family from ARCH_FAMILIES.
+    Searches title FIRST, then falls back to abs_path so generic-named log
+    files (run_s1337.log, train_seed444.log) still get classified by the
+    architecture-named directory they live in. Unmatched → 'Other'."""
     counts: dict[str, int] = {}
+    unmatched = 0
     for row in test_rows:
-        fam = detect_arch_family_for_row(row)
-        counts[fam] = counts.get(fam, 0) + 1
+        title = (row.get("title") or "")
+        path = (row.get("abs_path") or "")
+        matched = False
+        for fam_name, pat in ARCH_FAMILIES:
+            if re.search(pat, title, re.IGNORECASE):
+                counts[fam_name] = counts.get(fam_name, 0) + 1
+                matched = True
+                break
+        if not matched:
+            # Fallback: check the full path for the family name. Catches
+            # generic-named logs (run_s1337.log) that live in dirs like
+            # `.../sota_v2_tttonly_*/` or `.../nightcrawler_cubed/`.
+            for fam_name, pat in ARCH_FAMILIES:
+                if re.search(pat, path, re.IGNORECASE):
+                    counts[fam_name] = counts.get(fam_name, 0) + 1
+                    matched = True
+                    break
+        if not matched:
+            unmatched += 1
+    if unmatched > 0:
+        counts["Other"] = unmatched
     return sorted(counts.items(), key=lambda kv: -kv[1])
 
 
@@ -969,9 +789,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
     """Two-paragraph callout that sits between SECTION 1.0 and the chart.
     Generated deterministically from the day's numbers — no LLM."""
     metric = (headline_metric or "metric").upper()
-    has_floor = metric_has_bpb_floor(headline_metric)
     floor = INVALID_VAL_BPB_FLOOR
-    day_label = f"{day_index:03d}" if day_index is not None else "—"
     exp = by_camp.get("experimental", 0)
     neu = by_camp.get("neural", 0)
     total = max(exp + neu, 1)
@@ -986,30 +804,23 @@ def make_daily_summary_html(date: str, day_index: int | None,
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
-              f'<div class="ds-body"><p>Day {day_label} — '
+              f'<div class="ds-body"><p>Day {day_index:03d} — '
               f'<strong>no training runs launched</strong> on this date. '
               f'Activity captured: commits, sessions, supporting files. '
               f'See SECTION 3.0.</p></div>'
             '</aside>'
         )
 
-    # Allocation tone — deterministic, but gated on enough rows to avoid
-    # making a tiny day sound like a deliberate allocation strategy.
-    if n_tests < 5:
-        allocation_clause = "Run count is too small for an allocation read."
+    # Allocation tone — only when we actually have runs to talk about.
+    if exp_pct >= 80:
+        allocation_tone = "skewed hard experimental"
+    elif neu_pct >= 80:
+        allocation_tone = "skewed hard neural"
+    elif abs(exp_pct - neu_pct) < 15:
+        allocation_tone = "balanced experimental/neural"
     else:
-        if exp_pct >= 80:
-            allocation_tone = "skewed hard experimental"
-        elif neu_pct >= 80:
-            allocation_tone = "skewed hard neural"
-        elif abs(exp_pct - neu_pct) < 15:
-            allocation_tone = "balanced experimental/neural"
-        else:
-            side = "experimental" if exp_pct > neu_pct else "neural"
-            allocation_tone = f"{side}-leaning"
-        allocation_clause = (
-            f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural)"
-        )
+        side = "experimental" if exp_pct > neu_pct else "neural"
+        allocation_tone = f"{side}-leaning"
 
     # Top architectures
     top_arch_names = [name for name, _ in arch_families[:2] if name != "Other"]
@@ -1019,21 +830,16 @@ def make_daily_summary_html(date: str, day_index: int | None,
     else:
         arch_phrase = "the day was a mixed-architecture sweep"
 
-    if has_floor:
-        para1 = (
-            f"Day {day_label} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
-            f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} eval-error floor "
-            f"and <strong>{invalid_count} below-floor</strong> readings discarded. "
-            f"{allocation_clause} — {arch_phrase}."
-        )
-    else:
-        para1 = (
-            f"Day {day_label} recorded {n_tests} measured rows against "
-            f"<strong>{html.escape(metric)}</strong>. {allocation_clause} — {arch_phrase}."
-        )
+    para1 = (
+        f"Day {day_index:03d} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
+        f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} eval-error floor "
+        f"and <strong>{invalid_count} below-floor</strong> readings discarded. "
+        f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+        f"{arch_phrase}."
+    )
 
     # Para 2: best-of-day, PB comparison
-    valid_rows = [r for r in test_rows if is_valid_metric_value(headline_metric, r["value"])]
+    valid_rows = [r for r in test_rows if r["value"] >= floor]
     if valid_rows:
         best = min(valid_rows, key=lambda r: r["value"])
         best_value = best["value"]
@@ -1051,13 +857,11 @@ def make_daily_summary_html(date: str, day_index: int | None,
             pb_line = (f"Best valid of the day = <strong>{best_value:.4f}</strong> "
                        f"({html.escape(best_title[:60])}). "
                        f"No prior baseline to compare against.")
-    elif has_floor:
-        pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
     else:
-        pb_line = "<strong>No measured rows.</strong>"
+        pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
 
     # Crash flag
-    crash_count = sum(1 for r in test_rows if metric_value_status(headline_metric, r["value"]) == "CRASH")
+    crash_count = sum(1 for r in test_rows if r["value"] > 3.0)
     if crash_count:
         crash_values = sorted([r["value"] for r in test_rows if r["value"] > 3.0],
                               reverse=True)[:2]
@@ -1077,13 +881,19 @@ def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
                              arch_families: list[tuple[str, int]]) -> str:
     """VAL_BPB spread per architecture family — n / min / median / max,
     valid runs only. Returns rendered HTML directly (custom .bpb-table class)."""
-    valid = [r for r in test_rows if is_valid_metric_value(headline_metric, r["value"])]
+    valid = [r for r in test_rows if r["value"] >= INVALID_VAL_BPB_FLOOR]
     if not valid:
         return ""
 
+    def family_of(title: str) -> str:
+        for fam_name, pat in ARCH_FAMILIES:
+            if re.search(pat, title or "", re.IGNORECASE):
+                return fam_name
+        return "Other"
+
     by_fam: dict[str, list[float]] = {}
     for r in valid:
-        fam = detect_arch_family_for_row(r)
+        fam = family_of(r.get("title", ""))
         by_fam.setdefault(fam, []).append(r["value"])
     # Order rows by overall arch_families ranking (count descending)
     ordered_fams = [f for f, _ in arch_families if f in by_fam]
@@ -1193,41 +1003,30 @@ def make_grind_md(records: list[dict]) -> str:
     return "\n".join(chunks)
 
 
+INVALID_VAL_BPB_FLOOR = 1.06
+
+
 def make_test_table_md(rows: list[dict], metric: str,
                        reference_baseline: float | None) -> str:
     if not rows:
         return f"_No tests with measured {metric} on this date._"
     out = []
-    display_rows = rows
-    metric_l = (metric or "").lower()
-    if metric_l in KERNEL_METRICS and len(rows) > MAX_KERNEL_TABLE_ROWS:
-        keep = {r["n"] for r in rows[:80]}
-        keep.update(r["n"] for r in sorted(rows, key=lambda r: r["value"])[:160])
-        display_rows = [r for r in rows if r["n"] in keep]
-        out.append(
-            f"_Showing {len(display_rows)} of {len(rows)} measured kernel rows: "
-            "the first 80 in time order plus the 160 fastest rows. "
-            "The full day-local JSON set is grouped in SECTION 3.0._"
-        )
-        out.append("")
-    out.append(f"| # | TIME | HW | ABLATION | {metric.upper()} | STATUS | Δ % | VERIFY | OPEN |")
-    out.append("|---|------|----|----------|-----------------|--------|-----|--------|------|")
-    for r in display_rows:
+    out.append(f"| # | TIME | HW | ABLATION | {metric.upper()} | STATUS | Δ % | OPEN |")
+    out.append("|---|------|----|----------|-----------------|--------|-----|------|")
+    for r in rows:
         ablation = r["title"]
         if r["n_runs"] > 1:
             ablation = f"{ablation} (×{r['n_runs']})"
         if len(ablation) > 80:
             ablation = ablation[:77] + "…"
-        status = r.get("status") or metric_value_status(metric, r["value"])
-        is_invalid = status == "INVALID"
-        is_crash = status == "CRASH"
+        is_invalid = r["value"] < INVALID_VAL_BPB_FLOOR
         delta_str = "—"
-        if r.get("delta_pct") is not None and not is_invalid and not is_crash:
+        if r.get("delta_pct") is not None and not is_invalid:
             arrow = "↓" if r["delta_pct"] < 0 else ("↑" if r["delta_pct"] > 0 else "")
             delta_str = f"{arrow}{abs(r['delta_pct']):.1f}%"
-        elif is_invalid or is_crash:
+        elif is_invalid:
             delta_str = "—"
-        status_str = f"**{status}**" if status in ("INVALID", "CRASH") else "OK"
+        status_str = "**INVALID**" if is_invalid else "OK"
         # Build link cell
         link_cell_parts = []
         if r.get("link_href"):
@@ -1237,7 +1036,7 @@ def make_test_table_md(rows: list[dict], metric: str,
         link_cell = " · ".join(link_cell_parts) if link_cell_parts else "—"
         # Mark invalid val_bpb cell with class hook (used by HTML CSS)
         val_str = f"{r['value']:.4f}"
-        if is_invalid or is_crash:
+        if is_invalid:
             val_str = f"`{val_str}`"  # backtick-wrap renders as <code>, distinct
         out.append(
             f"| **{r['n']}** "
@@ -1247,7 +1046,6 @@ def make_test_table_md(rows: list[dict], metric: str,
             f"| {val_str} "
             f"| {status_str} "
             f"| {delta_str} "
-            f"| {r.get('verify') or '—'} "
             f"| {link_cell} |"
         )
     return "\n".join(out)
@@ -1261,6 +1059,28 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     records = fetch_day(conn, date)
     if not records:
         sys.exit(f"no artifacts found for {date}")
+
+    # CLASSIFICATION % must reflect research output, not file-tree mass.
+    # Count training-log records (excluding reference baselines) per camp;
+    # this matches the Test Runs table's universe. Sister files (.json,
+    # .md, .py supporting artifacts) inflated the prior denominator with
+    # work-day file-touches that didn't represent test runs.
+    by_camp: dict[str, int] = defaultdict(int)
+    for r in records:
+        if r.get("file_kind") != "training_log":
+            continue
+        try:
+            md = json.loads(r.get("metrics_json") or "{}")
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
+            continue
+        by_camp[r["camp"]] += 1
+    # If the day had no training_logs at all (commit-only / session-only days),
+    # fall back to counting all records so the bar still renders something.
+    if not by_camp:
+        for r in records:
+            by_camp[r["camp"]] += 1
 
     headline_metric = metric_override or pick_headline_metric(records)
     asset_dir = ASSETS_DIR / date
@@ -1289,17 +1109,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             baseline_to_beat=chart_baseline,
             baseline_label="best before today",
         )
-
-    # CLASSIFICATION % must reflect rendered research output. When there are
-    # measured rows, count those rows. On session/docs-only days, fall back to
-    # the day-local supporting record mix so the header still has context.
-    by_camp: dict[str, int] = defaultdict(int)
-    if test_rows:
-        for r in test_rows:
-            by_camp[r.get("camp", "experimental")] += 1
-    else:
-        for r in records:
-            by_camp[r["camp"]] += 1
 
     # Header stats — "hours worked" deliberately removed; the chart's time
     # axis already shows the day's exploration trajectory.
@@ -1337,21 +1146,8 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     neu_n = by_camp.get("neural", 0)
     alloc = (f"EXPERIMENTAL {100*exp_n/(exp_n+neu_n):.0f}% / "
              f"NEURAL {100*neu_n/(exp_n+neu_n):.0f}%") if (exp_n+neu_n) else "—"
-    invalid_count = sum(1 for r in test_rows
-                        if metric_value_status(headline_metric, r["value"]) == "INVALID")
-    crash_count = sum(1 for r in test_rows
-                      if metric_value_status(headline_metric, r["value"]) == "CRASH")
-    valid_count = sum(1 for r in test_rows
-                      if metric_value_status(headline_metric, r["value"]) == "OK")
-    if metric_has_bpb_floor(headline_metric):
-        tests_run_text = (
-            f"{len(test_rows)} unique  "
-            f"({valid_count} valid / {invalid_count} below floor / {crash_count} crash)"
-        )
-    elif test_rows:
-        tests_run_text = f"{len(test_rows)} unique  ({valid_count} measured)"
-    else:
-        tests_run_text = "0 unique  (0 measured)"
+    invalid_count = sum(1 for r in test_rows if r["value"] < INVALID_VAL_BPB_FLOOR)
+    valid_count = len(test_rows) - invalid_count
     # NOTE: validity floor is a project-wide convention shown only on the
     # chart (the red zone). TOP SOURCE and the standalone ALLOCATION row were
     # dropped per design feedback — the experimental/neural % is now inline
@@ -1361,7 +1157,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         ("DATE", date),
         ("DAY", f"{day_index:03d}" if day_index else "—"),
         ("PRIMARY METRIC", (headline_metric or "—").upper()),
-        ("TESTS RUN", tests_run_text),
+        ("TESTS RUN", f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"),
         ("ARCHITECTURE FAMILY", format_arch_families(arch_families)),
         ("CLASSIFICATION", ""),  # placeholder — alloc bar replaces value cell
     ]
@@ -1415,21 +1211,10 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         qmd_lines.append("_NO HEADLINE METRIC (VAL_BPB / VAL_LOSS) RECORDED ON THIS DATE._")
         qmd_lines.append("")
 
-    test_record_paths: set[str] = set()
-    keep_kernel_sources_in_support = (
-        (headline_metric or "").lower() in KERNEL_METRICS
-        and len(test_rows) > MAX_KERNEL_TABLE_ROWS
-    )
-    if not keep_kernel_sources_in_support:
-        for r in test_rows:
-            paths = r.get("record_paths")
-            if isinstance(paths, set):
-                test_record_paths.update(paths)
-            else:
-                test_record_paths.add(r["abs_path"])
+    test_record_paths = {r["abs_path"] for r in test_rows}
     # Section 3.0 — Daily Grind — removed per design intent (codex sessions
     # still appear in Supporting Files via the camp-stripe list).
-    supporting_md = make_supporting_files_md(records, test_record_paths, date) \
+    supporting_md = make_supporting_files_md(records, test_record_paths) \
         .replace("## Supporting Files\n\n", "")
     qmd_lines += [
         "## SECTION 2.0 — TEST RUNS",
@@ -1480,9 +1265,9 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
                     # separator row
                     pass
                 else:
-                    # If any cell contains an invalid/crash status marker,
+                    # If any cell contains the literal "**INVALID**" marker,
                     # tag the row so CSS can highlight it.
-                    is_invalid = any(("**INVALID**" in c or "**CRASH**" in c) for c in cells)
+                    is_invalid = any("**INVALID**" in c for c in cells)
                     tr_class = " class='invalid'" if is_invalid else ""
                     out.append(f"<tr{tr_class}>" +
                                "".join(f"<td>{format_cell(c)}</td>" for c in cells) +
@@ -1546,6 +1331,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         )
         s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
         s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
+        s = re.sub(r"_([^_]+)_", r"<em>\1</em>", s)
         return s
 
     style = """
