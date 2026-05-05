@@ -36,23 +36,25 @@
     h1 .h1-mark { width: 32px; height: 32px; display: block;
                   opacity: 0.85; filter: brightness(1.1); }
     h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
-                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+                  font-size: 14px; font-weight: 400; letter-spacing: 0.04em; }
 
     /* Legacy CRT terminal bar — kept in the markup for backwards-compat,
        but suppressed in the clean layout. */
     .terminal-bar { display: none; }
 
-    h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    h2 { font-size: 12px; font-weight: 400; letter-spacing: 0.12em;
          text-transform: uppercase; margin: 36px 0 14px;
          padding: 0 0 8px;
          border-bottom: 1px solid var(--rule-hi);
          color: var(--ink-hi); }
-    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+    h3 { font-size: 11.5px; font-weight: 400; letter-spacing: 0.08em;
          text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
     p { margin: 8px 0; color: var(--ink); }
     code { font-family: var(--mono); background: transparent;
            padding: 0; border: none;
-           color: var(--ink-hi); font-weight: 600; }
+           color: var(--ink-hi); font-weight: 400; }
+    /* Neutralize inline emphasis tags — only h1 carries bold weight. */
+    strong, b { font-weight: 400; color: inherit; }
     .muted { color: var(--ink-mute); }
     em, i { font-style: normal; color: var(--ink-mute); }
     figure { margin: 16px 0; text-align: center;
@@ -69,11 +71,11 @@
     .rh-row { display: flex; align-items: baseline;
               padding: 5px 0; font-size: 12.5px; color: var(--ink-hi); }
     .rh-row + .rh-row { border-top: 1px solid var(--rule); }
-    .rh-key { white-space: nowrap; font-weight: 500;
+    .rh-key { white-space: nowrap; font-weight: 400;
               letter-spacing: 0.04em;
               min-width: 220px; color: var(--ink-mute); }
     .rh-dots { display: none; }
-    .rh-val { white-space: nowrap; font-weight: 600; color: var(--ink-hi); }
+    .rh-val { white-space: nowrap; font-weight: 400; color: var(--ink-hi); }
 
     /* Inline allocation bar inside the CLASSIFICATION row. */
     .rh-row-alloc { align-items: center; padding: 14px 0; }
@@ -90,7 +92,7 @@
                        rgba(0,0,0,0.55) 3px,
                        transparent 3px,
                        transparent 7px); }
-    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 400;
                   font-size: 12px; letter-spacing: 0.02em; }
     .alloc-text-exp { color: var(--data-exp); }
     .alloc-text-neu { color: var(--data-neu); }
@@ -101,7 +103,7 @@
             margin: 10px 0 18px;
             border: 1px solid var(--rule-hi);
             background-color: transparent; }
-    th { text-align: left; color: var(--ink-mute); font-weight: 600;
+    th { text-align: left; color: var(--ink-mute); font-weight: 400;
          text-transform: uppercase; letter-spacing: 0.08em;
          padding: 10px 14px;
          background: transparent;
@@ -116,8 +118,8 @@
     tr:hover td { background: rgba(255,255,255,0.02); }
     /* INVALID row — clean red tint, no hatch */
     tr.invalid td { color: var(--ink-mute); }
-    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
-    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 400; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 400; }
 
     /* Lists — wrapped flat bordered block, internal hairlines. */
     ul { padding: 0; list-style: none; margin: 10px 0 18px;
@@ -126,7 +128,7 @@
          padding: 9px 14px; border-bottom: 1px solid var(--rule);
          line-height: 1.6; }
     li:last-child { border-bottom: none; }
-    li strong { color: var(--ink-hi); font-weight: 600; }
+    li strong { color: var(--ink-hi); font-weight: 400; }
 
     /* Links — quiet blue, underline on hover */
     a { color: var(--link); text-decoration: none;
@@ -146,16 +148,16 @@
         background: rgba(125,255,125,0.03); }
     .day-summary .ds-key {
         font-size: 10.5px; letter-spacing: 0.10em;
-        text-transform: uppercase; font-weight: 700;
+        text-transform: uppercase; font-weight: 400;
         color: var(--ink-mute); padding-top: 2px; }
     .day-summary .ds-body p { margin: 0 0 10px; }
     .day-summary .ds-body p:last-child { margin-bottom: 0; }
-    .day-summary strong { color: var(--ink-hi); font-weight: 600; }
+    .day-summary strong { color: var(--ink-hi); font-weight: 400; }
 
     /* val_bpb spread per family table */
     .bpb-table { width: auto; min-width: 480px; }
     .bpb-table td { font-variant-numeric: tabular-nums; }
-    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:first-child { font-weight: 400; color: var(--ink-hi); }
     .bpb-table td:not(:first-child),
     .bpb-table th:not(:first-child) { text-align: right; }
 
