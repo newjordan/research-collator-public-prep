@@ -23,6 +23,8 @@ import os
 import re
 import sqlite3
 import sys
+
+import yaml
 from collections import defaultdict
 from pathlib import Path
 
@@ -304,13 +306,93 @@ def _record_run_time_iso(rec: dict) -> str | None:
     return rec.get("mtime_iso")
 
 
+def _hardware_from_record(rec: dict) -> str:
+    """Compose a per-test hardware label from whatever signals the scraper
+    extracted into metrics_json. Returns canonical strings like "8×H100",
+    "1×RTX 5090 (runpod)", "DGX Spark (local)", or "" if unknown."""
+    md_str = rec.get("metrics_json") or ""
+    if not md_str:
+        # Last-ditch path scan for provider+gpu strings
+        path = rec.get("abs_path") or ""
+        title = rec.get("title") or ""
+        text = f"{path} {title}"
+        gt = None
+        for pat, label in (
+            (re.compile(r"\bH100\b", re.I), "H100"),
+            (re.compile(r"\bA100\b", re.I), "A100"),
+            (re.compile(r"\b5090\b"), "RTX 5090"),
+            (re.compile(r"\b4090\b"), "RTX 4090"),
+            (re.compile(r"\bgb10\b|\bdgx[\s_-]?spark\b", re.I), "DGX Spark"),
+        ):
+            if pat.search(text):
+                gt = label
+                break
+        return gt or ""
+
+    try:
+        md = json.loads(md_str)
+    except json.JSONDecodeError:
+        return ""
+
+    gpu_type = md.get("gpu_type") or ""
+    n_gpus = md.get("n_gpus") or md.get("n_ranks")
+    provider = md.get("provider") or ""
+
+    parts: list[str] = []
+    if isinstance(n_gpus, int) and n_gpus > 0 and gpu_type:
+        parts.append(f"{n_gpus}×{gpu_type}")
+    elif gpu_type:
+        parts.append(gpu_type)
+    elif isinstance(n_gpus, int) and n_gpus > 0:
+        parts.append(f"{n_gpus}× GPU")
+    if provider and provider != "local":
+        parts.append(f"({provider})")
+    return " ".join(parts)
+
+
+def _hardware_priority_key(rec: dict) -> int:
+    """Hardware signals from training_log content > resolved_config JSON >
+    submission JSON > anything else. Used to pick the most reliable
+    per-test hardware label when multiple records contribute to one title."""
+    kind = rec.get("file_kind")
+    if kind == "training_log":
+        return 0  # most reliable — actual rank prints + GPU init lines
+    if kind == "json":
+        return 1
+    return 2
+
+
+def _val_bpb_source(rec: dict) -> str:
+    """Tag the source of a val_bpb value: log_final_eval > log_step_best >
+    json_top_level > commit_message > unknown."""
+    md_str = rec.get("metrics_json") or ""
+    if not md_str:
+        return "unknown"
+    try:
+        md = json.loads(md_str)
+    except json.JSONDecodeError:
+        return "unknown"
+    return md.get("val_bpb_source") or "unknown"
+
+
+_VAL_BPB_SOURCE_RANK = {
+    "log_final_eval":   0,
+    "log_step_best":    1,
+    "json_top_level":   2,
+    "commit_message":   3,
+    "unknown":          4,
+}
+
+
 def extract_test_rows(records: list[dict], metric: str,
                       reference_baseline: float | None) -> list[dict]:
     """One Test Run row per unique title, sorted by RUN TIME (chronological).
 
-    The row number IS the chart number — both reference order is "what got
-    tested when". This matches autoresearch trajectory charts: read left to
-    right to follow the day's exploration through.
+    Per-test fields are merged across ALL records sharing the title:
+      - hardware: take the highest-priority signal (log > json > path)
+      - value:    prefer the lower (better) value, AND prefer log-derived
+                  values over commit-message claims when both exist.
+      - source:   tag every row with where its val_bpb came from.
     """
     by_title: dict[str, dict] = {}
     for rec in records:
@@ -318,11 +400,6 @@ def extract_test_rows(records: list[dict], metric: str,
         if not vals:
             continue
         title = (rec.get("title") or "(untitled)").strip()
-        hw_text = " ".join([
-            rec.get("title") or "",
-            rec.get("summary") or "",
-            rec.get("abs_path") or "",
-        ])
         wallclock = None
         if rec.get("file_kind") == "json":
             try:
@@ -330,23 +407,15 @@ def extract_test_rows(records: list[dict], metric: str,
                     raw = json.load(f)
                 if isinstance(raw, dict):
                     wallclock = raw.get("wallclock_seconds") or raw.get("wallclock")
-                    if isinstance(raw.get("blurb"), str):
-                        hw_text += " " + raw["blurb"]
                     if isinstance(raw.get("name"), str) and len(raw["name"]) > len(title):
                         title = raw["name"][:160]
             except (OSError, json.JSONDecodeError):
                 pass
 
-        # Hardware: also pull n_ranks from training_log metrics
-        hardware = detect_hardware(hw_text)
-        if not hardware and rec.get("file_kind") == "training_log":
-            try:
-                md = json.loads(rec.get("metrics_json") or "{}")
-                n_ranks = md.get("n_ranks")
-                if isinstance(n_ranks, int):
-                    hardware = f"{n_ranks}× ranks"
-            except json.JSONDecodeError:
-                pass
+        hardware = _hardware_from_record(rec)
+        hw_priority = _hardware_priority_key(rec)
+        bpb_source = _val_bpb_source(rec)
+        bpb_priority = _VAL_BPB_SOURCE_RANK.get(bpb_source, 9)
 
         time_iso = _record_run_time_iso(rec)
         time_str = ""
@@ -362,7 +431,7 @@ def extract_test_rows(records: list[dict], metric: str,
 
         best_val = min(vals)
         cur = by_title.get(title)
-        if cur is None or best_val < cur["value"]:
+        if cur is None:
             by_title[title] = {
                 "title": title,
                 "value": best_val,
@@ -370,6 +439,7 @@ def extract_test_rows(records: list[dict], metric: str,
                 "time": time_str,
                 "time_iso": time_iso,
                 "hardware": hardware,
+                "hardware_priority": hw_priority if hardware else 99,
                 "wallclock_seconds": wallclock,
                 "camp": rec["camp"],
                 "source_label": rec["source_label"],
@@ -377,13 +447,28 @@ def extract_test_rows(records: list[dict], metric: str,
                 "link_label": link_label,
                 "link_href": link_href,
                 "run_script": run_script,
+                "val_bpb_source": bpb_source,
+                "val_bpb_priority": bpb_priority,
             }
-        else:
-            cur["n_runs"] += len(vals)
-            if hardware and not cur["hardware"]:
-                cur["hardware"] = hardware
-            if wallclock and not cur["wallclock_seconds"]:
-                cur["wallclock_seconds"] = wallclock
+            continue
+
+        cur["n_runs"] += len(vals)
+        # Hardware: prefer the highest-priority source we've seen.
+        if hardware and hw_priority < cur.get("hardware_priority", 99):
+            cur["hardware"] = hardware
+            cur["hardware_priority"] = hw_priority
+        # Value: prefer the more-reliable source. If sources tie, prefer the
+        # lower (better) measurement. This is the verification path —
+        # log-derived numbers override commit-message claims for the same
+        # title.
+        if bpb_priority < cur["val_bpb_priority"]:
+            cur["value"] = best_val
+            cur["val_bpb_source"] = bpb_source
+            cur["val_bpb_priority"] = bpb_priority
+        elif bpb_priority == cur["val_bpb_priority"] and best_val < cur["value"]:
+            cur["value"] = best_val
+        if wallclock and not cur["wallclock_seconds"]:
+            cur["wallclock_seconds"] = wallclock
 
     # Sort by RUN TIME (chronological — the journey through the day)
     rows = sorted(by_title.values(), key=lambda r: r.get("time_iso") or "")
@@ -527,20 +612,34 @@ def _frosted_flake_data_uri() -> str:
     return _FROSTED_FLAKE_DATA_URI
 
 
+_DAY_EPOCH: dt.date | None = None
+
+
+def _day_epoch() -> dt.date:
+    """Read the day-numbering epoch from config.yaml once. day_index is stable
+    relative to this anchor — never drifts as the scraper finds new sources."""
+    global _DAY_EPOCH
+    if _DAY_EPOCH is None:
+        try:
+            with open("/home/frosty40/research_collator/config.yaml") as f:
+                cfg = yaml.safe_load(f)
+            anchor = cfg.get("day_epoch", "2026-03-17")
+            _DAY_EPOCH = dt.date.fromisoformat(anchor)
+        except (OSError, ValueError):
+            _DAY_EPOCH = dt.date(2026, 3, 17)
+    return _DAY_EPOCH
+
+
 def compute_day_index(conn: sqlite3.Connection, date: str) -> int | None:
-    """Position of `date` in the chronological list of all dates with activity.
-    Day 1 = earliest activity in the corpus. Returns None if not found."""
-    rows = conn.execute(
-        "SELECT abs_path, rel_path, mtime_iso FROM artifacts"
-    ).fetchall()
-    dates: set[str] = set()
-    for r in rows:
-        d = best_date(dict(r))
-        if d:
-            dates.add(d)
-    if date not in dates:
+    """Days since the locked epoch (config.yaml `day_epoch`), 1-indexed.
+    Day 1 = epoch. Stable across stripper / enrich / classify re-runs and
+    across new sources being added — same date always gets the same number."""
+    try:
+        target = dt.date.fromisoformat(date)
+    except ValueError:
         return None
-    return sorted(dates).index(date) + 1
+    delta = (target - _day_epoch()).days
+    return delta + 1 if delta >= 0 else None
 
 
 def make_report_header_html(fields: list[tuple[str, str]],

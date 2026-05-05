@@ -233,6 +233,42 @@ def handle_markdown(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
     return record
 
 
+def _walk_hardware(obj: Any, depth: int = 0, max_depth: int = 6) -> dict[str, Any]:
+    """Walk a nested dict (e.g., resolved_config.json) for hardware fields.
+    Returns canonical {gpu_type, n_gpus, provider} when found.
+    Looks for keys like:
+      kernel.gpu_type / model.gpu_type / device / gpu / gpu_name
+      world_size / nproc_per_node / n_gpus / num_gpus
+      pod_type / provider / cloud
+    """
+    out: dict[str, Any] = {}
+    if depth > max_depth or not isinstance(obj, dict):
+        return out
+    for k, v in obj.items():
+        kl = str(k).lower()
+        if isinstance(v, str):
+            # GPU type signals
+            if kl in ("gpu_type", "gpu", "gpu_name", "device", "device_name",
+                      "accelerator"):
+                gt = _detect_gpu_type(v) or v
+                if gt:
+                    out.setdefault("gpu_type", gt)
+            if kl in ("provider", "pod_type", "cloud", "host"):
+                p = _detect_provider(v) or v
+                if p:
+                    out.setdefault("provider", p)
+        elif isinstance(v, (int, float)) and not isinstance(v, bool):
+            if kl in ("world_size", "n_gpus", "num_gpus", "nproc_per_node",
+                      "ngpus", "gpu_count"):
+                if isinstance(v, int) and 1 <= v <= 64:
+                    out.setdefault("n_gpus", int(v))
+        elif isinstance(v, dict):
+            nested = _walk_hardware(v, depth + 1, max_depth)
+            for nk, nv in nested.items():
+                out.setdefault(nk, nv)
+    return out
+
+
 def handle_json_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
     record: dict[str, Any] = {"file_kind": "json"}
     if size > max_bytes:
@@ -250,12 +286,39 @@ def handle_json_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, A
             if tk in obj and isinstance(obj[tk], (str, int, float)):
                 record["title"] = str(obj[tk])[:300]
                 break
-        for sk in ("description", "summary", "status", "verdict", "decision"):
+        for sk in ("description", "summary", "status", "verdict", "decision",
+                   "blurb"):
             if sk in obj and isinstance(obj[sk], (str, int, float)):
                 record["summary"] = str(obj[sk])[:1000]
                 break
 
     metrics = _walk_metrics(obj)
+    # Hardware extraction — nested config files (resolved_config.json) carry
+    # this in `kernel.gpu_type`, `model.world_size`, etc. Submission JSONs
+    # carry it in the `blurb` prose field.
+    if isinstance(obj, dict):
+        hw = _walk_hardware(obj)
+        for k, v in hw.items():
+            metrics.setdefault(k, v)
+        # Blurb prose — last-resort scan for hardware mentions
+        blurb = obj.get("blurb")
+        if isinstance(blurb, str):
+            if "gpu_type" not in metrics:
+                gt = _detect_gpu_type(blurb)
+                if gt:
+                    metrics["gpu_type"] = gt
+            if "provider" not in metrics:
+                pv = _detect_provider(blurb)
+                if pv:
+                    metrics["provider"] = pv
+        # Path fallback for provider (runpod_2026_03_30_logs/...)
+        if "provider" not in metrics:
+            pv = _detect_provider(abs_path)
+            if pv:
+                metrics["provider"] = pv
+        # Tag val_bpb as JSON-derived (most reliable source for submissions)
+        if "val_bpb" in metrics:
+            metrics.setdefault("val_bpb_source", "json_top_level")
     if metrics:
         record["metrics_json"] = json.dumps(metrics)
     return record
@@ -380,8 +443,55 @@ RE_LOG_FINAL = re.compile(
 RE_LOG_RANK = re.compile(r"\[rank(\d+)\]")
 RE_LOG_TRAIN_TIME = re.compile(r"train_time:(\d+)ms")
 RE_LOG_STEP_NUM = re.compile(r"step:(\d+)/")
-# Filename timestamp patterns: _20260328_005704 or _20260328-005704
 RE_FILENAME_TS = re.compile(r"_(\d{8})[-_](\d{6})\b")
+
+# Hardware detection patterns. Order matters: most-specific first so 8×H100
+# beats H100. Each entry: (regex, canonical-label).
+HW_GPU_PATTERNS = [
+    (re.compile(r"\bnvidia[\s_-]+h200\b",                   re.I), "H200"),
+    (re.compile(r"\bnvidia[\s_-]+h100[\s_-]+(?:sxm[5]?|pcie|nvl)\b", re.I), "H100"),
+    (re.compile(r"\bnvidia[\s_-]+h100\b",                   re.I), "H100"),
+    (re.compile(r"\bnvidia[\s_-]+a100\b",                   re.I), "A100"),
+    (re.compile(r"\bnvidia[\s_-]+l40s?\b",                  re.I), "L40"),
+    (re.compile(r"\bnvidia[\s_-]+rtx[\s_-]+5090\b",         re.I), "RTX 5090"),
+    (re.compile(r"\bnvidia[\s_-]+rtx[\s_-]+4090\b",         re.I), "RTX 4090"),
+    (re.compile(r"\bgeforce[\s_-]+rtx[\s_-]+5090\b",        re.I), "RTX 5090"),
+    (re.compile(r"\bgeforce[\s_-]+rtx[\s_-]+4090\b",        re.I), "RTX 4090"),
+    (re.compile(r"\bgb10\b",                                re.I), "GB10"),
+    (re.compile(r"\bdgx[\s_-]?spark\b",                     re.I), "DGX Spark"),
+    # Bare patterns as fallback (lower priority — placed last)
+    (re.compile(r"\bh100\b",                                re.I), "H100"),
+    (re.compile(r"\ba100\b",                                re.I), "A100"),
+    (re.compile(r"\b5090\b",                                re.I), "RTX 5090"),
+    (re.compile(r"\b4090\b",                                re.I), "RTX 4090"),
+]
+# Provider detection from path/text. Matches break at non-alnum (so
+# `runpod_2026_03_30_logs` matches; underscore counts as alnum boundary
+# since \b is alnum-vs-not so we use lookarounds with non-alnum-or-boundary).
+HW_PROVIDER_PATTERNS = [
+    (re.compile(r"(?:^|[^a-zA-Z0-9])runpod(?:[^a-zA-Z0-9]|$)", re.I), "runpod"),
+    (re.compile(r"(?:^|[^a-zA-Z0-9])vast(?:[\s_.-]?ai)?(?:[^a-zA-Z0-9]|$)", re.I), "vast.ai"),
+    (re.compile(r"(?:^|[^a-zA-Z0-9])lambda(?:[\s_.-]?labs)?(?:[^a-zA-Z0-9]|$)", re.I), "lambda"),
+    (re.compile(r"(?:^|[^a-zA-Z0-9])coreweave(?:[^a-zA-Z0-9]|$)", re.I), "coreweave"),
+    (re.compile(r"(?:^|[^a-zA-Z0-9])dgx[\s_.-]?spark(?:[^a-zA-Z0-9]|$)", re.I), "local"),
+    (re.compile(r"(?:^|[^a-zA-Z0-9])spark-2949(?:[^a-zA-Z0-9]|$)", re.I), "local"),
+]
+# Also extract `world_size:N` from training logs as a fallback for n_gpus.
+RE_LOG_WORLD_SIZE = re.compile(r"\bworld_size:\s*(\d+)\b")
+
+
+def _detect_gpu_type(text: str) -> str | None:
+    for pat, label in HW_GPU_PATTERNS:
+        if pat.search(text):
+            return label
+    return None
+
+
+def _detect_provider(text: str) -> str | None:
+    for pat, label in HW_PROVIDER_PATTERNS:
+        if pat.search(text):
+            return label
+    return None
 
 
 def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
@@ -438,10 +548,35 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
             metrics["val_bpb_during_run_best"] = min(clean)
         metrics["val_bpb_n_step_evals"] = len(bpbs_during)
 
-    # Hardware: count distinct rank IDs from torch DDP output
+    # Hardware — three signals, all per-test:
+    #   gpu_type    : canonical label (H100, A100, RTX 5090, GB10, ...)
+    #   n_gpus      : distinct rank IDs from torch DDP output
+    #   provider    : runpod / vast.ai / lambda / coreweave / local
     ranks = {int(m.group(1)) for m in RE_LOG_RANK.finditer(text)}
     if ranks:
         metrics["n_ranks"] = len(ranks)
+        metrics["n_gpus"] = len(ranks)
+    elif (ws := RE_LOG_WORLD_SIZE.search(text)) is not None:
+        # Fallback: many logs print `world_size:N` in their config block but
+        # do not emit `[rankN]` lines (single-process launchers, redirected
+        # stderr, etc.). Trust that as the GPU count.
+        metrics["n_gpus"] = int(ws.group(1))
+    # GPU type — search log content first, then path. Logs typically contain
+    # "NVIDIA H100 80GB HBM3" in the first ~1KB of GPU init output.
+    gpu_type = _detect_gpu_type(text[:8192]) or _detect_gpu_type(abs_path)
+    if gpu_type:
+        metrics["gpu_type"] = gpu_type
+    # Provider — strongest signal is path (runpod_*, lambda_*, etc.)
+    provider = _detect_provider(abs_path) or _detect_provider(text[:4096])
+    if provider:
+        metrics["provider"] = provider
+    # Tag the source of the val_bpb value so the renderer can prefer
+    # log-derived measurements over commit-message claims.
+    if "val_bpb" in metrics:
+        if "val_bpb_int6_sliding_window" in final_evals or "val_bpb_int6_roundtrip" in final_evals:
+            metrics["val_bpb_source"] = "log_final_eval"
+        elif "val_bpb_during_run_best" in metrics:
+            metrics["val_bpb_source"] = "log_step_best"
 
     # Train time + step count from last occurrence
     trains = RE_LOG_TRAIN_TIME.findall(text)

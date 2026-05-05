@@ -143,6 +143,10 @@ def walk_git_repo(repo: dict) -> list[dict]:
         chosen = explicit_abs or implicit_abs
         if chosen:
             metrics["val_bpb"] = min(chosen)
+            # Source-of-truth tag: commit messages are claims, not measurements.
+            # The renderer prefers log-derived numbers when both exist for the
+            # same test (verification path).
+            metrics["val_bpb_source"] = "commit_message"
             if len(chosen) > 1:
                 metrics["val_bpb_n_measurements"] = len(chosen)
                 metrics["val_bpb_max"] = max(chosen)
