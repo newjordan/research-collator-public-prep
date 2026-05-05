@@ -28,7 +28,7 @@ import plot as plot_mod
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
     best_date, fetch_day, pick_headline_metric,
-    extract_metric_for_record, render_one_day,
+    extract_metric_for_record, is_valid_metric_value, render_one_day,
 )
 
 
@@ -52,6 +52,8 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
     for rec in records:
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         for v in vals:
+            if not is_valid_metric_value(metric, v):
+                continue
             if best_v is None or v < best_v:
                 best_v = v
                 best_title = rec.get("title") or "(untitled)"
@@ -64,7 +66,8 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
 def render_index(dates_with_results: list[dict],
                  days_summary: list[dict],
                  journey_chart_path: str,
-                 reference_baseline: float | None) -> str:
+                 reference_baseline: float | None,
+                 metric_used: str) -> str:
     """Build the front index.html."""
     style = """
     body { font-family: -apple-system, system-ui, sans-serif; max-width: 1080px;
@@ -113,7 +116,7 @@ def render_index(dates_with_results: list[dict],
     lines.append(f"<span class='stat'><strong>{total_neural}</strong> neural</span>")
     lines.append(f"<span class='stat'><strong>{total_exp}</strong> experimental</span>")
     lines.append(f"<span class='stat'><strong>{total_grind}</strong> daily-grind notes</span>")
-    lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with measured val_loss/val_bpb</span>")
+    lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with measured {metric_used}</span>")
     if journey_best is not None:
         lines.append(f"<span class='stat'>best ever: <strong>{journey_best:.4f}</strong></span>")
     lines.append("</p>")
@@ -189,16 +192,16 @@ def main():
             print(f"      {i}/{len(dates)} ({time.perf_counter() - t0:.1f}s)")
 
     print("[3/4] computing per-day bests for journey chart...")
-    # Pick the metric with broadest coverage across the corpus.
-    metric_used = "val_loss"
+    # The report arc is parameter-golf-first: prefer valid val_bpb. Only
+    # fallback when no day has a valid val_bpb.
+    metric_used = "val_bpb"
     per_day = []
     for d in dates:
         b = per_day_best(conn, d, metric_used)
         if b:
             per_day.append(b)
     if not per_day:
-        # fallback: try val_bpb
-        metric_used = "val_bpb"
+        metric_used = "val_loss"
         for d in dates:
             b = per_day_best(conn, d, metric_used)
             if b:
@@ -222,7 +225,7 @@ def main():
             # leftmost value and clutter the panel).
         )
 
-    index_html = render_index(per_day, days_summary, journey_path, reference_baseline)
+    index_html = render_index(per_day, days_summary, journey_path, reference_baseline, metric_used)
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     (HTML_DIR / "index.html").write_text(index_html)
 

@@ -28,7 +28,7 @@ from typing import Any
 
 import yaml
 
-EXTRACTION_VERSION = "stripper_v1"
+EXTRACTION_VERSION = "stripper_v3"
 
 # Regexes used by the markdown handler — all anchored, all bounded.
 RE_FRONTMATTER = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -119,6 +119,22 @@ def upsert_artifact(conn: sqlite3.Connection, row: dict[str, Any]) -> None:
         f"ON CONFLICT(abs_path) DO UPDATE SET {update_clause}"
     )
     conn.execute(sql, [row[c] for c in cols])
+
+
+def _sha256_file(abs_path: str, chunk_bytes: int = 1024 * 1024) -> str | None:
+    """Hash small parseable artifacts so render-time dedup works across
+    copied worktrees. Large tensor/checkpoint files stay metadata-only."""
+    h = hashlib.sha256()
+    try:
+        with open(abs_path, "rb") as f:
+            while True:
+                chunk = f.read(chunk_bytes)
+                if not chunk:
+                    break
+                h.update(chunk)
+    except OSError:
+        return None
+    return h.hexdigest()
 
 
 # ---------- Per-extension handlers --------------------------------------------
@@ -753,6 +769,19 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
                 rec = handler(abs_path, st.st_size, max_bytes)
             except Exception as e:  # noqa: BLE001 — handler isolation
                 rec = {"file_kind": "?", "parse_error": f"handler_crash:{type(e).__name__}:{e}"}
+
+            # Hash every non-empty parseable artifact under its size cap, not
+            # just training logs. This lets the renderer collapse copied
+            # records/results/source files across multiple checkout trees while
+            # preserving the raw path identity in SQLite.
+            if (not rec.get("content_sha256")
+                    and st.st_size > 0
+                    and handler_name != "checkpoint_meta"
+                    and max_bytes
+                    and st.st_size <= max_bytes):
+                sha = _sha256_file(abs_path)
+                if sha:
+                    rec["content_sha256"] = sha
 
             # Filename-fallback title for any record that didn't get one
             if not rec.get("title"):

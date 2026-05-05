@@ -34,6 +34,11 @@ except ImportError:
 # in the parameter-golf benchmark, not a real result. Plotted as a dotted red
 # line; tests below it are marked invalid and excluded from running-min.
 INVALID_VAL_BPB_FLOOR = 1.06
+CRASH_THRESHOLD = 3.0
+
+
+def _metric_has_bpb_floor(metric_name: str) -> bool:
+    return metric_name.lower() in {"val_bpb", "val_bits_per_byte", "bpb"}
 
 # Palette — matches the clean US-Graphics-style HTML report (charcoal dark).
 # Neutral greys, single yellow accent, neutral whites. No green tinting.
@@ -161,6 +166,7 @@ def day_chart(out_path: str | Path,
     if not pts:
         return _stub(out_path, f"{metric_name} — {date}", "no records"), 0
     pts.sort(key=lambda p: p["time"])
+    has_bpb_floor = _metric_has_bpb_floor(metric_name)
 
     # Slightly taller for proportional breathing room now that we've dropped
     # the label gutter.
@@ -169,14 +175,14 @@ def day_chart(out_path: str | Path,
     times = [p["time"] for p in pts]
     values = [p["value"] for p in pts]
 
-    # Red zone: hatched diagonal pattern on the same BG, plus a thin solid
-    # ruler at the floor. The hatch (//) gives texture without relying on
-    # subtly-different blacks.
-    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID,
-               alpha=0.10, hatch="///", edgecolor=DARK_INVALID,
-               linewidth=0, zorder=0)
-    ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_INVALID, linestyle="-",
-               linewidth=0.7, alpha=0.65, zorder=0)
+    # Red eval-error zone exists only for val_bpb-like metrics. Kernel
+    # benchmark timings use ordinary lower-is-better axes with no floor.
+    if has_bpb_floor:
+        ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID,
+                   alpha=0.10, hatch="///", edgecolor=DARK_INVALID,
+                   linewidth=0, zorder=0)
+        ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_INVALID, linestyle="-",
+                   linewidth=0.7, alpha=0.65, zorder=0)
 
     # Light journey line connecting consecutive tests in time order
     if len(pts) >= 2:
@@ -199,8 +205,10 @@ def day_chart(out_path: str | Path,
 
     # Running-min line — phosphor green = "current personal best", the only
     # element on the chart that uses the accent color.
-    valid_pairs = [(t, v) for t, v in zip(times, values)
-                   if v >= INVALID_VAL_BPB_FLOOR]
+    valid_pairs = [
+        (t, v) for t, v in zip(times, values)
+        if (not has_bpb_floor or (v >= INVALID_VAL_BPB_FLOOR and v <= CRASH_THRESHOLD))
+    ]
     if valid_pairs:
         valid_times = [p[0] for p in valid_pairs]
         valid_values = [p[1] for p in valid_pairs]
@@ -214,26 +222,31 @@ def day_chart(out_path: str | Path,
                 label="BEST VALID")
 
     # Tight y-clip — small breathing room above the curve, no big gutter.
-    CRASH_THRESHOLD = 3.0
-    real_values = [v for v in values if v <= CRASH_THRESHOLD]
+    real_values = [v for v in values if (not has_bpb_floor or v <= CRASH_THRESHOLD)]
     if real_values:
-        below_floor = [v for v in values if v < INVALID_VAL_BPB_FLOOR]
-        if below_floor:
-            y_lo = max(0.4, min(below_floor) - 0.08)
+        if has_bpb_floor:
+            below_floor = [v for v in values if v < INVALID_VAL_BPB_FLOOR]
+            if below_floor:
+                y_lo = max(0.4, min(below_floor) - 0.08)
+            else:
+                y_lo = INVALID_VAL_BPB_FLOOR - 0.15
+            data_max = max(real_values)
+            data_range = max(0.4, data_max - y_lo)
+            y_hi = data_max + 0.10 * data_range
         else:
-            y_lo = INVALID_VAL_BPB_FLOOR - 0.15
-        data_max = max(real_values)
-        data_range = max(0.4, data_max - y_lo)
-        # ~10% breathing room. Selective labels (Plan C) sit on top of dots
-        # with a small offset, no dedicated gutter needed.
-        y_hi = data_max + 0.10 * data_range
+            data_min = min(real_values)
+            data_max = max(real_values)
+            data_range = max(1e-9, data_max - data_min)
+            pad = max(0.10 * data_range, 0.02 * max(abs(data_min), 1e-6), 1e-6)
+            y_lo = max(0.0, data_min - pad)
+            y_hi = data_max + pad
         ax.set_xlim(min(mdates.date2num(p["time"]) for p in pts) - 0.01,
                     max(mdates.date2num(p["time"]) for p in pts) + 0.01)
         ax.set_ylim(y_lo, y_hi)
 
         # Crash indicator — back to top-right where it belongs, away from
         # both the data zone and the red invalid band.
-        crashes = [v for v in values if v > CRASH_THRESHOLD]
+        crashes = [v for v in values if has_bpb_floor and v > CRASH_THRESHOLD]
         if crashes:
             ax.annotate(
                 f"▲ {len(crashes)} CRASH RUN{'S' if len(crashes) != 1 else ''} "
@@ -254,7 +267,7 @@ def day_chart(out_path: str | Path,
     # Baseline-to-beat — paper-white dashed (this is reference info, not
     # "active state", so it stays neutral, not accent-green).
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
-            and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
+            and (not has_bpb_floor or baseline_to_beat >= INVALID_VAL_BPB_FLOOR)):
         ax.axhline(baseline_to_beat, color=DARK_TEXT_HI, linestyle="--",
                    linewidth=0.9, alpha=0.50, zorder=1)
         ax.annotate(f"{baseline_label.upper()} = {baseline_to_beat:.4f}",
@@ -290,7 +303,9 @@ def day_chart(out_path: str | Path,
                   fontsize=7.5, ncol=3, columnspacing=1.1,
                   handletextpad=0.5, borderpad=0.5)
 
-    fig.tight_layout()
+    # Fixed margins avoid tight_layout warnings on dense kernel-benchmark
+    # days while keeping the chart frame stable across the corpus.
+    fig.subplots_adjust(left=0.08, right=0.985, bottom=0.18, top=0.90)
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path)
