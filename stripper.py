@@ -328,6 +328,10 @@ def handle_json_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, A
         # Tag val_bpb as JSON-derived (most reliable source for submissions)
         if "val_bpb" in metrics:
             metrics.setdefault("val_bpb_source", "json_top_level")
+        # Reference-baseline detection — submission.json files in
+        # records/track_*/ ship as published references, not user runs.
+        if _is_reference_baseline_path(abs_path):
+            metrics["is_reference_baseline"] = True
     if metrics:
         record["metrics_json"] = json.dumps(metrics)
     return record
@@ -496,6 +500,24 @@ def _detect_gpu_type(text: str) -> str | None:
     return None
 
 
+# Reference-baseline path patterns — files matching these are published
+# reference results, not user experiments. Any file inside `records/track_*/`
+# is part of the parameter-golf canonical baselines area; explicit
+# `_NaiveBaseline` / `published_baselines` / `_baselines` paths catch other
+# repos' baseline conventions.
+_RE_REF_BASELINE_PATH = re.compile(
+    r"(?:/records/track_[\w-]+/|"
+    r"[/_-]NaiveBaseline\b|"
+    r"/published_baselines/|"
+    r"/_baselines/)",
+    re.IGNORECASE,
+)
+
+
+def _is_reference_baseline_path(abs_path: str) -> bool:
+    return bool(_RE_REF_BASELINE_PATH.search(abs_path or ""))
+
+
 def _detect_provider(text: str) -> str | None:
     for pat, label in HW_PROVIDER_PATTERNS:
         if pat.search(text):
@@ -628,6 +650,20 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
     steps = RE_LOG_STEP_NUM.findall(text)
     if steps:
         metrics["step_final"] = int(steps[-1])
+
+    # Reference-baseline detection — files inside `records/track_*/` are
+    # published reference results that ship with the parameter-golf repo,
+    # NOT the user's experiments. They appear copied across multiple
+    # worktrees and previously inflated test counts (especially on early
+    # days when only the published baselines existed).
+    if _is_reference_baseline_path(abs_path):
+        metrics["is_reference_baseline"] = True
+
+    # content_sha256 — lets the renderer dedup the same training-log file
+    # copied across multiple worktrees / pod-pulls. Hash the bytes we read.
+    record["content_sha256"] = hashlib.sha256(
+        text.encode("utf-8", errors="replace")
+    ).hexdigest()
 
     if metrics:
         record["metrics_json"] = json.dumps(metrics)

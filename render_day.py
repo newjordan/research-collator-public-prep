@@ -99,23 +99,45 @@ def best_date(rec: dict) -> str | None:
             except ValueError:
                 pass
 
-    # 3. mtime fallback
+    # 3. mtime fallback — convert UTC mtime to user's local TZ before
+    # extracting the date. The stripper records mtime in UTC; the user
+    # thinks in CDT (UTC-5). Without this, late-evening runs roll into
+    # the next day's report (e.g. Apr 20 23:30 local → Apr 21 UTC).
     if rec.get("mtime_iso"):
-        return rec["mtime_iso"][:10]
+        try:
+            utc = dt.datetime.fromisoformat(rec["mtime_iso"].replace("Z", "+00:00"))
+            local = utc - dt.timedelta(hours=5)  # CDT
+            return local.date().isoformat()
+        except (ValueError, TypeError):
+            return rec["mtime_iso"][:10]
     return None
 
 
 def fetch_day(conn: sqlite3.Connection, date: str) -> list[dict]:
+    """Records belonging to `date` in the user's local TZ (CDT).
+
+    We over-fetch (date(mtime, '-5h') OR path-LIKE for date-named dirs)
+    then refine with best_date(). Dedup by content_sha256 so the same
+    training-log file copied across worktrees collapses to one record.
+    """
     cur = conn.cursor()
     rows = cur.execute(
-        "SELECT * FROM artifacts WHERE date(mtime_iso)=? OR rel_path LIKE ? OR abs_path LIKE ?",
+        "SELECT * FROM artifacts WHERE "
+        "date(mtime_iso, '-5 hours')=? OR rel_path LIKE ? OR abs_path LIKE ?",
         (date, f"%{date.replace('-', '')}%", f"%{date}%"),
     ).fetchall()
     out = []
+    seen_sha: set[str] = set()
     for r in rows:
         rec = dict(r)
-        if best_date(rec) == date:
-            out.append(rec)
+        if best_date(rec) != date:
+            continue
+        sha = rec.get("content_sha256")
+        if sha:
+            if sha in seen_sha:
+                continue
+            seen_sha.add(sha)
+        out.append(rec)
     return out
 
 
@@ -140,6 +162,12 @@ def pick_headline_metric(records: list[dict]) -> str | None:
     for metric in HEADLINE_METRICS:
         n = 0
         for rec in records:
+            try:
+                md = json.loads(rec.get("metrics_json") or "{}")
+            except (json.JSONDecodeError, TypeError):
+                md = {}
+            if md.get("is_reference_baseline"):
+                continue
             if extract_metric_for_record(rec.get("metrics_json"), metric):
                 n += 1
                 if n >= 2:
@@ -159,6 +187,12 @@ def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | Non
         rec = dict(r)
         bd = best_date(rec)
         if not bd or bd >= date:
+            continue
+        try:
+            md = json.loads(rec["metrics_json"])
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
             continue
         for v in extract_metric_for_record(rec["metrics_json"], metric):
             if best is None or v < best:
@@ -209,9 +243,16 @@ def hours_worked(records: list[dict], report_date: str,
 
 def tests_variety_pct(records: list[dict], metric: str) -> tuple[int, int, float]:
     """unique-test-titles, total-datapoints, variety percentage.
-    Returns (unique, total, pct)."""
+    Returns (unique, total, pct). Reference-baseline records are excluded
+    so the count matches the Test Runs table."""
     titles_per_dp: list[str] = []
     for rec in records:
+        try:
+            md = json.loads(rec.get("metrics_json") or "{}")
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
+            continue
         title = (rec.get("title") or "").strip()
         for _v in extract_metric_for_record(rec.get("metrics_json"), metric):
             titles_per_dp.append(title)
@@ -399,6 +440,14 @@ def extract_test_rows(records: list[dict], metric: str,
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         if not vals:
             continue
+        # Reference baselines aren't user tests — exclude them from the
+        # Test Runs view (they still appear in supporting files).
+        try:
+            md = json.loads(rec.get("metrics_json") or "{}")
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
+            continue
         title = (rec.get("title") or "(untitled)").strip()
         wallclock = None
         if rec.get("file_kind") == "json":
@@ -488,9 +537,15 @@ def extract_test_rows(records: list[dict], metric: str,
 def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
     """One chart entry per measured-metric occurrence, with run-time.
     For chart input — preserves time_iso so the trajectory plots correctly.
-    """
+    Reference baselines are excluded — they're not user trajectory."""
     out = []
     for rec in records:
+        try:
+            md = json.loads(rec.get("metrics_json") or "{}")
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
+            continue
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         time_iso = _record_run_time_iso(rec)
         for v in vals:
@@ -528,6 +583,9 @@ def make_supporting_files_md(records: list[dict], test_record_paths: set[str]) -
 # the family STEM and allow any trailing word characters / variants
 # (medusa2, medusa_a_post_ema, ClownCar_IV, clowncar4 all match).
 ARCH_FAMILIES = [
+    # Reference / baseline runs (not user experiments — usually pre-labeled
+    # via is_reference_baseline, but pattern-match as a fallback)
+    ("NaiveBaseline",        r"\bnaive[\s_-]?baseline\w*|_NaiveBaseline\b"),
     # Specific compound names (must match before their components)
     ("AR Self-Gen GPTQ",     r"\bar[\s_-]+self[\s_-]+gen[\s_-]+gptq\b"),
     ("Binary U-Net",         r"\bbinary(?:[\s_-]+asymmetric)?[\s_-]+u[\s_-]?net"),
@@ -536,6 +594,9 @@ ARCH_FAMILIES = [
     ("Depth Recurrence",     r"\bdepth[\s_-]+recurrence\b"),
     ("Parallel Residuals",   r"\bparallel[\s_-]+residual"),
     ("Sliding Window",       r"\bsliding[\s_-]+window\b"),
+    ("Staged Hybrid Bench",  r"\bstaged[\s_-]+(?:primary|fallback)\b|\bhybrid[AB]\b"),
+    ("Watch / Handoff",      r"\b(?:watch|handoff)(?:_daemon|_nohup|_logs|[\s_-]?\d{8})\b"),
+    ("Spark Smoke Kit",      r"\b(?:SMK|spark[\s_-]?smoke)(?:[\s_-]\w*)?"),
     # Architecture / experiment family stems — match any suffix
     ("Medusa",               r"\bmedusa\w*"),
     ("ClownCar",             r"\bclown[\s_-]?car\w*"),
@@ -553,6 +614,22 @@ ARCH_FAMILIES = [
     ("X-Wing",               r"\b[axfp][\s_-]?wing\w*"),
     ("Fartmagic",            r"\bfartmagic\w*"),
     ("Megakernel",           r"\bmegakernel\w*"),
+    # Note: avoid trailing `\b` — "y" followed by "_" has no word-boundary
+    # because `_` counts as a word character in Python regex. End matches
+    # with `\w*` instead (matches the rest of the slug).
+    ("Nightcrawler",         r"\bnightcrawler\w*"),
+    ("SOTA Crawler",         r"\bsota[\s_-]+crawler\w*"),
+    ("SOTA v2 TTT",          r"\bsota[\s_-]?v2[\s_-]+tttonly\w*"),
+    ("Exp-D TTT8 Stride32",  r"\bexp[\s_-]?d[\s_-]+ttt8\w*"),
+    ("FP16 Tied Embed",      r"\bfp16[\s_-]+(?:tied[\s_-]+)?embed\w*"),
+    ("Long Context",         r"\blong[\s_-]?context[\s_-]?seq\d+\w*|\bseq2048\w*"),
+    ("Mixed Precision",      r"\bmixed[\s_-]+precision\w*"),
+    ("Quasi-10B",            r"\bquasi[\s_-]?10[\s_-]?b\w*"),
+    ("Lower LR",             r"\blower[\s_-]+lr\w*"),
+    ("SwiGLU + Warmdown",    r"\bswiglu\w*.*\bwarmdown\w*"),
+    ("Int6 QAT",             r"\bint6[\s_-]+(?:qat|sliding|middle)\w*|\bste[\s_-]+int6\w*"),
+    ("SmearGate / MuonWD",   r"\bsmeargate\w*|\bmuon[\s_-]?wd\w*"),
+    ("PGUT",                 r"\bpgut\w*"),
     # Components / methods (only fall-through if no family matched above)
     ("DeltaNet",             r"\bdeltanet\w*"),
     ("JEPA",                 r"\bjepa\b"),
@@ -560,24 +637,36 @@ ARCH_FAMILIES = [
     ("BigramHash",           r"\bbigram[\s_-]?hash\w*"),
     ("GPTQ",                 r"\bgptq\w*"),
     ("LoRA-TTT",             r"\blora\b.*\bttt\b"),
-    ("State-Space (TTT)",    r"\bstate[\s_-]+space\b"),
+    ("State-Space (TTT)",    r"\bstate[\s_-]+space\b|\bttt(?:[\s_-]?\w+)?\b"),
     ("Modded-nanoGPT",       r"\bmodded[\s_-]?nanogpt\w*"),
 ]
 
 
 def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
     """For each test row, find the FIRST matching family from ARCH_FAMILIES.
-    Returns ordered (family_name, count) descending. Unmatched → 'Other'."""
+    Searches title FIRST, then falls back to abs_path so generic-named log
+    files (run_s1337.log, train_seed444.log) still get classified by the
+    architecture-named directory they live in. Unmatched → 'Other'."""
     counts: dict[str, int] = {}
     unmatched = 0
     for row in test_rows:
         title = (row.get("title") or "")
+        path = (row.get("abs_path") or "")
         matched = False
         for fam_name, pat in ARCH_FAMILIES:
             if re.search(pat, title, re.IGNORECASE):
                 counts[fam_name] = counts.get(fam_name, 0) + 1
                 matched = True
                 break
+        if not matched:
+            # Fallback: check the full path for the family name. Catches
+            # generic-named logs (run_s1337.log) that live in dirs like
+            # `.../sota_v2_tttonly_*/` or `.../nightcrawler_cubed/`.
+            for fam_name, pat in ARCH_FAMILIES:
+                if re.search(pat, path, re.IGNORECASE):
+                    counts[fam_name] = counts.get(fam_name, 0) + 1
+                    matched = True
+                    break
         if not matched:
             unmatched += 1
     if unmatched > 0:
@@ -707,7 +796,22 @@ def make_daily_summary_html(date: str, day_index: int | None,
     exp_pct = 100.0 * exp / total
     neu_pct = 100.0 * neu / total
 
-    # Allocation tone
+    # Zero-tests day — don't fabricate "allocation skew" or "the day was
+    # about hammering X variants" when no runs were launched. Common
+    # causes: pre-research-arc days, kernel-benchmark days with no
+    # val_bpb output, session-only days.
+    if n_tests == 0:
+        return (
+            '<aside class="day-summary">'
+              '<div class="ds-key">DAILY SUMMARY</div>'
+              f'<div class="ds-body"><p>Day {day_index:03d} — '
+              f'<strong>no training runs launched</strong> on this date. '
+              f'Activity captured: commits, sessions, supporting files. '
+              f'See SECTION 3.0.</p></div>'
+            '</aside>'
+        )
+
+    # Allocation tone — only when we actually have runs to talk about.
     if exp_pct >= 80:
         allocation_tone = "skewed hard experimental"
     elif neu_pct >= 80:
@@ -956,9 +1060,27 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     if not records:
         sys.exit(f"no artifacts found for {date}")
 
+    # CLASSIFICATION % must reflect research output, not file-tree mass.
+    # Count training-log records (excluding reference baselines) per camp;
+    # this matches the Test Runs table's universe. Sister files (.json,
+    # .md, .py supporting artifacts) inflated the prior denominator with
+    # work-day file-touches that didn't represent test runs.
     by_camp: dict[str, int] = defaultdict(int)
     for r in records:
+        if r.get("file_kind") != "training_log":
+            continue
+        try:
+            md = json.loads(r.get("metrics_json") or "{}")
+        except (json.JSONDecodeError, TypeError):
+            md = {}
+        if md.get("is_reference_baseline"):
+            continue
         by_camp[r["camp"]] += 1
+    # If the day had no training_logs at all (commit-only / session-only days),
+    # fall back to counting all records so the bar still renders something.
+    if not by_camp:
+        for r in records:
+            by_camp[r["camp"]] += 1
 
     headline_metric = metric_override or pick_headline_metric(records)
     asset_dir = ASSETS_DIR / date
