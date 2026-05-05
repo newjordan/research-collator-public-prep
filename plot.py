@@ -162,7 +162,9 @@ def day_chart(out_path: str | Path,
         return _stub(out_path, f"{metric_name} — {date}", "no records"), 0
     pts.sort(key=lambda p: p["time"])
 
-    fig, ax = plt.subplots(figsize=(9.0, 3.6))
+    # Slightly taller for proportional breathing room now that we've dropped
+    # the label gutter.
+    fig, ax = plt.subplots(figsize=(9.5, 4.0))
 
     times = [p["time"] for p in pts]
     values = [p["value"] for p in pts]
@@ -211,8 +213,7 @@ def day_chart(out_path: str | Path,
                 color=DARK_TEXT_HI, linewidth=1.6, alpha=1.0, zorder=2,
                 label="BEST VALID")
 
-    # Tighter y-clip focused on the day's actual curve, with a label gutter
-    # reserved ABOVE the data zone so the numbered badges have clear airspace.
+    # Tight y-clip — small breathing room above the curve, no big gutter.
     CRASH_THRESHOLD = 3.0
     real_values = [v for v in values if v <= CRASH_THRESHOLD]
     if real_values:
@@ -223,67 +224,32 @@ def day_chart(out_path: str | Path,
             y_lo = INVALID_VAL_BPB_FLOOR - 0.15
         data_max = max(real_values)
         data_range = max(0.4, data_max - y_lo)
-        label_gutter = 0.22 * data_range
-        y_hi = data_max + 0.05 + label_gutter
+        # ~10% breathing room. Selective labels (Plan C) sit on top of dots
+        # with a small offset, no dedicated gutter needed.
+        y_hi = data_max + 0.10 * data_range
+        ax.set_xlim(min(mdates.date2num(p["time"]) for p in pts) - 0.01,
+                    max(mdates.date2num(p["time"]) for p in pts) + 0.01)
         ax.set_ylim(y_lo, y_hi)
+
+        # Crash indicator — back to top-right where it belongs, away from
+        # both the data zone and the red invalid band.
         crashes = [v for v in values if v > CRASH_THRESHOLD]
         if crashes:
-            # Bottom-right corner — top is reserved for the badge gutter now.
             ax.annotate(
                 f"▲ {len(crashes)} CRASH RUN{'S' if len(crashes) != 1 else ''} "
                 f"OFF-SCALE  (max={max(crashes):.2f})",
-                xy=(1.0, 0.0), xycoords="axes fraction",
-                xytext=(-6, 6), textcoords="offset points",
-                fontsize=7.5, color=DARK_ACCENT, ha="right", va="bottom",
+                xy=(1.0, 1.0), xycoords="axes fraction",
+                xytext=(-6, -6), textcoords="offset points",
+                fontsize=7.5, color=DARK_ACCENT, ha="right", va="top",
                 fontweight="bold",
                 bbox=dict(boxstyle="square,pad=0.3",
                           facecolor=DARK_BG,
                           edgecolor=DARK_ACCENT, linewidth=0.6))
 
-    # Numbered badges with leader lines — packed into the gutter we just
-    # reserved above the data zone. Done AFTER set_ylim so the packing math
-    # uses the locked axes range, not auto-scale (which would include the
-    # off-scale crashes and stretch the layout).
-    sorted_pts_for_labels = sorted(pts, key=lambda p: p["time"])
-    xs_num = [mdates.date2num(p["time"]) for p in sorted_pts_for_labels]
-    if xs_num:
-        ax.set_xlim(min(xs_num) - 0.01, max(xs_num) + 0.01)
-        cur_ylim = ax.get_ylim()
-        xlim_ = ax.get_xlim()
-        xspan = xlim_[1] - xlim_[0]
-        yspan = cur_ylim[1] - cur_ylim[0]
-        min_gap_x = xspan / 30.0
-        placed_x: list[float] = []
-        for x in xs_num:
-            if not placed_x:
-                placed_x.append(x)
-                continue
-            placed_x.append(max(x, placed_x[-1] + min_gap_x))
-        # Two-row gutter inside the axes (just below the top edge).
-        y_top  = cur_ylim[1] - 0.05 * yspan
-        y_alt  = cur_ylim[1] - 0.12 * yspan
-        was_pushed = [False]
-        for i in range(1, len(xs_num)):
-            was_pushed.append(placed_x[i] > xs_num[i] + 1e-9)
-        ys: list[float] = []
-        for i in range(len(xs_num)):
-            local_pressure = was_pushed[i] or (i + 1 < len(xs_num) and was_pushed[i + 1])
-            ys.append(y_alt if (local_pressure and (i % 2 == 1)) else y_top)
-        # Leader lines first (behind badges)
-        for i, p in enumerate(sorted_pts_for_labels):
-            ax.plot([xs_num[i], placed_x[i]],
-                    [p["value"], ys[i] - 0.012 * yspan],
-                    color=DARK_RULE_HI, linewidth=0.5, alpha=0.75,
-                    solid_capstyle="round", zorder=4)
-        # Badges on top
-        for i, p in enumerate(sorted_pts_for_labels):
-            ax.text(placed_x[i], ys[i], str(p["n"]),
-                    fontsize=9.0, fontweight="bold",
-                    color=DARK_TEXT_HI, ha="center", va="center",
-                    zorder=5,
-                    bbox=dict(boxstyle="square,pad=0.30",
-                              facecolor=DARK_BG,
-                              edgecolor=DARK_RULE_HI, linewidth=0.7, alpha=0.97))
+    # No on-chart numbered labels. The Test Runs table immediately below the
+    # chart is the source of truth for "which run is which" — chart shows
+    # only the data signal (dots, journey line, BEST VALID step line, red
+    # zone, crash indicator).
 
     # Baseline-to-beat — paper-white dashed (this is reference info, not
     # "active state", so it stays neutral, not accent-green).
@@ -310,12 +276,19 @@ def day_chart(out_path: str | Path,
     ax.xaxis.set_major_locator(loc)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
 
-    ax.set_xlabel("TIME (UTC) — left→right = day's exploration trajectory")
-    ax.set_ylabel(metric_name.upper())
-    ax.set_title(f"{metric_name.upper()} — {date}", loc="left")
+    ax.set_xlabel("TIME (UTC) — LEFT→RIGHT = DAY'S EXPLORATION TRAJECTORY",
+                  labelpad=8, fontsize=8.5, color=DARK_TEXT,
+                  fontweight="normal")
+    ax.set_ylabel(metric_name.upper(), labelpad=8, fontsize=9, color=DARK_TEXT)
+    ax.set_title(f"{metric_name.upper()}  ·  {date}", loc="left", pad=10,
+                 fontsize=10.5, fontweight="bold", color=DARK_TEXT_HI)
     if len(by_camp) > 0:
-        ax.legend(loc="upper left", framealpha=0.95, edgecolor="#000",
-                  fontsize=7.5)
+        # Lower-left of axes — clear of the top-right crash indicator and
+        # the typical mid-to-upper data band.
+        ax.legend(loc="lower left", framealpha=0.92,
+                  edgecolor=DARK_RULE_HI, facecolor=DARK_BG,
+                  fontsize=7.5, ncol=3, columnspacing=1.1,
+                  handletextpad=0.5, borderpad=0.5)
 
     fig.tight_layout()
     out_path = Path(out_path)
