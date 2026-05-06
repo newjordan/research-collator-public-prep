@@ -346,6 +346,10 @@ GITHUB_REMOTES = {
     "git:sota_rascal":        "https://github.com/newjordan/rascal",
     "git:ml-lab":             "https://github.com/newjordan/ml-lab",
     "git:sota_nueral":        "https://github.com/newjordan/sota_nueral",
+    "git:dotagents_mono":     "https://github.com/newjordan/GR44",
+    "git:qwen_agent":         "https://github.com/QwenLM/Qwen-Agent",
+    "git:pg_whale":           "https://github.com/newjordan/blessed_whale",
+    "git:rascal-private":     "https://github.com/newjordan/rascal",
 }
 HOME = "/home/frosty40"
 SERVE_BASE = "http://dgx-spark:8765"   # HTTP server now serves $HOME at this base

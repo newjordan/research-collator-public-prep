@@ -78,6 +78,7 @@ SOURCE_DEFAULT = {
     "qwen_agent": "experimental",
     "augment_checkpoints": "experimental",
     "parameter-golf-lab": "experimental",
+    "open_parameter_golf_junkyard": "experimental",
     "parameter-golf-cross-repo": "experimental",
     "sota_crawler": "experimental",
     "sota_nueral": "neural",

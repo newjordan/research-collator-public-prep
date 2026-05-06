@@ -58,6 +58,10 @@ roots:
     label: parameter-golf-lab
     git_remote: newjordan/parameter-golf
     period_hint: "2026-03-18 .. 2026-05-01"
+  - path: /home/frosty40/llm_research/parameter-golf-lab/junkyard
+    label: open_parameter_golf_junkyard
+    git_remote: newjordan/parameter-golf
+    period_hint: "parameter-golf junkyard outputs, launchers, checkpoints, and traces"
   - path: /home/frosty40/llm_research/parameter-golf-cross-repo
     label: parameter-golf-cross-repo
     git_remote: null
@@ -126,6 +130,17 @@ exclude_dir_names:
 # DotAgents desktop model cache would introduce stale upstream mtimes.
 exclude_path_substrings:
   - /home/frosty40/workspace/projects/rig-desktop-config/.config/@dotagents/desktop/models/
+  - /srv/agents/lanes/agent-orchestrator/state/grafana/plugins/
+  - /srv/studio/apps/comfyui/.github/
+  - /srv/studio/apps/comfyui/api_server/
+  - /srv/studio/apps/comfyui/comfy/
+  - /srv/studio/apps/comfyui/comfy_extras/
+  - /srv/studio/apps/comfyui/custom_nodes/
+  - /srv/studio/apps/comfyui/notebooks/
+  - /srv/studio/apps/comfyui/script_examples/
+  - /srv/studio/apps/comfyui/tests/
+  - /srv/studio/apps/comfyui/web/
+  - /home/frosty40/llm_research/parameter-golf-lab/junkyard/vendor/
 
 # Extensions and which handler runs on them.
 ext_handler_map:
@@ -143,6 +158,15 @@ ext_handler_map:
   ".conf": text_summary
   ".service": text_summary
   ".timer": text_summary
+  ".html": text_summary
+  ".css": text_summary
+  ".js": text_summary
+  ".jsonl": text_summary
+  ".launch": text_summary
+  ".bak": text_summary
+  ".bak1": text_summary
+  ".bak2": text_summary
+  ".bak3": text_summary
   ".mp4": asset_meta
   ".mov": asset_meta
   ".png": asset_meta
@@ -160,6 +184,7 @@ ext_handler_map:
   ".tsv": csv_meta
   ".pt": checkpoint_meta
   ".pth": checkpoint_meta
+  ".ptz": checkpoint_meta
   ".safetensors": checkpoint_meta
   # Training-run logs — STRICT patterns only (step:N val_bpb:X / final_*).
   # Skipping .txt because in this corpus many .txt files are train_gpt.py
