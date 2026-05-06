@@ -21,6 +21,7 @@ lab-protocol aesthetic.
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
 | `ablation_label_local.py` | Separate, optional Nemo3 ablation-label suggestion lane. Calls only local vLLM, writes review artifacts, and only approved JSONL labels affect rendering. |
+| `scripts/mine_conversation_architecture.py` | Separate deterministic Claude/Codex transcript miner for time-ordered model-architecture change signals. No LLM, no daily-render evidence injection. |
 | `config.yaml` | Roots to walk, exclusion list, file-extension → handler map. |
 
 ## Template lock
@@ -77,6 +78,18 @@ python3 chat_extract_local.py --date 2026-03-28 --model qwen3-coder:30b
 Outputs land in `output/chat_extract/`. The first command writes only the
 chunk manifest; the second calls local Ollama Qwen. These raw extracts are
 inputs for a final research-oriented accuracy pass, not daily-report evidence.
+
+Optional local conversation architecture mining, no LLM:
+
+```bash
+python3 scripts/mine_conversation_architecture.py --date 2026-03-28
+python3 scripts/mine_conversation_architecture.py --start 2026-03-02 --end 2026-03-03
+```
+
+Outputs land in `output/conversation_architecture/` as JSONL, Markdown, and a
+summary JSON. This miner reads raw Claude/Codex JSONLs at message granularity,
+filters infra/UI chatter out, and emits only strict model-architecture-change
+signals for manual review.
 
 Optional local ablation-label suggestions, no paid API:
 
