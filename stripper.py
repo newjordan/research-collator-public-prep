@@ -248,6 +248,33 @@ def handle_markdown(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
     return record
 
 
+def handle_text_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
+    """Index plain-text research support files without loose metric scraping."""
+    record: dict[str, Any] = {"file_kind": "text"}
+    if size > max_bytes:
+        record["too_large"] = 1
+        return record
+    try:
+        with open(abs_path, encoding="utf-8", errors="replace") as f:
+            text = f.read()
+    except (OSError, UnicodeDecodeError) as e:
+        record["parse_error"] = f"read: {type(e).__name__}: {e}"
+        return record
+
+    lines = [line.rstrip() for line in text.splitlines()]
+    meaningful = [
+        line.strip()
+        for line in lines
+        if line.strip() and not line.lstrip().startswith(("#!", "#"))
+    ]
+    if meaningful:
+        record["title"] = meaningful[0][:300]
+    stripped = text.strip()
+    if stripped:
+        record["summary"] = stripped[:1000]
+    return record
+
+
 def _walk_hardware(obj: Any, depth: int = 0, max_depth: int = 6) -> dict[str, Any]:
     """Walk a nested dict (e.g., resolved_config.json) for hardware fields.
     Returns canonical {gpu_type, n_gpus, provider} when found.
@@ -460,6 +487,15 @@ def handle_checkpoint_meta(abs_path: str, size: int, max_bytes: int) -> dict[str
     return record
 
 
+def handle_asset_meta(abs_path: str, size: int, max_bytes: int) -> dict[str, Any]:
+    # Metadata only — never load images, videos, meshes, or archives.
+    record: dict[str, Any] = {"file_kind": "asset"}
+    suffix = Path(abs_path).suffix.lower().lstrip(".") or "asset"
+    record["title"] = f"{Path(abs_path).name} ({size / 1e6:.1f} MB)"
+    record["summary"] = f"{suffix} artifact indexed as metadata only; binary contents were not loaded."
+    return record
+
+
 def fallback_summary(rec: dict[str, Any], filename: str, size: int,
                      handler_name: str) -> str:
     """Short deterministic context for records whose handler found no prose.
@@ -476,12 +512,16 @@ def fallback_summary(rec: dict[str, Any], filename: str, size: int,
         return "JSON artifact indexed; canonical numeric metrics were extracted when present."
     if kind == "md":
         return "Markdown artifact indexed; frontmatter, headings, and tables were extracted when present."
+    if kind == "text":
+        return "Text/config artifact indexed; no numeric metrics were inferred from loose prose."
     if kind == "py":
         return "Python artifact indexed; docstring and argparse metadata were extracted when present."
     if kind == "csv":
         return "CSV/TSV artifact indexed; columns, row count, and numeric summaries were extracted."
     if kind == "ckpt":
         return "Checkpoint artifact indexed as metadata only; tensor contents were not loaded."
+    if kind == "asset":
+        return "Binary/media artifact indexed as metadata only; contents were not loaded."
     if kind == "training_log":
         if size == 0:
             return "(empty stub - run launched but output was not captured locally)"
@@ -741,19 +781,23 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
 
 HANDLERS = {
     "markdown": handle_markdown,
+    "text_summary": handle_text_summary,
     "json_summary": handle_json_summary,
     "python_module": handle_python_module,
     "csv_meta": handle_csv_meta,
     "checkpoint_meta": handle_checkpoint_meta,
+    "asset_meta": handle_asset_meta,
     "training_log": handle_training_log,
 }
 
 MAX_BYTE_KEY = {
     "markdown": "max_md_bytes",
+    "text_summary": "max_text_bytes",
     "json_summary": "max_json_bytes",
     "python_module": "max_py_bytes",
     "csv_meta": "max_csv_bytes",
     "checkpoint_meta": "max_pt_bytes",
+    "asset_meta": "max_asset_bytes",
     "training_log": "max_log_bytes",
 }
 
@@ -765,6 +809,7 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
     root = root_cfg["path"]
     label = root_cfg["label"]
     excludes = set(cfg["exclude_dir_names"])
+    path_excludes = tuple(str(p) for p in cfg.get("exclude_path_substrings", []) or [])
     ext_map = cfg["ext_handler_map"]
 
     if not os.path.isdir(root):
@@ -774,13 +819,19 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
     out: list[dict[str, Any]] = []
     for dirpath, dirnames, filenames in os.walk(root, topdown=True, followlinks=False):
         # Mutate dirnames in-place to prune walk
-        dirnames[:] = [d for d in dirnames if d not in excludes]
+        dirnames[:] = [
+            d for d in dirnames
+            if d not in excludes
+            and not any(x in os.path.join(dirpath, d, "") for x in path_excludes)
+        ]
         for fn in filenames:
             ext = os.path.splitext(fn)[1].lower()
             handler_name = ext_map.get(ext)
             if not handler_name:
                 continue
             abs_path = os.path.join(dirpath, fn)
+            if any(x in abs_path for x in path_excludes):
+                continue
             try:
                 st = os.stat(abs_path, follow_symlinks=False)
             except OSError:

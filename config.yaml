@@ -2,39 +2,98 @@
 # Pure data; no LLM calls anywhere in the stripper.
 
 roots:
-  # Local research dirs, ordered roughly chronologically (Feb -> May 2026).
+  # Canonical LLM research corpus copy. Most local SOTA/parameter-golf work
+  # should be scraped from /home/frosty40/llm_research so this repo does not
+  # need to chase scattered source locations.
+  #
+  # ml-lab is still on its original path because it is not currently present
+  # under /home/frosty40/llm_research.
   - path: /home/frosty40/ml-lab
     label: ml-lab
     git_remote: newjordan/ml-lab
     period_hint: "2026-02-24 .. 2026-03-23"
-  - path: /home/frosty40/parameter-golf-lab
+  # Early local DGX / studio / agent work. These are not present in
+  # /home/frosty40/llm_research yet, but they are required for days 1-5.
+  - path: /srv/agents
+    label: srv_agents
+    git_remote: null
+    period_hint: "2026-03-02 .. 2026-03-06"
+  - path: /srv/studio
+    label: srv_studio
+    git_remote: null
+    period_hint: "2026-03-02 .. 2026-03-06"
+  - path: /srv/forge
+    label: srv_forge
+    git_remote: null
+    period_hint: "2026-03-02 .. 2026-03-04"
+  - path: /srv/models
+    label: srv_models
+    git_remote: null
+    period_hint: "2026-03-02 .. 2026-03-04 metadata-only"
+  - path: /home/frosty40/workspace/projects/dotagents-mono
+    label: dotagents_mono
+    git_remote: newjordan/GR44
+    period_hint: "2026-03-02 .. 2026-03-07"
+  - path: /home/frosty40/workspace/projects/rig-desktop-config
+    label: rig_desktop_config
+    git_remote: null
+    period_hint: "2026-03-04 .. 2026-03-06"
+  - path: /home/frosty40/workspace/projects/local_qwen_agent
+    label: local_qwen_agent
+    git_remote: null
+    period_hint: "2026-03-03"
+  - path: /home/frosty40/workspace/projects/dgx_nim_upgrade
+    label: dgx_nim_upgrade
+    git_remote: null
+    period_hint: "2026-03-04"
+  - path: /home/frosty40/workspace/projects/Qwen-Agent
+    label: qwen_agent
+    git_remote: QwenLM/Qwen-Agent
+    period_hint: "2026-03-06"
+  - path: /home/frosty40/.augment
+    label: augment_checkpoints
+    git_remote: null
+    period_hint: "2026-03-06"
+  - path: /home/frosty40/llm_research/parameter-golf-lab
     label: parameter-golf-lab
     git_remote: newjordan/parameter-golf
     period_hint: "2026-03-18 .. 2026-05-01"
-  - path: /home/frosty40/parameter-golf-cross-repo
+  - path: /home/frosty40/llm_research/parameter-golf-cross-repo
     label: parameter-golf-cross-repo
     git_remote: null
     period_hint: "2026-04-06 (one day)"
-  - path: /home/frosty40/sota_nueral
+  - path: /home/frosty40/llm_research/sota_nueral
     label: sota_nueral
     git_remote: newjordan/sota_nueral
     period_hint: "2026-04-01 .. 2026-04-26"
-  - path: /home/frosty40/sota_nueral_archive
+  - path: /home/frosty40/llm_research/sota_nueral_archive
     label: sota_nueral_archive
     git_remote: null
     period_hint: "2026-04-01 .. 2026-04-06"
-  - path: /home/frosty40/sota_crawler
+  - path: /home/frosty40/llm_research/sota_crawler
     label: sota_crawler
     git_remote: newjordan/parameter-golf
     period_hint: "2026-04-08 .. 2026-04-23"
-  - path: /home/frosty40/SOTA_FINAL
+  - path: /home/frosty40/llm_research/SOTA_FINAL
     label: SOTA_FINAL
     git_remote: newjordan/Fartmagic
     period_hint: "2026-04-12 .. 2026-05-04"
-  - path: /home/frosty40/sota_rascal
+  - path: /home/frosty40/llm_research/sota_rascal
     label: sota_rascal
     git_remote: newjordan/rascal
     period_hint: "2026-04-03 .. 2026-05-04"
+  - path: /home/frosty40/llm_research/pg_whale
+    label: pg_whale
+    git_remote: newjordan/blessed_whale
+    period_hint: "2026-04-15 .. 2026-05-04"
+  - path: /home/frosty40/llm_research/rascal-private
+    label: rascal-private
+    git_remote: newjordan/rascal
+    period_hint: "2026-04-26"
+  - path: /home/frosty40/llm_research/sota_rascal_pod_saves
+    label: sota_rascal_pod_saves
+    git_remote: null
+    period_hint: "pod shutdown archives and manifests"
   # Codex daily-grind narrative rollups (ml-intern phase + others)
   - path: /home/frosty40/.codex/memories/rollout_summaries
     label: codex_rollouts
@@ -59,11 +118,42 @@ exclude_dir_names:
   - .tox
   - .nox
   - .cache
+  - .claude
+  - .codex
+
+# Narrow path substrings to prune. These are not broad directory names because
+# roots like /srv/models are valid research evidence, while this specific
+# DotAgents desktop model cache would introduce stale upstream mtimes.
+exclude_path_substrings:
+  - /home/frosty40/workspace/projects/rig-desktop-config/.config/@dotagents/desktop/models/
 
 # Extensions and which handler runs on them.
 ext_handler_map:
   ".md": markdown
   ".markdown": markdown
+  ".rst": text_summary
+  ".txt": text_summary
+  ".sh": text_summary
+  ".bash": text_summary
+  ".yaml": text_summary
+  ".yml": text_summary
+  ".toml": text_summary
+  ".ini": text_summary
+  ".cfg": text_summary
+  ".conf": text_summary
+  ".service": text_summary
+  ".timer": text_summary
+  ".mp4": asset_meta
+  ".mov": asset_meta
+  ".png": asset_meta
+  ".jpg": asset_meta
+  ".jpeg": asset_meta
+  ".webp": asset_meta
+  ".glb": asset_meta
+  ".ply": asset_meta
+  ".tgz": asset_meta
+  ".zip": asset_meta
+  ".gz": asset_meta
   ".json": json_summary
   ".py": python_module
   ".csv": csv_meta
@@ -81,6 +171,8 @@ ext_handler_map:
 # Per-file size caps (bytes). Files larger than this get a "too_large=true"
 # stamp and skip the deep parse — only filesystem metadata is recorded.
 max_md_bytes: 1048576       # 1 MB — anything bigger is logs, not notes
+max_text_bytes: 1048576     # 1 MB — configs/manifests/launchers only
+max_asset_bytes: 0          # metadata only for images/videos/archives
 max_json_bytes: 5242880     # 5 MB
 max_py_bytes: 524288        # 512 KB
 max_csv_bytes: 10485760     # 10 MB — header + nrows only anyway
@@ -91,12 +183,16 @@ max_pt_bytes: 0             # 0 means "always treat as metadata-only"
 # Git repos to walk for commits — author-date is the ground-truth activity
 # signal that mtime doesn't capture. Each commit becomes one record.
 git_repos:
-  - {path: /home/frosty40/parameter-golf-lab, label: "git:parameter-golf-lab"}
-  - {path: /home/frosty40/ml-lab,             label: "git:ml-lab"}
-  - {path: /home/frosty40/sota_crawler,       label: "git:sota_crawler"}
-  - {path: /home/frosty40/sota_nueral,        label: "git:sota_nueral"}
-  - {path: /home/frosty40/SOTA_FINAL,         label: "git:SOTA_FINAL"}
-  - {path: /home/frosty40/sota_rascal,        label: "git:sota_rascal"}
+  - {path: /home/frosty40/llm_research/parameter-golf-lab, label: "git:parameter-golf-lab"}
+  - {path: /home/frosty40/ml-lab,                          label: "git:ml-lab"}
+  - {path: /home/frosty40/workspace/projects/dotagents-mono, label: "git:dotagents_mono", since: "2026-03-01", until: "2026-03-08"}
+  - {path: /home/frosty40/workspace/projects/Qwen-Agent,     label: "git:qwen_agent", since: "2026-03-01", until: "2026-03-07"}
+  - {path: /home/frosty40/llm_research/sota_crawler,        label: "git:sota_crawler"}
+  - {path: /home/frosty40/llm_research/sota_nueral,         label: "git:sota_nueral"}
+  - {path: /home/frosty40/llm_research/SOTA_FINAL,          label: "git:SOTA_FINAL"}
+  - {path: /home/frosty40/llm_research/sota_rascal,         label: "git:sota_rascal"}
+  - {path: /home/frosty40/llm_research/pg_whale,            label: "git:pg_whale"}
+  - {path: /home/frosty40/llm_research/rascal-private,      label: "git:rascal-private"}
 
 # Claude Code session JSONLs — these capture the user-Claude collaboration
 # work-stream that mtime doesn't show.

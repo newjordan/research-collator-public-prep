@@ -66,12 +66,14 @@ HARDWARE_PATTERNS = (
     (r"\b4[\s_-]*x\b",     "4 GPU"),
 )
 
-HEADLINE_METRICS = ("val_bpb", "val_loss", "val_bits_per_byte", "bpb", "loss")
+HEADLINE_METRICS = ("val_bpb", "val_loss", "val_bits_per_byte", "bpb")
 BPB_METRICS = {"val_bpb", "val_bits_per_byte", "bpb"}
 INVALID_VAL_BPB_FLOOR = 1.06
 CRASH_VAL_BPB_THRESHOLD = 3.0
 CHAT_SESSION_KINDS = {"codex_session", "claude_session"}
-SUPPORTING_FILE_KINDS = {"training_log", "md", "py", "json", "csv", "ckpt"}
+SUPPORTING_FILE_KINDS = {
+    "training_log", "md", "text", "asset", "py", "json", "csv", "ckpt",
+}
 SUPPORTING_EXCLUDED_KINDS = CHAT_SESSION_KINDS | {"git_commit"}
 SUPPORTING_RELEVANCE_RE = re.compile(
     r"(?:^|/)(?:logs?|runs?|results?|outputs?|artifacts?|checkpoints?|reports?|"
@@ -1197,18 +1199,18 @@ def make_daily_summary_html(date: str, day_index: int | None,
     day_label = format_day_index(day_index)
     day_ref = f"Day {day_label}" if day_label != "—" else "Unindexed day"
 
-    # Zero-tests day — don't fabricate "allocation skew" or "the day was
-    # about hammering X variants" when no runs were launched. Common
-    # causes: pre-research-arc days, kernel-benchmark days with no
-    # val_bpb output, session-only days.
+    # Zero measured validation rows — don't fabricate "allocation skew" or
+    # "the day was about hammering X variants" when the day has support files
+    # but no explicit val_bpb/val_loss output. Common causes: infra/studio
+    # days, kernel-benchmark days, and session-only days.
     if n_tests == 0:
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
               f'<div class="ds-body"><p>{day_ref} — '
-              f'<strong>no training runs launched</strong> on this date. '
-              f'Day-local support artifacts are summarized in the header and '
-              f'test table when present.</p></div>'
+              f'<strong>no explicit validation metric</strong> was captured '
+              f'on this date. Day-local support artifacts, logs, commits, '
+              f'configs, and media are still indexed below when present.</p></div>'
             '</aside>'
         )
 

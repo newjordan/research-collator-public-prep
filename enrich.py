@@ -79,10 +79,15 @@ def walk_git_repo(repo: dict) -> list[dict]:
         return []
 
     fmt = "%H%x1f%aI%x1f%an%x1f%s%x1f%b%x1e"
+    cmd = ["git", "-C", repo_path, "log", "--no-merges"]
+    if repo.get("since"):
+        cmd.append(f"--since={repo['since']}")
+    if repo.get("until"):
+        cmd.append(f"--until={repo['until']}")
+    cmd.extend([f"--pretty=format:{fmt}", "-z"])
     try:
         out = subprocess.check_output(
-            ["git", "-C", repo_path, "log", "--no-merges",
-             f"--pretty=format:{fmt}", "-z"],
+            cmd,
             text=True, errors="replace",
         )
     except (subprocess.CalledProcessError, FileNotFoundError) as e:

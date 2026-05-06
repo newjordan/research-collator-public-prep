@@ -30,7 +30,7 @@ import render_day  # noqa: E402
 
 ALLOWED_CAMPS = {"experimental", "neural", "daily_grind"}
 ALLOWED_FILE_KINDS = {
-    "md", "json", "py", "csv", "ckpt", "training_log",
+    "md", "text", "asset", "json", "py", "csv", "ckpt", "training_log",
     "git_commit", "claude_session", "codex_session",
 }
 REQUIRED_ARTIFACT_COLUMNS = {
@@ -138,6 +138,13 @@ def verify_config(config_path: Path, db_path: Path, report: ContractReport) -> N
     for ext, handler in {
         ".log": "training_log",
         ".out": "training_log",
+        ".txt": "text_summary",
+        ".sh": "text_summary",
+        ".yaml": "text_summary",
+        ".yml": "text_summary",
+        ".mp4": "asset_meta",
+        ".png": "asset_meta",
+        ".tgz": "asset_meta",
         ".json": "json_summary",
         ".py": "python_module",
         ".md": "markdown",

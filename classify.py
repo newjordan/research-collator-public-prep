@@ -48,7 +48,11 @@ WEAK_EXP_KW = (
     "scientific plan", "research-driven",
 )
 # Sources where the team-identity beats weak experimental keywords.
-COMPETITIVE_SOURCES = {"SOTA_FINAL", "sota_rascal"}
+COMPETITIVE_SOURCES = {
+    "SOTA_FINAL", "sota_rascal", "pg_whale", "rascal-private",
+    "sota_rascal_pod_saves", "git:SOTA_FINAL", "git:sota_rascal",
+    "git:pg_whale", "git:rascal-private",
+}
 # Backwards-compat alias used by old reports.
 EXP_KW = STRONG_EXP_KW + WEAK_EXP_KW
 NEURAL_KW = (
@@ -63,6 +67,16 @@ NEURAL_KW = (
 # Source-label defaults for ambiguous artifacts that fired no other rule.
 SOURCE_DEFAULT = {
     "ml-lab": "experimental",
+    "srv_agents": "experimental",
+    "srv_studio": "experimental",
+    "srv_forge": "experimental",
+    "srv_models": "experimental",
+    "dotagents_mono": "experimental",
+    "rig_desktop_config": "experimental",
+    "local_qwen_agent": "experimental",
+    "dgx_nim_upgrade": "experimental",
+    "qwen_agent": "experimental",
+    "augment_checkpoints": "experimental",
     "parameter-golf-lab": "experimental",
     "parameter-golf-cross-repo": "experimental",
     "sota_crawler": "experimental",
@@ -70,6 +84,19 @@ SOURCE_DEFAULT = {
     "sota_nueral_archive": "neural",
     "SOTA_FINAL": "neural",
     "sota_rascal": "neural",
+    "pg_whale": "neural",
+    "rascal-private": "neural",
+    "sota_rascal_pod_saves": "neural",
+    "git:ml-lab": "experimental",
+    "git:dotagents_mono": "experimental",
+    "git:qwen_agent": "experimental",
+    "git:parameter-golf-lab": "experimental",
+    "git:sota_crawler": "experimental",
+    "git:sota_nueral": "neural",
+    "git:SOTA_FINAL": "neural",
+    "git:sota_rascal": "neural",
+    "git:pg_whale": "neural",
+    "git:rascal-private": "neural",
     # codex_rollouts handled at top of classify(); never reaches default lookup.
 }
 
