@@ -109,7 +109,7 @@ codex_sessions_root: /home/frosty40/.codex/sessions
 sqlite_path: /home/frosty40/research_collator/index.sqlite
 extraction_version: "stripper_v2"
 
-# Day numbering — anchored to a fixed epoch so DAY index never drifts as the
-# scraper finds new sources. day_index = (date - day_epoch).days + 1.
-# Day 1 = the first work-day of the parameter-golf research arc, locked.
-day_epoch: "2026-03-17"
+# Legacy field retained for old scripts. The daily renderer follows TEMPLATE.md:
+# day_index is the 1-based index of the target date in the sorted set of dates
+# with artifacts. This keeps the recovered baseline at 2026-03-28 = DAY 022.
+day_epoch: null

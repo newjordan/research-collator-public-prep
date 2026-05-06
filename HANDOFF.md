@@ -26,6 +26,30 @@ on a previous attempt with LLM-per-file scraping.
 `TEMPLATE.md` is the canonical layout spec; the renderer follows it.
 `README.md` points to TEMPLATE.md as the design lock.
 
+## Correction Pass (2026-05-06)
+
+The 2026-05-05 handoff below contains two rules that were wrong and have been
+superseded in code:
+
+- DAY numbering is back to the `TEMPLATE.md` contract: 1-based index in the
+  sorted set of dates with artifacts. This restores the recovered baseline
+  `2026-03-28 = DAY 022`; `day_epoch` is now legacy-only.
+- `records/track_*` is not a blanket reference-baseline namespace. Dated
+  `records/track_*` folders are primary evidence for early daily work. The
+  stripper now tags only explicit baseline paths/names such as `NaiveBaseline`,
+  `published_baselines`, and `_baselines`.
+- The smart renderer now reads CSS from the recovered `Research Day.html`
+  baseline so data rendering can change without creating a second visual
+  style.
+- SECTION 3.0 no longer presents Codex/Claude chat sessions or git commits
+  as research support. It is limited to day-local created files, logs,
+  planning/testing artifacts, summaries, scripts, CSV/JSON outputs, and
+  checkpoints.
+- Cumulative chat-log extraction is a separate lane in `chat_extract_local.py`.
+  It uses local Ollama Qwen on `spark-2949`, fails closed on cloud/non-Qwen
+  models, and is not part of scrape/render. Treat its JSONL as raw extraction
+  input for a later research-oriented accuracy pass, not as report evidence.
+
 ## Session 1 (prior session) summary
 
 - Built the stripper / enrich / classify / render skeleton.

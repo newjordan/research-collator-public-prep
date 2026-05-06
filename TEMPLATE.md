@@ -28,6 +28,11 @@ community, future-you. Read time target: ≤3 minutes skim, ≤10 minutes deep.
 The visual system is fixed. Renderers must not introduce additional colors,
 fonts, or surface treatments without first updating this section.
 
+The locked base CSS source is `templates/daily_report_locked.html`. The
+renderer refuses to run if that file's `<style>` block does not match
+`LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
+`daily-report-v2.0-wide-log-panel`.
+
 ### 2.1 Palette (single source of truth)
 
 | Token         | Value      | Purpose                                          |
@@ -59,7 +64,7 @@ tabular-nums`) on every value column.
 
 ### 2.3 Surface treatment
 
-Single-rule, no fills. Every panel (header block, table, supporting list,
+Single-rule, no fills. Every panel (header block, table, log detail row,
 day summary, figure frame) is enclosed by exactly one `1px solid var(--rule-hi)`
 border. No box-shadows, no gradients (except the 45° diagonal stripes on the
 neural data segment), no card-style background tints.
@@ -98,20 +103,25 @@ re-ordered without a spec revision.
 3.3   VAL_BPB SPREAD        Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
-4. SECTION 2.0  TEST RUNS   8-column table:
+4. SECTION 2.0  TEST RUNS   Camp-isolated 8-column tables:
                               # | TIME | HW | ABLATION | VAL_BPB | STATUS | Δ % | OPEN
+                            EXPERIMENTAL and NEURAL render as separate tables
+                            when present.
+                            ABLATION defaults to deterministic raw title.
+                            Optional local Nemo3 labels may replace it only
+                            after promotion into approved ablation-label JSONL
+                            keyed by date, row number, and raw-title hash.
+                            OPEN renders training logs as a compact
+                            `<details>` toggle. Opening it reveals a
+                            full-table-width detail row beneath that run with
+                            the escaped log text plus the original file link.
+                            Non-log artifacts remain normal links.
                             INVALID rows: muted text, red val_bpb cell, red STATUS.
-
-5. SECTION 3.0  SUPPORTING FILES
-                            Wrapped in `.supporting-section` with vertical
-                            guideline. Each `<li>` carries a left camp-stripe
-                            (solid dark green for experimental, hatched
-                            lighter green for neural, neutral for other).
 ```
 
 DAILY GRIND — explicitly **not** in the canonical layout. Codex/Claude
-session entries appear in SUPPORTING FILES (with their camp stripes), not
-as their own section.
+session entries are indexed only for the separate local-summary lane. They
+MUST NOT render as report body research support.
 
 ---
 
@@ -140,12 +150,13 @@ points may render there.
 
 ### 4.3 Validity zones
 
-- `val_bpb < INVALID_VAL_BPB_FLOOR` (= **1.06**): red zone, hatched 45°,
-  dotted floor line. Project-wide convention (don't get excited about
-  scores in the red — known eval errors).
+- `val_bpb < INVALID_VAL_BPB_FLOOR` (= **1.06**): quiet invalid zone,
+  slightly different background, subtle solid floor line. Project-wide
+  convention (don't get excited about scores in the quiet zone — known eval
+  errors).
 - `INVALID_VAL_BPB_FLOOR ≤ val_bpb ≤ CRASH_THRESHOLD` (= 3.0): valid range.
 - `val_bpb > CRASH_THRESHOLD`: crashed-early runs. Off-scale, summarized
-  by a single bottom-right indicator (`▲ N CRASH RUNS OFF-SCALE  (max=…)`).
+  by a single top-right indicator (`▲ N CRASH RUNS OFF-SCALE  (max=…)`).
   These points are **not plotted** but their count + max are surfaced.
 
 ### 4.4 Marks
@@ -153,27 +164,20 @@ points may render there.
 | Element           | Style                                                       |
 |-------------------|-------------------------------------------------------------|
 | Camp scatter      | `s=140`, `linewidths=0.9`, edge = page bg.                  |
-| Journey line      | Light grey, alpha 0.55, lw 0.7, connects pts in time order. |
-| Best-valid step   | White (`--ink-hi`), lw 1.6, where='post'. Excludes invalids.|
-| Validity floor    | Solid red lw 0.7, alpha 0.65.                               |
-| Red zone          | `axhspan(0, FLOOR)`, alpha 0.10, hatch `///`, edge red.     |
+| Journey line      | Green-rule grey, alpha 0.55, lw 0.7, connects in-scale valid segments only. |
+| Best-valid step   | Accent green, lw 1.2, where='post'. Excludes invalids/crashes.|
+| Validity floor    | Subtle solid rule, lw 0.65, alpha 0.55.                     |
+| Invalid zone      | Quiet background shift only; below-floor points are 50% desaturated. |
 | PB-baseline ref   | White dashed, lw 0.9, alpha 0.50.                           |
-| Crash indicator   | Bottom-right, yellow border + yellow text on bg.            |
+| Crash indicator   | Top-right above grid, accent border + accent text on bg.    |
+| Legend            | Centered below the time axis, outside the data grid.         |
+| Prior-day marker  | Top-right title: `PRIOR DAY VAL_BPB · N.NNNN`; no inline label on dashed line. |
 
-### 4.5 Numbered badges (the contract)
+### 4.5 Run identity labels
 
-Each test run gets a numbered badge in the **gutter**, packed left→right
-with a min-gap rule. Badges that would otherwise overlap a neighbor are
-pushed right; if pressure persists, every other badge alternates to a
-second sub-row. A thin grey leader line connects each badge to its
-anchor dot.
-
-Constraints:
-- Badge font: 9pt bold, white text on bg with grey border, `pad=0.30`.
-- Min horizontal gap: `xspan / 30` (≈ 30 badges fit in a single row).
-- Two sub-rows: `y_top = ymax - 0.05·yspan`, `y_alt = ymax - 0.12·yspan`.
-- Leader line: `--rule-hi`, lw 0.5, alpha 0.75.
-- Badge number = its row in the Test Runs table (1-indexed by run-time).
+The chart does **not** draw every run label. Run identity is preserved in
+Section 2 where row numbers and embedded logs are readable. The chart labels
+only the best valid point as `BEST #N`, where `N` is the Test Runs table row.
 
 ---
 
@@ -182,7 +186,7 @@ Constraints:
 Renderers MUST maintain these. Tests live in `render_day.py` itself; if any
 of these break, the page is wrong.
 
-1. **Five colors only.** No element introduces a color outside §2.1.
+1. **Palette locked.** No page element introduces a color outside §2.1.
 2. **One black.** All surfaces use `--bg`. No alternate backgrounds.
 3. **Single border per panel.** No card fills, no shadows, no double-rules.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
@@ -191,8 +195,12 @@ of these break, the page is wrong.
    and red on the STATUS strong tag.
 6. **The validity floor is never a header field.** It's a project-wide
    convention shown only on the chart.
-7. **Self-contained.** The HTML embeds chart + frosted-flake mark as base64;
-   no external requests. Opens offline in any browser.
+7. **Self-contained.** The HTML embeds chart + frosted-flake mark as base64
+   and embeds training-log text in Section 2 disclosures; no external
+   requests are required for review. Opens offline in any browser.
+8. **Template hash locked.** `render_day.py` must refuse to render if
+   `templates/daily_report_locked.html` CSS drifts without an intentional hash
+   update.
 
 ---
 
@@ -210,10 +218,10 @@ For every artifact attributable to the day:
 |--------------------------|----------|--------------------------------------------------------|
 | `abs_path`               | TEXT PK  | Stable identity (file path, or `git://repo/sha`).      |
 | `mtime_iso`              | TEXT     | ISO8601 UTC. Authoritative timestamp.                  |
-| `file_kind`              | TEXT     | `md`/`json`/`py`/`csv`/`pt`/`training_log`/`git_commit`/`claude_session`/`codex_session` |
+| `file_kind`              | TEXT     | `md`/`json`/`py`/`csv`/`ckpt`/`training_log`/`git_commit`/`claude_session`/`codex_session` |
 | `source_label`           | TEXT     | Short label used in supporting-files row.              |
 | `title`                  | TEXT     | Display title — never empty (filename fallback OK).    |
-| `summary`                | TEXT     | One-line context. Never includes the val_bpb number.   |
+| `summary`                | TEXT     | One-line context. Never empty; renderer never parses metrics from it. |
 | `metrics_json`           | TEXT     | JSON dict of extracted metrics (see §6.3).             |
 | `camp`                   | TEXT     | `experimental` \| `neural` \| `daily_grind`            |
 
@@ -229,8 +237,8 @@ The renderer derives these from the records and a target date:
   records strictly before this date.
 - **`test_rows`** — one row per unique title (collapsing seed replicas),
   sorted by run-time ascending. Each row: `n, time, hardware, title,
-  value, n_runs, link_label, link_href, run_script, time_iso, camp,
-  delta_pct`.
+  value, n_runs, link_label, link_href, run_script, training_logs,
+  time_iso, camp, delta_pct`.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
 - **`valid_count` / `invalid_count`** — `value ≥/< INVALID_VAL_BPB_FLOOR`.
@@ -248,20 +256,54 @@ canonical keys:
 | `n_ranks`                | distinct rank IDs in training-log output (HW signal).    |
 | `train_time_seconds`     | last `train_time:Nms` in log content.                    |
 | `step_final`             | last `step:N/M` in log content.                          |
-| `filename_run_start`     | `YYYYMMDD_HHMMSS` parsed from training-log filename.     |
+| `filename_run_start`     | `YYYYMMDDTHHMMSS` parsed from training-log filename.     |
 | `n_user_turns`           | codex/claude session: `event_msg`/`user_message` count.  |
 | `n_agent_turns`          | codex/claude session: `agent_message` count.             |
 | `n_exec_commands`        | codex/claude session: `exec_command_end` count.          |
 | `n_patches`              | codex/claude session: `patch_apply_end` count.           |
 | `session_duration_seconds` | last_event_ts − first_event_ts                         |
 
-### 6.4 Architecture-family detection
+### 6.4 Verification gate
+
+The canonical scrape/render pipeline MUST pass:
+
+```bash
+python3 stripper.py
+python3 enrich.py
+python3 classify.py
+python3 scripts/verify_scraper_contract.py
+python3 render_all.py
+python3 scripts/verify_daily_template.py --all
+```
+
+`scripts/verify_scraper_contract.py` is the executable gate for §6. It
+checks:
+
+- required columns and non-empty display fields (`title`, `summary`,
+  `camp`, `classification_rule`, timestamps, paths);
+- JSON-parseable `metrics_json` with numeric headline metrics;
+- training-log `val_bpb_source` provenance (`log_final_eval` or
+  `log_step_best`);
+- `filename_run_start` and `n_gpus` sanity;
+- readable measured training-log files plus `content_sha256`;
+- day attribution via `best_date()` / `fetch_day()`;
+- Section 2 row numbering and camp isolation (`daily_grind` cannot become
+  a test row);
+- retrieval indexes: `idx_label`, `idx_kind`, `idx_mtime`, `idx_title`,
+  `idx_kind_mtime`, `idx_source_kind`, `idx_content_sha`, `idx_camp`,
+  `idx_rule`, `idx_camp_kind`, `idx_camp_mtime`.
+
+Non-empty training logs without canonical metric patterns are warnings, not
+fatal errors: they are preserved as indexed evidence but do not create Test
+Runs rows.
+
+### 6.5 Architecture-family detection
 
 The `ARCH_FAMILIES` list in `render_day.py` is the source of truth for
 canonical family names and their detection regex. New family codenames
 go there. Order matters: more-specific patterns first.
 
-### 6.5 Camp classifier
+### 6.6 Camp classifier
 
 The `classify.py` rule order:
 1. `source == "codex_rollouts"` → `daily_grind`

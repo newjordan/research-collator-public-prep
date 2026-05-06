@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Render ONE day's research report — re-shaped per user spec:
+"""Render ONE day's locked daily research report.
 
-  HEADER     hours worked · tests-variety % · top source
-  CHART      day_chart for headline metric (val_bpb preferred, val_loss fallback)
-  TESTS      table: time | hardware | ablation detail | bpb result | Δ vs best
-  GRIND      codex_rollouts narrative for the date
-  BIB        every artifact contributing to the day, with abs_path
+The visual and structural contract lives in TEMPLATE.md. This file turns
+scraper/enrich/classify records into that template instance; it should repair
+data attribution, not invent a new report shape.
 
 Usage:
     python3 render_day.py --date 2026-04-26
+    python3 render_day.py --day 22
     python3 render_day.py --date 2026-04-26 --metric val_loss
 """
 
@@ -17,6 +16,7 @@ from __future__ import annotations
 import argparse
 import base64
 import datetime as dt
+import hashlib
 import html
 import json
 import os
@@ -24,7 +24,6 @@ import re
 import sqlite3
 import sys
 
-import yaml
 from collections import defaultdict
 from pathlib import Path
 
@@ -35,6 +34,14 @@ OUT_ROOT = Path("/home/frosty40/research_collator/output")
 QMD_DIR = OUT_ROOT / "days"
 HTML_DIR = OUT_ROOT / "preview"
 ASSETS_DIR = OUT_ROOT / "assets"
+ABLATION_LABELS_PATH = Path(os.environ.get(
+    "ABLATION_LABELS_PATH",
+    str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
+))
+LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
+LOCKED_TEMPLATE_STYLE_SHA256 = "10bdc54d95a899ae2d60a669c18807f86538ea8105482bd226e51366f070dc4e"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
+TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
 HARDWARE_PATTERNS = (
@@ -60,6 +67,52 @@ HARDWARE_PATTERNS = (
 )
 
 HEADLINE_METRICS = ("val_bpb", "val_loss", "val_bits_per_byte", "bpb", "loss")
+BPB_METRICS = {"val_bpb", "val_bits_per_byte", "bpb"}
+INVALID_VAL_BPB_FLOOR = 1.06
+CRASH_VAL_BPB_THRESHOLD = 3.0
+CHAT_SESSION_KINDS = {"codex_session", "claude_session"}
+SUPPORTING_FILE_KINDS = {"training_log", "md", "py", "json", "csv", "ckpt"}
+SUPPORTING_EXCLUDED_KINDS = CHAT_SESSION_KINDS | {"git_commit"}
+SUPPORTING_RELEVANCE_RE = re.compile(
+    r"(?:^|/)(?:logs?|runs?|results?|outputs?|artifacts?|checkpoints?|reports?|"
+    r"plans?|planning|notes?|analysis|eval|tests?|bench|scripts?)(?:/|$)|"
+    r"(?:log|launcher|run|result|metric|eval|bench|test|plan|handoff|summary|"
+    r"readme|todo|notes?)",
+    re.IGNORECASE,
+)
+CAMP_DISPLAY_LABEL = {
+    "experimental": "experimental",
+    "neural": "neural",
+    "daily_grind": "daily grind",
+}
+
+
+def is_bpb_metric(metric: str | None) -> bool:
+    if not metric:
+        return False
+    return metric in BPB_METRICS or metric.startswith("val_bpb")
+
+
+def is_below_floor(metric: str | None, value: float) -> bool:
+    return is_bpb_metric(metric) and value < INVALID_VAL_BPB_FLOOR
+
+
+def is_crash_value(metric: str | None, value: float) -> bool:
+    return is_bpb_metric(metric) and value > CRASH_VAL_BPB_THRESHOLD
+
+
+def is_valid_metric_value(metric: str | None, value: float) -> bool:
+    if not is_bpb_metric(metric):
+        return True
+    return INVALID_VAL_BPB_FLOOR <= value <= CRASH_VAL_BPB_THRESHOLD
+
+
+def ablation_title_sha(title: str) -> str:
+    return hashlib.sha256(title.encode("utf-8", errors="replace")).hexdigest()
+
+
+def format_day_index(day_index: int | None) -> str:
+    return f"{day_index:03d}" if isinstance(day_index, int) else "—"
 
 
 def best_date(rec: dict) -> str | None:
@@ -176,7 +229,12 @@ def pick_headline_metric(records: list[dict]) -> str | None:
 
 
 def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | None:
-    """Best (lowest, since loss-style) metric across records strictly before date."""
+    """Best valid prior metric across records strictly before date.
+
+    For BPB-style metrics, below-floor values are known eval/loader errors and
+    crash-class values are not personal-best candidates. They still remain in
+    their daily report; they just cannot become the baseline-to-beat.
+    """
     cur = conn.cursor()
     rows = cur.execute(
         "SELECT abs_path, rel_path, mtime_iso, metrics_json FROM artifacts "
@@ -195,6 +253,8 @@ def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | Non
         if md.get("is_reference_baseline"):
             continue
         for v in extract_metric_for_record(rec["metrics_json"], metric):
+            if not is_valid_metric_value(metric, v):
+                continue
             if best is None or v < best:
                 best = v
     return best
@@ -308,6 +368,39 @@ def _build_link(rec: dict) -> tuple[str, str]:
         # http server is rooted at HOME so this URL is fetchable from the tailnet
         return (kind or "file", f"{SERVE_BASE}/{rel}")
     return (kind or "file", "")
+
+
+def _file_href(abs_path: str, label: str = "file") -> tuple[str, str]:
+    """Return a served file URL for a local absolute path."""
+    if abs_path.startswith(HOME + "/"):
+        rel = abs_path[len(HOME) + 1:]
+        return (label, f"{SERVE_BASE}/{rel}")
+    return (label, "")
+
+
+def _training_log_ref(rec: dict) -> dict | None:
+    if rec.get("file_kind") != "training_log":
+        return None
+    abs_path = rec.get("abs_path") or ""
+    if not abs_path:
+        return None
+    label, href = _file_href(abs_path, "open file")
+    return {
+        "abs_path": abs_path,
+        "basename": os.path.basename(abs_path) or "training_log",
+        "href": href,
+        "href_label": label,
+        "size": rec.get("file_size_bytes"),
+    }
+
+
+def _append_training_log_ref(row: dict, rec: dict) -> None:
+    ref = _training_log_ref(rec)
+    if not ref:
+        return
+    logs = row.setdefault("training_logs", [])
+    if all(existing.get("abs_path") != ref["abs_path"] for existing in logs):
+        logs.append(ref)
 
 
 def _find_run_script(rec: dict) -> str | None:
@@ -481,7 +574,7 @@ def extract_test_rows(records: list[dict], metric: str,
         best_val = min(vals)
         cur = by_title.get(title)
         if cur is None:
-            by_title[title] = {
+            row = {
                 "title": title,
                 "value": best_val,
                 "n_runs": len(vals),
@@ -498,10 +591,14 @@ def extract_test_rows(records: list[dict], metric: str,
                 "run_script": run_script,
                 "val_bpb_source": bpb_source,
                 "val_bpb_priority": bpb_priority,
+                "training_logs": [],
             }
+            _append_training_log_ref(row, rec)
+            by_title[title] = row
             continue
 
         cur["n_runs"] += len(vals)
+        _append_training_log_ref(cur, rec)
         # Hardware: prefer the highest-priority source we've seen.
         if hardware and hw_priority < cur.get("hardware_priority", 99):
             cur["hardware"] = hardware
@@ -560,13 +657,92 @@ def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
 
 # ---------- bibliography ----------------------------------------------------
 
+def _is_in_any_dir(abs_path: str, dirs: set[str]) -> bool:
+    """True when abs_path is inside one of the detected test-run directories."""
+    if not abs_path.startswith(HOME + "/"):
+        return False
+    norm_path = os.path.abspath(abs_path)
+    for d in dirs:
+        try:
+            if os.path.commonpath([norm_path, d]) == d:
+                return True
+        except ValueError:
+            continue
+    return False
+
+
+def is_rendered_support_record(rec: dict) -> bool:
+    """True for artifacts allowed to appear as report support evidence."""
+    return (
+        rec.get("camp") != "daily_grind"
+        and rec.get("file_kind") in SUPPORTING_FILE_KINDS
+        and rec.get("file_kind") not in SUPPORTING_EXCLUDED_KINDS
+    )
+
+
 def make_supporting_files_md(records: list[dict], test_record_paths: set[str]) -> str:
-    """Everything that wasn't a numbered Test Run — supporting docs, codex
-    sessions, the leg's checkpoints/configs/etc."""
+    """Files that directly support the day.
+
+    Section 3 is not a cross-day artifact dump. When measured Test Runs exist,
+    include sibling/child artifacts from those run directories. When the day
+    has no measured runs, include a small day-local list of created files,
+    logs, plans, summaries, and test-adjacent artifacts. Chat transcripts and
+    commits are indexed elsewhere, but never rendered as research support.
+    """
     out = ["", "## Supporting Files", ""]
-    rest = [r for r in records if r["abs_path"] not in test_record_paths]
+    if not test_record_paths:
+        priority = {
+            "training_log": 0,
+            "md": 1,
+            "py": 2,
+            "json": 3,
+            "csv": 4,
+            "ckpt": 5,
+        }
+        rest = [
+            r for r in records
+            if is_rendered_support_record(r)
+        ]
+        rest = sorted(
+            rest,
+            key=lambda r: (
+                0 if SUPPORTING_RELEVANCE_RE.search(
+                    " ".join([
+                        r.get("abs_path") or "",
+                        r.get("source_label") or "",
+                        r.get("title") or "",
+                    ])
+                ) else 1,
+                priority.get(r.get("file_kind"), 9),
+                r.get("mtime_iso") or "",
+                r.get("source_label") or "",
+            ),
+        )[:12]
+        if not rest:
+            out.append("_No supporting files: no day-local created files, logs, plans, or test artifacts were detected._")
+            return "\n".join(out)
+        for r in rest:
+            rel = r["abs_path"].replace("/home/frosty40/", "~/")
+            title = r["title"] or "(untitled)"
+            link_label, link_href = _build_link(r)
+            link_md = f" — [{link_label}]({link_href})" if link_href else ""
+            out.append(f"- **{r['camp']}** · `{r['source_label']}` · {r['file_kind']} · "
+                       f"`{rel}` — {title}{link_md}")
+        return "\n".join(out)
+
+    test_dirs = {
+        os.path.abspath(str(Path(p).parent))
+        for p in test_record_paths
+        if p.startswith(HOME + "/")
+    }
+    rest = [
+        r for r in records
+        if r["abs_path"] not in test_record_paths
+        and _is_in_any_dir(r.get("abs_path") or "", test_dirs)
+        and is_rendered_support_record(r)
+    ]
     if not rest:
-        out.append("_No supporting files._")
+        out.append("_No supporting files: no sibling artifacts were found for the detected test runs._")
         return "\n".join(out)
     for r in sorted(rest, key=lambda r: (r["camp"], r["source_label"], r["mtime_iso"])):
         rel = r["abs_path"].replace("/home/frosty40/", "~/")
@@ -701,34 +877,155 @@ def _frosted_flake_data_uri() -> str:
     return _FROSTED_FLAKE_DATA_URI
 
 
-_DAY_EPOCH: dt.date | None = None
+_BASELINE_STYLE: str | None = None
+_ARTIFACT_DAY_INDEX: dict[str, int] | None = None
 
 
-def _day_epoch() -> dt.date:
-    """Read the day-numbering epoch from config.yaml once. day_index is stable
-    relative to this anchor — never drifts as the scraper finds new sources."""
-    global _DAY_EPOCH
-    if _DAY_EPOCH is None:
-        try:
-            with open("/home/frosty40/research_collator/config.yaml") as f:
-                cfg = yaml.safe_load(f)
-            anchor = cfg.get("day_epoch", "2026-03-17")
-            _DAY_EPOCH = dt.date.fromisoformat(anchor)
-        except (OSError, ValueError):
-            _DAY_EPOCH = dt.date(2026, 3, 17)
-    return _DAY_EPOCH
+def _embedded_log_style() -> str:
+    return """
+    /* Embedded training logs: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        cursor: pointer;
+        color: var(--link);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 0 14px 14px;
+        border-top: none;
+        color: var(--ink);
+    }
+    .log-panel {
+        border-top: 1px solid var(--rule);
+        padding-top: 9px;
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--ink);
+        background: transparent;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    """
+
+
+def _embedded_log_script() -> str:
+    return (
+        "<script>(function(){"
+        "function sync(d){"
+        "var tr=d.closest('tr');"
+        "var row=tr&&tr.nextElementSibling;"
+        "if(!row||!row.classList.contains('log-detail-row'))return;"
+        "var open=Array.prototype.some.call("
+        "tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});"
+        "row.classList.toggle('is-open',open);"
+        "}"
+        "document.querySelectorAll('details.log-toggle').forEach(function(d){"
+        "d.addEventListener('toggle',function(){sync(d);});"
+        "sync(d);"
+        "});"
+        "})();</script>"
+    )
+
+
+def _daily_template_style() -> str:
+    """Load CSS from the locked daily report standard.
+
+    The renderer is allowed to be smart about data. It is not allowed to carry
+    a second visual design that drifts from the user's daily template. The
+    source file and its CSS hash are the repo-level lock for the base visual
+    system; any intentional visual change must update TEMPLATE.md and this
+    hash in the same patch.
+    """
+    global _BASELINE_STYLE
+    if _BASELINE_STYLE is not None:
+        return _BASELINE_STYLE
+    try:
+        raw = LOCKED_TEMPLATE_HTML.read_text(encoding="utf-8")
+    except OSError as e:
+        raise TemplateContractError(
+            f"missing locked daily template CSS source: {LOCKED_TEMPLATE_HTML}"
+        ) from e
+    m = re.search(r"<style>(.*?)</style>", raw, flags=re.DOTALL | re.IGNORECASE)
+    if not m:
+        raise TemplateContractError(
+            f"locked daily template has no <style> block: {LOCKED_TEMPLATE_HTML}"
+        )
+    style = m.group(1).strip()
+    style_sha = hashlib.sha256(style.encode("utf-8")).hexdigest()
+    if style_sha != LOCKED_TEMPLATE_STYLE_SHA256:
+        raise TemplateContractError(
+            "locked daily template CSS hash drifted: "
+            f"expected {LOCKED_TEMPLATE_STYLE_SHA256}, got {style_sha}; "
+            "update TEMPLATE.md and LOCKED_TEMPLATE_STYLE_SHA256 if this was intentional"
+        )
+    required = [
+        ".alloc-bar { display: inline-flex; height: 30px; width: 240px;",
+        ".rh-row-alloc { align-items: center; padding: 14px 0; }",
+        ".supporting-section",
+        ".bpb-table",
+    ]
+    missing = [needle for needle in required if needle not in style]
+    if missing:
+        raise TemplateContractError(
+            f"locked daily template CSS missing required rules: {missing}"
+        )
+    _BASELINE_STYLE = style + "\n" + _embedded_log_style().strip()
+    return _BASELINE_STYLE
+
+
+def artifact_day_index(conn: sqlite3.Connection) -> dict[str, int]:
+    """1-based index in the sorted set of dates with artifacts.
+
+    This is the TEMPLATE.md contract and matches the recovered baseline:
+    2026-03-28 renders as DAY 022 with the current corpus.
+    """
+    global _ARTIFACT_DAY_INDEX
+    if _ARTIFACT_DAY_INDEX is None:
+        rows = conn.execute(
+            "SELECT abs_path, rel_path, mtime_iso FROM artifacts"
+        ).fetchall()
+        dates = sorted({
+            bd for bd in (best_date(dict(r)) for r in rows) if bd is not None
+        })
+        _ARTIFACT_DAY_INDEX = {d: i for i, d in enumerate(dates, start=1)}
+    return _ARTIFACT_DAY_INDEX
 
 
 def compute_day_index(conn: sqlite3.Connection, date: str) -> int | None:
-    """Days since the locked epoch (config.yaml `day_epoch`), 1-indexed.
-    Day 1 = epoch. Stable across stripper / enrich / classify re-runs and
-    across new sources being added — same date always gets the same number."""
-    try:
-        target = dt.date.fromisoformat(date)
-    except ValueError:
-        return None
-    delta = (target - _day_epoch()).days
-    return delta + 1 if delta >= 0 else None
+    return artifact_day_index(conn).get(date)
+
+
+def date_for_day_index(conn: sqlite3.Connection, day_index: int) -> str | None:
+    for date, idx in artifact_day_index(conn).items():
+        if idx == day_index:
+            return date
+    return None
 
 
 def make_report_header_html(fields: list[tuple[str, str]],
@@ -756,9 +1053,110 @@ def make_report_header_html(fields: list[tuple[str, str]],
     return '<div class="report-header">' + "".join(rows) + "</div>"
 
 
+TEMPLATE_HEADER_KEYS = [
+    "DATE",
+    "DAY",
+    "PRIMARY METRIC",
+    "TESTS RUN",
+    "ARCHITECTURE FAMILY",
+    "CLASSIFICATION",
+]
+
+TEMPLATE_SECTION_LINES = [
+    "## SECTION 1.0 — TRAJECTORY",
+    "## SECTION 2.0 — TEST RUNS",
+]
+
+
+class TemplateContractError(RuntimeError):
+    """Raised when render_day would emit a page outside TEMPLATE.md."""
+
+
+def assert_daily_template_contract(date: str,
+                                   records: list[dict],
+                                   header_fields: list[tuple[str, str]],
+                                   qmd_lines: list[str],
+                                   test_table_md: str,
+                                   metric: str,
+                                   n_tests: int) -> None:
+    """Small render-time guardrail for the locked daily template.
+
+    This keeps TEMPLATE.md executable without changing the user's visual
+    design: if section order, header rows, table columns, or day-local
+    attribution drift, rendering fails loudly.
+    """
+    header_keys = [k for k, _v in header_fields]
+    if header_keys != TEMPLATE_HEADER_KEYS:
+        raise TemplateContractError(
+            f"header rows drifted: expected {TEMPLATE_HEADER_KEYS}, got {header_keys}"
+        )
+
+    qmd_text = "\n".join(qmd_lines)
+    positions: list[int] = []
+    for section in TEMPLATE_SECTION_LINES:
+        pos = qmd_text.find(section)
+        if pos < 0:
+            raise TemplateContractError(f"missing template section: {section}")
+        positions.append(pos)
+    if positions != sorted(positions):
+        raise TemplateContractError("daily sections are out of canonical order")
+    if "DAILY GRIND" in qmd_text.upper():
+        raise TemplateContractError("DAILY GRIND section is not in the canonical layout")
+    if "SECTION 3.0" in qmd_text.upper() or "SUPPORTING FILES" in qmd_text.upper():
+        raise TemplateContractError("supporting-files section is not in the canonical layout")
+    bad_dates = [
+        (r.get("abs_path") or "", best_date(r))
+        for r in records
+        if best_date(r) != date
+    ]
+    if bad_dates:
+        sample = bad_dates[:3]
+        raise TemplateContractError(
+            f"daily report day-local contract failed for {date}: {sample}"
+        )
+
+    expected_header = (
+        f"| # | TIME | HW | ABLATION | {metric.upper()} | STATUS | Δ % | OPEN |"
+    )
+    expected_html_header = (
+        "<thead><tr>"
+        + "".join(
+            f"<th>{html.escape(c)}</th>"
+            for c in ["#", "TIME", "HW", "ABLATION", metric.upper(), "STATUS", "Δ %", "OPEN"]
+        )
+        + "</tr></thead>"
+    )
+    table_headers = [
+        line for line in test_table_md.splitlines()
+        if line.startswith("| # | TIME | HW | ABLATION |")
+    ]
+    if table_headers:
+        bad_headers = [line for line in table_headers if line != expected_header]
+        if bad_headers:
+            raise TemplateContractError(
+                f"test table header drifted: expected {expected_header!r}, got {bad_headers[0]!r}"
+            )
+    elif n_tests and expected_html_header not in test_table_md:
+        raise TemplateContractError(
+            f"test table header drifted: expected HTML header {expected_html_header!r}"
+        )
+    if "details class='log-toggle'" in test_table_md:
+        if "tr class='log-detail-row'><td colspan='8'>" not in test_table_md:
+            raise TemplateContractError(
+                "training log disclosures must expand into full-width detail rows"
+            )
+        if "details class='log-embed'" in test_table_md:
+            raise TemplateContractError(
+                "training log disclosures cannot be embedded inside the narrow OPEN cell"
+            )
+
+
 def make_alloc_bar_html(by_camp: dict[str, int]) -> str:
-    """Inline 240×30 allocation bar — experimental dark-green block + neural
-    striped lighter-green block + a label string after the bar."""
+    """Inline allocation bar for the CLASSIFICATION row.
+
+    Keep this markup aligned with the locked baseline: 240x30 bar first, text
+    second, both on the same header row.
+    """
     exp = by_camp.get("experimental", 0)
     neu = by_camp.get("neural", 0)
     total = exp + neu
@@ -766,8 +1164,9 @@ def make_alloc_bar_html(by_camp: dict[str, int]) -> str:
         return ""
     exp_pct = 100.0 * exp / total
     neu_pct = 100.0 * neu / total
+    label = f"EXPERIMENTAL {exp_pct:.0f}% ({exp}) / NEURAL {neu_pct:.0f}% ({neu})"
     return (
-        '<span class="alloc-bar">'
+        f'<span class="alloc-bar" aria-label="{html.escape(label)}">'
           f'<span class="alloc-seg-exp" style="width:{exp_pct:.2f}%"></span>'
           f'<span class="alloc-seg-neu" style="width:{neu_pct:.2f}%"></span>'
         '</span>'
@@ -795,6 +1194,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
     total = max(exp + neu, 1)
     exp_pct = 100.0 * exp / total
     neu_pct = 100.0 * neu / total
+    day_label = format_day_index(day_index)
+    day_ref = f"Day {day_label}" if day_label != "—" else "Unindexed day"
 
     # Zero-tests day — don't fabricate "allocation skew" or "the day was
     # about hammering X variants" when no runs were launched. Common
@@ -804,10 +1205,10 @@ def make_daily_summary_html(date: str, day_index: int | None,
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
-              f'<div class="ds-body"><p>Day {day_index:03d} — '
+              f'<div class="ds-body"><p>{day_ref} — '
               f'<strong>no training runs launched</strong> on this date. '
-              f'Activity captured: commits, sessions, supporting files. '
-              f'See SECTION 3.0.</p></div>'
+              f'Day-local support artifacts are summarized in the header and '
+              f'test table when present.</p></div>'
             '</aside>'
         )
 
@@ -830,16 +1231,27 @@ def make_daily_summary_html(date: str, day_index: int | None,
     else:
         arch_phrase = "the day was a mixed-architecture sweep"
 
+    if is_bpb_metric(headline_metric):
+        validity_phrase = (
+            f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} "
+            f"eval-error floor and <strong>{invalid_count} below-floor</strong> "
+            "readings discarded"
+        )
+    else:
+        validity_phrase = f"with <strong>{valid_count}</strong> measured rows"
+
     para1 = (
-        f"Day {day_index:03d} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
-        f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} eval-error floor "
-        f"and <strong>{invalid_count} below-floor</strong> readings discarded. "
+        f"{day_ref} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
+        f"{validity_phrase}. "
         f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
         f"{arch_phrase}."
     )
 
     # Para 2: best-of-day, PB comparison
-    valid_rows = [r for r in test_rows if r["value"] >= floor]
+    valid_rows = [
+        r for r in test_rows
+        if is_valid_metric_value(headline_metric, r["value"])
+    ]
     if valid_rows:
         best = min(valid_rows, key=lambda r: r["value"])
         best_value = best["value"]
@@ -861,10 +1273,15 @@ def make_daily_summary_html(date: str, day_index: int | None,
         pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
 
     # Crash flag
-    crash_count = sum(1 for r in test_rows if r["value"] > 3.0)
+    crash_count = sum(
+        1 for r in test_rows
+        if is_crash_value(headline_metric, r["value"])
+    )
     if crash_count:
-        crash_values = sorted([r["value"] for r in test_rows if r["value"] > 3.0],
-                              reverse=True)[:2]
+        crash_values = sorted(
+            [r["value"] for r in test_rows if is_crash_value(headline_metric, r["value"])],
+            reverse=True,
+        )[:2]
         crash_str = ", ".join(f"{v:.2f}" for v in crash_values)
         pb_line += (f" {crash_count} crash-class outlier{'s' if crash_count > 1 else ''} "
                     f"({crash_str}) excluded.")
@@ -881,7 +1298,10 @@ def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
                              arch_families: list[tuple[str, int]]) -> str:
     """VAL_BPB spread per architecture family — n / min / median / max,
     valid runs only. Returns rendered HTML directly (custom .bpb-table class)."""
-    valid = [r for r in test_rows if r["value"] >= INVALID_VAL_BPB_FLOOR]
+    valid = [
+        r for r in test_rows
+        if is_valid_metric_value(headline_metric, r["value"])
+    ]
     if not valid:
         return ""
 
@@ -1003,52 +1423,244 @@ def make_grind_md(records: list[dict]) -> str:
     return "\n".join(chunks)
 
 
-INVALID_VAL_BPB_FLOOR = 1.06
+def _format_bytes(n: object) -> str:
+    try:
+        value = int(n)
+    except (TypeError, ValueError):
+        return ""
+    if value < 1024:
+        return f"{value} B"
+    if value < 1024 * 1024:
+        return f"{value / 1024:.1f} KiB"
+    return f"{value / (1024 * 1024):.1f} MiB"
+
+
+def _read_training_log_text(abs_path: str) -> str:
+    if abs_path in TRAINING_LOG_EMBED_CACHE:
+        return TRAINING_LOG_EMBED_CACHE[abs_path]
+    try:
+        text = Path(abs_path).read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        text = f"[unable to read training log: {type(exc).__name__}: {exc}]"
+    TRAINING_LOG_EMBED_CACHE[abs_path] = text
+    return text
+
+
+def _pre_text_one_line(text: str) -> str:
+    """Escape text for a <pre> while keeping the generated HTML one-line.
+
+    md_to_html passes raw HTML through line-by-line, so embedded logs must not
+    introduce literal newlines into the table markup.
+    """
+    normalized = text.replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "\uFFFD")
+    return html.escape(normalized).replace("\n", "&#10;")
+
+
+def _anchor_html(label: str, href: str) -> str:
+    return (
+        f"<a href='{html.escape(href, quote=True)}' target='_blank' "
+        f"rel='noopener'>{html.escape(label)}</a>"
+    )
+
+
+def _training_log_summary_label(idx: int, total: int) -> str:
+    return "training_log" if total == 1 else f"training_log {idx}"
+
+
+def _training_log_toggle_html(idx: int, total: int) -> str:
+    summary = _training_log_summary_label(idx, total)
+    return (
+        "<details class='log-toggle'>"
+        f"<summary>{html.escape(summary)}</summary>"
+        "</details>"
+    )
+
+
+def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
+    abs_path = ref.get("abs_path") or ""
+    basename = ref.get("basename") or "training_log"
+    text = _read_training_log_text(abs_path)
+    size = _format_bytes(ref.get("size"))
+    meta_parts = [html.escape(_training_log_summary_label(idx, total)), html.escape(basename)]
+    if size:
+        meta_parts.append(html.escape(size))
+    if ref.get("href"):
+        meta_parts.append(_anchor_html(ref.get("href_label") or "open file", ref["href"]))
+    meta = " · ".join(meta_parts)
+    return (
+        "<div class='log-panel'>"
+        f"<div class='log-meta'>{meta}</div>"
+        f"<pre class='log-text'>{_pre_text_one_line(text)}</pre>"
+        "</div>"
+    )
+
+
+def make_open_cell_html(row: dict) -> str:
+    parts: list[str] = []
+    logs = row.get("training_logs") or []
+    for idx, ref in enumerate(logs, start=1):
+        parts.append(_training_log_toggle_html(idx, len(logs)))
+
+    extra_links: list[str] = []
+    if not logs and row.get("link_href"):
+        extra_links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
+    elif row.get("link_href") and all(ref.get("href") != row["link_href"] for ref in logs):
+        extra_links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
+    if row.get("run_script"):
+        extra_links.append(_anchor_html("run.sh", row["run_script"]))
+    if extra_links:
+        parts.append("<div class='open-extra'>" + " · ".join(extra_links) + "</div>")
+    return "".join(parts) if parts else "—"
+
+
+def make_log_detail_row_html(row: dict) -> str:
+    logs = row.get("training_logs") or []
+    if not logs:
+        return ""
+    panels = "".join(
+        _training_log_panel_html(ref, idx, len(logs))
+        for idx, ref in enumerate(logs, start=1)
+    )
+    return f"<tr class='log-detail-row'><td colspan='8'>{panels}</td></tr>"
+
+
+def _td_html(value: str, class_name: str | None = None) -> str:
+    cls = f" class='{html.escape(class_name, quote=True)}'" if class_name else ""
+    return f"<td{cls}>{value}</td>"
 
 
 def make_test_table_md(rows: list[dict], metric: str,
                        reference_baseline: float | None) -> str:
     if not rows:
-        return f"_No tests with measured {metric} on this date._"
+        return (
+            f'<p class="muted">No tests with measured {html.escape(metric)} '
+            "on this date.</p>"
+        )
     out = []
-    out.append(f"| # | TIME | HW | ABLATION | {metric.upper()} | STATUS | Δ % | OPEN |")
-    out.append("|---|------|----|----------|-----------------|--------|-----|------|")
+    headers = ["#", "TIME", "HW", "ABLATION", metric.upper(), "STATUS", "Δ %", "OPEN"]
+    out.append(
+        "<table class='test-runs-table'><thead><tr>"
+        + "".join(f"<th>{html.escape(h)}</th>" for h in headers)
+        + "</tr></thead><tbody>"
+    )
     for r in rows:
-        ablation = r["title"]
+        ablation = r.get("display_ablation") or r["title"]
         if r["n_runs"] > 1:
             ablation = f"{ablation} (×{r['n_runs']})"
         if len(ablation) > 80:
             ablation = ablation[:77] + "…"
-        is_invalid = r["value"] < INVALID_VAL_BPB_FLOOR
+        is_invalid = is_below_floor(metric, r["value"])
+        is_crash = is_crash_value(metric, r["value"])
         delta_str = "—"
-        if r.get("delta_pct") is not None and not is_invalid:
+        if r.get("delta_pct") is not None and not is_invalid and not is_crash:
             arrow = "↓" if r["delta_pct"] < 0 else ("↑" if r["delta_pct"] > 0 else "")
             delta_str = f"{arrow}{abs(r['delta_pct']):.1f}%"
-        elif is_invalid:
+        elif is_invalid or is_crash:
             delta_str = "—"
-        status_str = "**INVALID**" if is_invalid else "OK"
-        # Build link cell
-        link_cell_parts = []
-        if r.get("link_href"):
-            link_cell_parts.append(f"[{r.get('link_label') or 'open'}]({r['link_href']})")
-        if r.get("run_script"):
-            link_cell_parts.append(f"[run.sh]({r['run_script']})")
-        link_cell = " · ".join(link_cell_parts) if link_cell_parts else "—"
+        status_str = "<strong>INVALID</strong>" if is_invalid else ("CRASH" if is_crash else "OK")
         # Mark invalid val_bpb cell with class hook (used by HTML CSS)
         val_str = f"{r['value']:.4f}"
         if is_invalid:
-            val_str = f"`{val_str}`"  # backtick-wrap renders as <code>, distinct
+            val_str = f"<code>{html.escape(val_str)}</code>"
+        tr_class = ' class="invalid"' if is_invalid else ""
         out.append(
-            f"| **{r['n']}** "
-            f"| {r['time'] or '—'} "
-            f"| {r['hardware'] or '—'} "
-            f"| {ablation} "
-            f"| {val_str} "
-            f"| {status_str} "
-            f"| {delta_str} "
-            f"| {link_cell} |"
+            f"<tr{tr_class}>"
+            + _td_html(f"<strong>{int(r['n'])}</strong>")
+            + _td_html(html.escape(r["time"] or "—"))
+            + _td_html(html.escape(r["hardware"] or "—"))
+            + _td_html(html.escape(ablation))
+            + _td_html(val_str)
+            + _td_html(status_str)
+            + _td_html(html.escape(delta_str))
+            + _td_html(make_open_cell_html(r), "open-cell")
+            + "</tr>"
         )
+        log_detail_row = make_log_detail_row_html(r)
+        if log_detail_row:
+            out.append(log_detail_row)
+    out.append("</tbody></table>")
     return "\n".join(out)
+
+
+def load_approved_ablation_labels(path: Path = ABLATION_LABELS_PATH) -> dict[tuple[str, int, str], str]:
+    """Load human-approved local-model labels.
+
+    The key includes the raw title hash so stale approvals fail closed when row
+    order or source titles change.
+    """
+    if not path.exists():
+        return {}
+    labels: dict[tuple[str, int, str], str] = {}
+    with path.open(encoding="utf-8") as f:
+        for lineno, raw in enumerate(f, start=1):
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                item = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise TemplateContractError(
+                    f"invalid ablation label JSON at {path}:{lineno}: {exc}"
+                ) from exc
+            if item.get("approved") is not True:
+                continue
+            try:
+                date = str(item["date"])
+                n = int(item["n"])
+                title_sha = str(item["title_sha256"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise TemplateContractError(
+                    f"approved ablation label missing date/n/title_sha256 at {path}:{lineno}"
+                ) from exc
+            label = str(item.get("approved_ablation") or item.get("suggested_ablation") or "").strip()
+            label = re.sub(r"\s+", " ", label)
+            if not label:
+                continue
+            if "\n" in label or "|" in label:
+                raise TemplateContractError(
+                    f"unsafe ablation label at {path}:{lineno}: {label!r}"
+                )
+            labels[(date, n, title_sha)] = label[:96]
+    return labels
+
+
+def apply_approved_ablation_labels(rows: list[dict], date: str,
+                                  path: Path = ABLATION_LABELS_PATH) -> int:
+    labels = load_approved_ablation_labels(path)
+    if not labels:
+        return 0
+    applied = 0
+    for r in rows:
+        title_sha = ablation_title_sha(r.get("title") or "")
+        label = labels.get((date, int(r["n"]), title_sha))
+        if not label:
+            continue
+        r["display_ablation"] = label
+        applied += 1
+    return applied
+
+
+def make_camp_test_tables_md(rows: list[dict], metric: str,
+                             reference_baseline: float | None) -> str:
+    if not rows:
+        return make_test_table_md(rows, metric, reference_baseline)
+
+    sections: list[str] = []
+    camp_order = ["experimental", "neural"]
+    known_camps = {r.get("camp", "experimental") for r in rows}
+    ordered_camps = [c for c in camp_order if c in known_camps]
+    ordered_camps.extend(sorted(known_camps - set(camp_order)))
+
+    for camp in ordered_camps:
+        camp_rows = [r for r in rows if r.get("camp", "experimental") == camp]
+        if not camp_rows:
+            continue
+        label = CAMP_DISPLAY_LABEL.get(camp, camp).upper()
+        sections.append(f"### {label} TEST RUNS — {len(camp_rows)}")
+        sections.append("")
+        sections.append(make_test_table_md(camp_rows, metric, reference_baseline))
+        sections.append("")
+    return "\n".join(sections).strip()
 
 
 # ---------- main render -----------------------------------------------------
@@ -1110,6 +1722,17 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             baseline_label="best before today",
         )
 
+    # Once test rows exist, CLASSIFICATION should describe the same universe as
+    # SECTION 2.0 and the chart legend: collapsed daily test rows, not raw file
+    # tree mass. If there are no tests, leave classification empty rather than
+    # turning same-date file volume into a fake allocation signal.
+    if test_rows:
+        by_camp = defaultdict(int)
+        for row in test_rows:
+            by_camp[row.get("camp", "experimental")] += 1
+    else:
+        by_camp = defaultdict(int)
+
     # Header stats — "hours worked" deliberately removed; the chart's time
     # axis already shows the day's exploration trajectory.
     if headline_metric:
@@ -1120,6 +1743,14 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
 
     biggest_source = max(set(r["source_label"] for r in records),
                           key=lambda s: sum(1 for r in records if r["source_label"] == s))
+    visible_support_records = [r for r in records if is_rendered_support_record(r)]
+    if visible_support_records:
+        visible_support_source = max(
+            set(r["source_label"] for r in visible_support_records),
+            key=lambda s: sum(1 for r in visible_support_records if r["source_label"] == s),
+        )
+    else:
+        visible_support_source = "no day-local files/logs"
 
     headline_bits: list[str] = []
     if total_dps:
@@ -1135,19 +1766,21 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     headline_text = " · ".join(headline_bits)
 
     grind_md = make_grind_md(records)
-    test_table_md = make_test_table_md(test_rows, headline_metric or "metric", chart_baseline)
+    approved_ablation_labels = apply_approved_ablation_labels(test_rows, date)
+    test_table_md = make_camp_test_tables_md(test_rows, headline_metric or "metric", chart_baseline)
 
     # Compute day index across the corpus (Day 1, Day 12, etc.)
     day_index = compute_day_index(conn, date)
 
     # ---- Report header (USGC machine-report style) ----
-    # Allocation summary
     exp_n = by_camp.get("experimental", 0)
     neu_n = by_camp.get("neural", 0)
-    alloc = (f"EXPERIMENTAL {100*exp_n/(exp_n+neu_n):.0f}% / "
-             f"NEURAL {100*neu_n/(exp_n+neu_n):.0f}%") if (exp_n+neu_n) else "—"
-    invalid_count = sum(1 for r in test_rows if r["value"] < INVALID_VAL_BPB_FLOOR)
-    valid_count = len(test_rows) - invalid_count
+    invalid_count = sum(
+        1 for r in test_rows
+        if is_below_floor(headline_metric, r["value"])
+    )
+    crash_count = sum(1 for r in test_rows if is_crash_value(headline_metric, r["value"]))
+    valid_count = len(test_rows) - invalid_count - crash_count
     # NOTE: validity floor is a project-wide convention shown only on the
     # chart (the red zone). TOP SOURCE and the standalone ALLOCATION row were
     # dropped per design feedback — the experimental/neural % is now inline
@@ -1155,13 +1788,13 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     arch_families = detect_arch_families(test_rows)
     header_fields = [
         ("DATE", date),
-        ("DAY", f"{day_index:03d}" if day_index else "—"),
+        ("DAY", format_day_index(day_index)),
         ("PRIMARY METRIC", (headline_metric or "—").upper()),
         ("TESTS RUN", f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"),
         ("ARCHITECTURE FAMILY", format_arch_families(arch_families)),
-        ("CLASSIFICATION", ""),  # placeholder — alloc bar replaces value cell
+        ("CLASSIFICATION", "—"),  # replaced by alloc bar when measured tests exist
     ]
-    alloc_bar_html = make_alloc_bar_html(by_camp)
+    alloc_bar_html = make_alloc_bar_html(by_camp) if test_rows else None
     report_header = make_report_header_html(header_fields, alloc_bar=alloc_bar_html)
 
     # H1 with frosted-flake mark + date pinned right
@@ -1208,36 +1841,27 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             qmd_lines.append(spread_table)
             qmd_lines.append("")
     else:
-        qmd_lines.append("_NO HEADLINE METRIC (VAL_BPB / VAL_LOSS) RECORDED ON THIS DATE._")
+        qmd_lines.append(
+            '<p class="muted">NO HEADLINE METRIC (VAL_BPB / VAL_LOSS) '
+            "RECORDED ON THIS DATE.</p>"
+        )
         qmd_lines.append("")
 
-    test_record_paths = {r["abs_path"] for r in test_rows}
-    # Section 3.0 — Daily Grind — removed per design intent (codex sessions
-    # still appear in Supporting Files via the camp-stripe list).
-    supporting_md = make_supporting_files_md(records, test_record_paths) \
-        .replace("## Supporting Files\n\n", "")
     qmd_lines += [
         "## SECTION 2.0 — TEST RUNS",
         "",
         test_table_md,
         "",
-        '<div class="supporting-section">',
-        "",
-        "## SECTION 3.0 — SUPPORTING FILES",
-        "",
-        supporting_md,
-        "",
-        '</div>',
-        "",
-        # JS shim: tag each <li> in supporting-list with data-camp so the CSS
-        # pseudo-element renders the right colored stripe. Emitted as a single
-        # line so the markdown-to-HTML passthrough doesn't escape the body.
-        '<script>(function(){document.querySelectorAll(".supporting-list li")'
-        '.forEach(function(li){var s=li.querySelector("strong");'
-        'if(!s)return;var t=s.textContent.trim().toLowerCase();'
-        'if(t==="experimental"||t==="neural"||t==="daily_grind"){'
-        'li.setAttribute("data-camp",t);}});})();</script>',
     ]
+    assert_daily_template_contract(
+        date=date,
+        records=records,
+        header_fields=header_fields,
+        qmd_lines=qmd_lines,
+        test_table_md=test_table_md,
+        metric=headline_metric or "metric",
+        n_tests=len(test_rows),
+    )
     QMD_DIR.mkdir(parents=True, exist_ok=True)
     qmd_path = QMD_DIR / f"{date}.qmd"
     qmd_path.write_text("\n".join(qmd_lines))
@@ -1331,211 +1955,13 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         )
         s = re.sub(r"\*\*(.+?)\*\*", r"<strong>\1</strong>", s)
         s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
-        s = re.sub(r"_([^_]+)_", r"<em>\1</em>", s)
+        # Only treat underscores as emphasis delimiters when they are not
+        # inside identifiers. This preserves labels like training_log and
+        # daily_grind exactly as the scraper emitted them.
+        s = re.sub(r"(?<!\w)_([^_]+)_(?!\w)", r"<em>\1</em>", s)
         return s
 
-    style = """
-    /* CLEAN US-GRAPHICS-STYLE DARK MODE
-       Charcoal surfaces, neutral whites, single yellow accent. No dither,
-       no CRT, no green-tinted ink. Hairline rules; allocation bar inside the
-       last header row carries the experimental/neural visual. */
-    :root {
-      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
-              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
-              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
-      --bg:       #111315;
-      --surface:  #17191c;
-      --rule:     #2a2d31;
-      --rule-hi:  #3a3e44;
-      --ink:      #d6d8db;
-      --ink-hi:   #f4f5f7;
-      --ink-mute: #8a8d92;
-      --accent:   #e3b341;   /* yellow stripe accent */
-      --warn:     #e25a4a;
-      --link:     #7ab4ff;
-      --data-exp: #3a6e3a;
-      --data-neu: #6fbf6f;
-    }
-    * { box-sizing: border-box; }
-    html, body { background: var(--bg); }
-    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
-           color: var(--ink);
-           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px; }
-
-    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
-         text-transform: uppercase; margin: 0 0 18px;
-         padding: 0;
-         color: var(--ink-hi);
-         display: flex; align-items: center; justify-content: space-between;
-         gap: 16px; }
-    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
-    h1 .h1-mark { width: 32px; height: 32px; display: block;
-                  opacity: 0.85; filter: brightness(1.1); }
-    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
-                  font-size: 14px; font-weight: 400; letter-spacing: 0.04em; }
-
-    /* Legacy CRT terminal bar — kept in the markup for backwards-compat,
-       but suppressed in the clean layout. */
-    .terminal-bar { display: none; }
-
-    h2 { font-size: 12px; font-weight: 400; letter-spacing: 0.12em;
-         text-transform: uppercase; margin: 36px 0 14px;
-         padding: 0 0 8px;
-         border-bottom: 1px solid var(--rule-hi);
-         color: var(--ink-hi); }
-    h3 { font-size: 11.5px; font-weight: 400; letter-spacing: 0.08em;
-         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
-    p { margin: 8px 0; color: var(--ink); }
-    code { font-family: var(--mono); background: transparent;
-           padding: 0; border: none;
-           color: var(--ink-hi); font-weight: 400; }
-    /* Neutralize inline emphasis tags — only h1 carries bold weight. */
-    strong, b { font-weight: 400; color: inherit; }
-    .muted { color: var(--ink-mute); }
-    em, i { font-style: normal; color: var(--ink-mute); }
-    figure { margin: 16px 0; text-align: center;
-             border: 1px solid var(--rule-hi);
-             padding: 14px;
-             background-color: transparent; }
-    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
-
-    /* Report header — flat bordered block, no fill, no dot-leaders. */
-    .report-header { border: 1px solid var(--rule-hi);
-                     padding: 14px 18px;
-                     margin: 0 0 20px;
-                     background-color: transparent; }
-    .rh-row { display: flex; align-items: baseline;
-              padding: 5px 0; font-size: 12.5px; color: var(--ink-hi); }
-    .rh-row + .rh-row { border-top: 1px solid var(--rule); }
-    .rh-key { white-space: nowrap; font-weight: 400;
-              letter-spacing: 0.04em;
-              min-width: 220px; color: var(--ink-mute); }
-    .rh-dots { display: none; }
-    .rh-val { white-space: nowrap; font-weight: 400; color: var(--ink-hi); }
-
-    /* Inline allocation bar inside the CLASSIFICATION row. */
-    .rh-row-alloc { align-items: center; padding: 14px 0; }
-    .rh-alloc { display: flex; align-items: center; gap: 16px;
-                white-space: nowrap; }
-    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
-                 border: 1px solid var(--rule-hi); background: var(--rule);
-                 overflow: hidden; vertical-align: middle; }
-    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
-    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
-                     background-image: repeating-linear-gradient(
-                       45deg,
-                       rgba(0,0,0,0.55) 0,
-                       rgba(0,0,0,0.55) 3px,
-                       transparent 3px,
-                       transparent 7px); }
-    .alloc-text { display: inline-flex; gap: 10px; font-weight: 400;
-                  font-size: 12px; letter-spacing: 0.02em; }
-    .alloc-text-exp { color: var(--data-exp); }
-    .alloc-text-neu { color: var(--data-neu); }
-    .alloc-sep { color: var(--ink-mute); }
-
-    /* Tables — flat bordered, no fill */
-    table { border-collapse: collapse; width: 100%; font-size: 12px;
-            margin: 10px 0 18px;
-            border: 1px solid var(--rule-hi);
-            background-color: transparent; }
-    th { text-align: left; color: var(--ink-mute); font-weight: 400;
-         text-transform: uppercase; letter-spacing: 0.08em;
-         padding: 10px 14px;
-         background: transparent;
-         border-bottom: 1px solid var(--rule-hi);
-         font-size: 10.5px; }
-    td { padding: 9px 14px;
-         border-bottom: 1px solid var(--rule);
-         vertical-align: top;
-         color: var(--ink);
-         background: transparent; }
-    tbody tr:last-child td { border-bottom: none; }
-    tr:hover td { background: rgba(255,255,255,0.02); }
-    /* INVALID row — clean red tint, no hatch */
-    tr.invalid td { color: var(--ink-mute); }
-    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 400; }
-    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 400; }
-
-    /* Lists — wrapped flat bordered block, internal hairlines. */
-    ul { padding: 0; list-style: none; margin: 10px 0 18px;
-         border: 1px solid var(--rule-hi); }
-    li { margin: 0; font-size: 12px; color: var(--ink);
-         padding: 9px 14px; border-bottom: 1px solid var(--rule);
-         line-height: 1.6; }
-    li:last-child { border-bottom: none; }
-    li strong { color: var(--ink-hi); font-weight: 400; }
-
-    /* Links — quiet blue, underline on hover */
-    a { color: var(--link); text-decoration: none;
-        border-bottom: 1px solid transparent; }
-    a:hover { border-bottom-color: var(--link); }
-
-    ::selection { background: var(--accent); color: var(--bg); }
-
-    /* Daily summary callout — between section heading and chart */
-    .day-summary { display: grid;
-        grid-template-columns: 160px 1fr;
-        gap: 24px;
-        border: 1px solid var(--rule-hi);
-        border-left: 4px solid var(--data-exp);
-        padding: 18px 22px;
-        margin: 14px 0 22px;
-        background: rgba(125,255,125,0.03); }
-    .day-summary .ds-key {
-        font-size: 10.5px; letter-spacing: 0.10em;
-        text-transform: uppercase; font-weight: 400;
-        color: var(--ink-mute); padding-top: 2px; }
-    .day-summary .ds-body p { margin: 0 0 10px; }
-    .day-summary .ds-body p:last-child { margin-bottom: 0; }
-    .day-summary strong { color: var(--ink-hi); font-weight: 400; }
-
-    /* val_bpb spread per family table */
-    .bpb-table { width: auto; min-width: 480px; }
-    .bpb-table td { font-variant-numeric: tabular-nums; }
-    .bpb-table td:first-child { font-weight: 400; color: var(--ink-hi); }
-    .bpb-table td:not(:first-child),
-    .bpb-table th:not(:first-child) { text-align: right; }
-
-    /* Supporting files — left camp indicator stripe + vertical guideline */
-    .supporting-section { position: relative; padding-left: 22px; }
-    .supporting-section::before {
-        content: ""; position: absolute;
-        left: 3px; top: 0; bottom: 0;
-        width: 1px;
-        background: var(--rule-hi); opacity: 0.5;
-    }
-    .supporting-section > h2 { margin-left: 0; }
-    .supporting-list { list-style: none; padding-left: 0; margin-left: 0;
-                       border: 1px solid var(--rule-hi); }
-    .supporting-list li {
-        position: relative;
-        padding: 9px 14px 9px 36px;
-        border-left: none;
-        border-bottom: 1px solid var(--rule);
-        margin: 0;
-        list-style: none;
-    }
-    .supporting-list li:last-child { border-bottom: none; }
-    .supporting-list li::before {
-        content: ""; position: absolute;
-        left: 6px; top: 7px; bottom: 7px;
-        width: 8px;
-        background: var(--ink-mute);
-    }
-    .supporting-list li[data-camp="experimental"]::before {
-        background: var(--data-exp);
-    }
-    .supporting-list li[data-camp="neural"]::before {
-        background: var(--data-neu);
-        background-image: repeating-linear-gradient(
-            45deg,
-            rgba(0,0,0,0.55) 0,
-            rgba(0,0,0,0.55) 2px,
-            transparent 2px,
-            transparent 5px);
-    }
-    """
+    style = _daily_template_style()
     body_html = md_to_html("\n".join(qmd_lines))
     # Tag the auto-generated <ul> inside .supporting-section so the CSS
     # `.supporting-list li::before` stripe rules match it.
@@ -1549,6 +1975,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         f"<title>{date} — Research Day</title>"
         f"<style>{style}</style></head><body>"
         + body_html
+        + _embedded_log_script()
         + "</body></html>"
     )
     html_path.write_text(full_html)
@@ -1558,24 +1985,40 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "qmd_path": str(qmd_path),
         "html_path": str(html_path),
         "asset_dir": str(asset_dir),
+        "template_standard": DAILY_TEMPLATE_STANDARD,
+        "template_style_sha256": LOCKED_TEMPLATE_STYLE_SHA256,
         "n_records": len(records),
         "by_camp": dict(by_camp),
         "biggest_source": biggest_source,
+        "visible_support_source": visible_support_source,
+        "n_visible_support_records": len(visible_support_records),
         "headline_metric": headline_metric,
         "chart_n_points": chart_n,
         "chart_baseline_to_beat": chart_baseline,
         "unique_tests": unique_tests,
+        "n_training_log_rows": sum(1 for row in test_rows if row.get("training_logs")),
         "total_datapoints": total_dps,
         "variety_pct": variety_pct,
+        "approved_ablation_labels": approved_ablation_labels,
     }
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--date", required=True, help="YYYY-MM-DD")
+    target = ap.add_mutually_exclusive_group(required=True)
+    target.add_argument("--date", help="YYYY-MM-DD")
+    target.add_argument("--day", type=int, help="1-based corpus day index, e.g. 22")
     ap.add_argument("--metric", default=None, help="Override headline metric")
     args = ap.parse_args()
-    print(json.dumps(render_one_day(args.date, metric_override=args.metric), indent=2))
+    date = args.date
+    if args.day is not None:
+        conn = sqlite3.connect(DB)
+        conn.row_factory = sqlite3.Row
+        date = date_for_day_index(conn, args.day)
+        conn.close()
+        if date is None:
+            sys.exit(f"no artifact date found for DAY {args.day:03d}")
+    print(json.dumps(render_one_day(date, metric_override=args.metric), indent=2))
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ from typing import Any
 
 import yaml
 
-EXTRACTION_VERSION = "stripper_v1"
+EXTRACTION_VERSION = "stripper_v2"
 
 # Regexes used by the markdown handler — all anchored, all bounded.
 RE_FRONTMATTER = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -48,6 +48,24 @@ METRIC_KEY_PATTERNS = (
 
 
 # ---------- DB helpers ---------------------------------------------------------
+
+ARTIFACT_INDEX_DDL = (
+    "CREATE INDEX IF NOT EXISTS idx_label ON artifacts(source_label)",
+    "CREATE INDEX IF NOT EXISTS idx_kind ON artifacts(file_kind)",
+    "CREATE INDEX IF NOT EXISTS idx_mtime ON artifacts(mtime_iso)",
+    "CREATE INDEX IF NOT EXISTS idx_title ON artifacts(title)",
+    # Common retrieval surfaces for the locked daily template: same-kind time
+    # scans, source/kind slicing, and content-hash dedup.
+    "CREATE INDEX IF NOT EXISTS idx_kind_mtime ON artifacts(file_kind, mtime_iso)",
+    "CREATE INDEX IF NOT EXISTS idx_source_kind ON artifacts(source_label, file_kind)",
+    "CREATE INDEX IF NOT EXISTS idx_content_sha ON artifacts(content_sha256)",
+)
+
+
+def ensure_artifact_indexes(conn: sqlite3.Connection) -> None:
+    for ddl in ARTIFACT_INDEX_DDL:
+        conn.execute(ddl)
+
 
 def init_db(path: str) -> sqlite3.Connection:
     new = not os.path.exists(path)
@@ -90,11 +108,6 @@ def init_db(path: str) -> sqlite3.Connection:
                 extracted_at_iso TEXT NOT NULL
             );
 
-            CREATE INDEX idx_label ON artifacts(source_label);
-            CREATE INDEX idx_kind ON artifacts(file_kind);
-            CREATE INDEX idx_mtime ON artifacts(mtime_iso);
-            CREATE INDEX idx_title ON artifacts(title);
-
             CREATE TABLE walk_runs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 started_at_iso TEXT NOT NULL,
@@ -107,6 +120,8 @@ def init_db(path: str) -> sqlite3.Connection:
             );
             """
         )
+    ensure_artifact_indexes(conn)
+    conn.commit()
     return conn
 
 
@@ -328,8 +343,8 @@ def handle_json_summary(abs_path: str, size: int, max_bytes: int) -> dict[str, A
         # Tag val_bpb as JSON-derived (most reliable source for submissions)
         if "val_bpb" in metrics:
             metrics.setdefault("val_bpb_source", "json_top_level")
-        # Reference-baseline detection — submission.json files in
-        # records/track_*/ ship as published references, not user runs.
+        # Reference-baseline detection. Keep this narrow: dated records/track_*
+        # folders can be real user work and must stay visible in daily reports.
         if _is_reference_baseline_path(abs_path):
             metrics["is_reference_baseline"] = True
     if metrics:
@@ -445,6 +460,35 @@ def handle_checkpoint_meta(abs_path: str, size: int, max_bytes: int) -> dict[str
     return record
 
 
+def fallback_summary(rec: dict[str, Any], filename: str, size: int,
+                     handler_name: str) -> str:
+    """Short deterministic context for records whose handler found no prose.
+
+    The renderer should never have to guess what a record is. Keep this
+    intentionally generic; precise measurements belong in metrics_json.
+    """
+    kind = rec.get("file_kind") or handler_name
+    if rec.get("too_large"):
+        return f"{kind} artifact indexed as metadata only; file exceeds parser cap ({size} bytes)."
+    if rec.get("parse_error"):
+        return f"{kind} artifact indexed with parse error: {str(rec['parse_error'])[:180]}"
+    if kind == "json":
+        return "JSON artifact indexed; canonical numeric metrics were extracted when present."
+    if kind == "md":
+        return "Markdown artifact indexed; frontmatter, headings, and tables were extracted when present."
+    if kind == "py":
+        return "Python artifact indexed; docstring and argparse metadata were extracted when present."
+    if kind == "csv":
+        return "CSV/TSV artifact indexed; columns, row count, and numeric summaries were extracted."
+    if kind == "ckpt":
+        return "Checkpoint artifact indexed as metadata only; tensor contents were not loaded."
+    if kind == "training_log":
+        if size == 0:
+            return "(empty stub - run launched but output was not captured locally)"
+        return "Training log indexed; no canonical val_bpb/val_loss output pattern was found."
+    return f"{kind} artifact indexed from {filename}."
+
+
 # Strict patterns for training logs — accept val_bpb only when in training-output
 # format, not random Python source code that happens to mention val_loss.
 RE_LOG_STEP = re.compile(
@@ -501,13 +545,11 @@ def _detect_gpu_type(text: str) -> str | None:
 
 
 # Reference-baseline path patterns — files matching these are published
-# reference results, not user experiments. Any file inside `records/track_*/`
-# is part of the parameter-golf canonical baselines area; explicit
-# `_NaiveBaseline` / `published_baselines` / `_baselines` paths catch other
-# repos' baseline conventions.
+# reference results, not user experiments. Do not treat every
+# `records/track_*` run as a reference: those dated run folders are also the
+# primary evidence for the user's early daily work.
 _RE_REF_BASELINE_PATH = re.compile(
-    r"(?:/records/track_[\w-]+/|"
-    r"[/_-]NaiveBaseline\b|"
+    r"(?:[/_-]NaiveBaseline\b|"
     r"/published_baselines/|"
     r"/_baselines/)",
     re.IGNORECASE,
@@ -638,7 +680,7 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
     # Tag the source of the val_bpb value so the renderer can prefer
     # log-derived measurements over commit-message claims.
     if "val_bpb" in metrics:
-        if "val_bpb_int6_sliding_window" in final_evals or "val_bpb_int6_roundtrip" in final_evals:
+        if final_evals:
             metrics["val_bpb_source"] = "log_final_eval"
         elif "val_bpb_during_run_best" in metrics:
             metrics["val_bpb_source"] = "log_step_best"
@@ -651,11 +693,8 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
     if steps:
         metrics["step_final"] = int(steps[-1])
 
-    # Reference-baseline detection — files inside `records/track_*/` are
-    # published reference results that ship with the parameter-golf repo,
-    # NOT the user's experiments. They appear copied across multiple
-    # worktrees and previously inflated test counts (especially on early
-    # days when only the published baselines existed).
+    # Reference-baseline detection. Keep this narrow: dated records/track_*
+    # folders can be real user work and must stay visible in daily reports.
     if _is_reference_baseline_path(abs_path):
         metrics["is_reference_baseline"] = True
 
@@ -758,6 +797,8 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
             if not rec.get("title"):
                 stem = os.path.splitext(fn)[0]
                 rec["title"] = stem[:300] if stem else fn[:300]
+            if not rec.get("summary"):
+                rec["summary"] = fallback_summary(rec, fn, st.st_size, handler_name)
             rec.update({
                 "source_root": root,
                 "source_label": label,

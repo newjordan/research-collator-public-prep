@@ -172,7 +172,7 @@ def walk_git_repo(repo: dict) -> list[dict]:
             "file_size_bytes": len(blob),
             "mtime_iso": mtime_iso,
             "title": subject[:300],
-            "summary": (body[:1000] if body else shortstat) or shortstat,
+            "summary": (body[:1000] if body else shortstat) or shortstat or f"git commit {sha[:12]}",
             "metrics_json": json.dumps(metrics) if metrics else None,
             "extraction_version": EXTRACTION_VERSION,
             "extracted_at_iso": dt.datetime.now(tz=dt.timezone.utc)

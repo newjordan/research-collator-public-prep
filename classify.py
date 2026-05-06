@@ -139,6 +139,8 @@ def ensure_columns(conn: sqlite3.Connection):
         conn.execute("ALTER TABLE artifacts ADD COLUMN camp_override TEXT")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_camp ON artifacts(camp)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_rule ON artifacts(classification_rule)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_camp_kind ON artifacts(camp, file_kind)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_camp_mtime ON artifacts(camp, mtime_iso)")
     conn.commit()
 
 

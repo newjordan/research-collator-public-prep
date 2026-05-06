@@ -3,9 +3,10 @@
 TWO chart types, both ruthlessly simple, both consistent style:
 
   CHART A — day_chart(date, records, baseline_to_beat) -> PNG
-    Per-day plot for daily reports. X = records sorted by metric ascending
-    (best on left). Y = metric value. Dots colored by camp. Horizontal dashed
-    line = baseline to beat (best ever before this day). Top-3 labeled.
+    Per-day plot for daily reports. X = run time through the day. Y = metric
+    value. Dots colored by camp. Horizontal dashed line = baseline to beat
+    (best ever before this day). Numbered gutter badges match the Test Runs
+    table row numbers.
 
   CHART B — journey_chart(daily_bests, all_records) -> PNG
     Front-of-book plot. X = date across all days. Y = best metric achieved
@@ -17,12 +18,14 @@ Both render to PNG @ 130 DPI for crisp HTML/PDF embedding without bloat.
 from __future__ import annotations
 
 import datetime as dt
+import colorsys
 import math
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.dates as mdates
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 try:
     from adjustText import adjust_text
@@ -35,18 +38,26 @@ except ImportError:
 # line; tests below it are marked invalid and excluded from running-min.
 INVALID_VAL_BPB_FLOOR = 1.06
 
-# Palette — matches the clean US-Graphics-style HTML report (charcoal dark).
-# Neutral greys, single yellow accent, neutral whites. No green tinting.
-DARK_BG       = "#111315"   # page bg (matches HTML --bg)
-DARK_AXIS_BG  = "#111315"   # same — chart sits on the page bg
-DARK_TEXT     = "#d6d8db"   # primary ink
-DARK_TEXT_HI  = "#f4f5f7"   # emphasized
-DARK_RULE     = "#2a2d31"   # hairline dividers
-DARK_RULE_HI  = "#3a3e44"   # axis spines / stronger rules
-DARK_GRID     = "#2a2d31"
-DARK_ACCENT   = "#e3b341"   # yellow accent (used sparingly — crash flag)
-DARK_INVALID  = "#e25a4a"   # warn red
-DARK_INVALID_FILL = "#e25a4a"
+# Chart palette from the Claude Design reference chart: dark lab plot,
+# phosphor grid/running-best line, gold experimental points, slate neural
+# points. This is intentionally higher contrast than the surrounding page.
+DARK_BG       = "#0a0d0a"
+DARK_AXIS_BG  = "#0a0d0a"
+DARK_TEXT     = "#c8d4c0"
+DARK_TEXT_HI  = "#f0f4ed"
+DARK_TEXT_MUTE = "#6a766a"
+DARK_RULE     = "#7dff7d33"
+DARK_RULE_HI  = "#7dff7d66"
+DARK_GRID     = "#7dff7d22"
+DARK_ACCENT   = "#7dff7d"
+DARK_INVALID_ZONE = "#101510"
+
+
+def _desaturate(color: str, factor: float = 0.5) -> str:
+    """Return the same color with saturation multiplied by factor."""
+    r, g, b = mcolors.to_rgb(color)
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    return mcolors.to_hex(colorsys.hls_to_rgb(h, l, s * factor))
 
 plt.rcParams.update({
     "figure.dpi": 130,
@@ -100,9 +111,9 @@ plt.rcParams.update({
 })
 
 CAMP_COLOR = {
-    "neural":       "#6fbf6f",  # lighter green — neural minority (data color)
-    "experimental": "#3a6e3a",  # dark green — experimental majority
-    "daily_grind":  "#8a8d92",  # neutral muted
+    "neural":       "#6196c4",
+    "experimental": "#d8a040",
+    "daily_grind":  "#6a766a",
 }
 CAMP_MARKER = {
     "neural":       "o",
@@ -162,45 +173,81 @@ def day_chart(out_path: str | Path,
         return _stub(out_path, f"{metric_name} — {date}", "no records"), 0
     pts.sort(key=lambda p: p["time"])
 
-    # Slightly taller for proportional breathing room now that we've dropped
-    # the label gutter.
-    fig, ax = plt.subplots(figsize=(9.5, 4.0))
+    fig, ax = plt.subplots(figsize=(9.0, 3.6))
 
     times = [p["time"] for p in pts]
     values = [p["value"] for p in pts]
+    CRASH_THRESHOLD = 3.0
 
-    # Red zone: hatched diagonal pattern on the same BG, plus a thin solid
-    # ruler at the floor. The hatch (//) gives texture without relying on
-    # subtly-different blacks.
-    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID,
-               alpha=0.10, hatch="///", edgecolor=DARK_INVALID,
-               linewidth=0, zorder=0)
-    ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_INVALID, linestyle="-",
-               linewidth=0.7, alpha=0.65, zorder=0)
+    # Invalid region: quiet background shift only. The floor line stays subtle
+    # so below-floor runs are legible without turning the whole band into an
+    # alert state.
+    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID_ZONE,
+               alpha=1.0, edgecolor="none", linewidth=0, zorder=0)
+    ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_RULE_HI, linestyle="-",
+               linewidth=0.65, alpha=0.55, zorder=1)
+    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_BG,
+               alpha=0.22, edgecolor="none", linewidth=0, zorder=2.8)
 
-    # Light journey line connecting consecutive tests in time order
-    if len(pts) >= 2:
-        ax.plot(times, values, color="#666", linewidth=0.7, alpha=0.55,
-                zorder=1, label="_journey")
+    # Light journey line across consecutive in-scale valid tests only. Invalid
+    # and crash-class points remain visible as points, but they do not drag the
+    # trajectory through the quiet invalid band or into clipped off-scale space.
+    journey_segments: list[list[dict]] = []
+    current_segment: list[dict] = []
+    for p in pts:
+        if INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD:
+            current_segment.append(p)
+        elif current_segment:
+            journey_segments.append(current_segment)
+            current_segment = []
+    if current_segment:
+        journey_segments.append(current_segment)
+    for segment in journey_segments:
+        if len(segment) >= 2:
+            ax.plot([p["time"] for p in segment],
+                    [p["value"] for p in segment],
+                    color=DARK_RULE_HI, linewidth=0.7, alpha=0.55,
+                    zorder=1, label="_journey")
 
-    # Per-camp scatter — single style per camp, no invalid variants.
+    # Per-camp scatter. Below-floor points use the same hue family at half
+    # saturation so the invalid zone reads as supporting evidence, not the
+    # primary signal.
     by_camp: dict[str, list[dict]] = {}
     for p in pts:
         by_camp.setdefault(p["camp"], []).append(p)
     for camp, items in by_camp.items():
-        ax.scatter([it["time"] for it in items],
-                   [it["value"] for it in items],
-                   color=CAMP_COLOR.get(camp, "#888"),
-                   marker=CAMP_MARKER.get(camp, "o"),
-                   s=140, alpha=0.95,
-                   edgecolors=DARK_BG, linewidths=0.9,
-                   label=f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}",
-                   zorder=3)
+        color = CAMP_COLOR.get(camp, DARK_TEXT_MUTE)
+        label = f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}"
+        nominal_items = [
+            it for it in items if it["value"] >= INVALID_VAL_BPB_FLOOR
+        ]
+        invalid_items = [
+            it for it in items if it["value"] < INVALID_VAL_BPB_FLOOR
+        ]
+        if nominal_items:
+            ax.scatter([it["time"] for it in nominal_items],
+                       [it["value"] for it in nominal_items],
+                       color=color,
+                       marker=CAMP_MARKER.get(camp, "o"),
+                       s=58, alpha=0.95,
+                       edgecolors=DARK_BG, linewidths=0.9,
+                       label=label,
+                       zorder=3)
+        if invalid_items:
+            ax.scatter([it["time"] for it in invalid_items],
+                       [it["value"] for it in invalid_items],
+                       color=_desaturate(color, 0.5),
+                       marker=CAMP_MARKER.get(camp, "o"),
+                       s=50, alpha=0.78,
+                       edgecolors=_desaturate(DARK_TEXT_MUTE, 0.5),
+                       linewidths=0.65,
+                       label="_nolegend_" if nominal_items else label,
+                       zorder=3)
 
-    # Running-min line — phosphor green = "current personal best", the only
-    # element on the chart that uses the accent color.
+    # Running-min line — best valid value seen so far. Below-floor eval bugs
+    # and crash-class values never move the personal-best step.
     valid_pairs = [(t, v) for t, v in zip(times, values)
-                   if v >= INVALID_VAL_BPB_FLOOR]
+                   if INVALID_VAL_BPB_FLOOR <= v <= CRASH_THRESHOLD]
     if valid_pairs:
         valid_times = [p[0] for p in valid_pairs]
         valid_values = [p[1] for p in valid_pairs]
@@ -210,11 +257,11 @@ def day_chart(out_path: str | Path,
             cur = min(cur, v)
             running_min.append(cur)
         ax.step(valid_times, running_min, where="post",
-                color=DARK_TEXT_HI, linewidth=1.6, alpha=1.0, zorder=2,
+                color=DARK_ACCENT, linewidth=1.2, alpha=0.95, zorder=2,
                 label="BEST VALID")
 
-    # Tight y-clip — small breathing room above the curve, no big gutter.
-    CRASH_THRESHOLD = 3.0
+    # Tight y-clip focused on the day's actual curve. Crash-class values are
+    # summarized separately instead of stretching the chart scale.
     real_values = [v for v in values if v <= CRASH_THRESHOLD]
     if real_values:
         below_floor = [v for v in values if v < INVALID_VAL_BPB_FLOOR]
@@ -224,32 +271,50 @@ def day_chart(out_path: str | Path,
             y_lo = INVALID_VAL_BPB_FLOOR - 0.15
         data_max = max(real_values)
         data_range = max(0.4, data_max - y_lo)
-        # ~10% breathing room. Selective labels (Plan C) sit on top of dots
-        # with a small offset, no dedicated gutter needed.
-        y_hi = data_max + 0.10 * data_range
-        ax.set_xlim(min(mdates.date2num(p["time"]) for p in pts) - 0.01,
-                    max(mdates.date2num(p["time"]) for p in pts) + 0.01)
+        y_hi = data_max + 0.12 * data_range
         ax.set_ylim(y_lo, y_hi)
 
-        # Crash indicator — back to top-right where it belongs, away from
-        # both the data zone and the red invalid band.
         crashes = [v for v in values if v > CRASH_THRESHOLD]
         if crashes:
+            # Crash-class runs sit outside the plotting area so the grid and
+            # data remain readable.
             ax.annotate(
                 f"▲ {len(crashes)} CRASH RUN{'S' if len(crashes) != 1 else ''} "
                 f"OFF-SCALE  (max={max(crashes):.2f})",
                 xy=(1.0, 1.0), xycoords="axes fraction",
-                xytext=(-6, -6), textcoords="offset points",
-                fontsize=7.5, color=DARK_ACCENT, ha="right", va="top",
-                fontweight="bold",
+                xytext=(0, 2), textcoords="offset points",
+                fontsize=7.5, color=DARK_ACCENT, ha="right", va="bottom",
+                fontweight="bold", annotation_clip=False, clip_on=False,
+                zorder=6,
                 bbox=dict(boxstyle="square,pad=0.3",
                           facecolor=DARK_BG,
                           edgecolor=DARK_ACCENT, linewidth=0.6))
 
-    # No on-chart numbered labels. The Test Runs table immediately below the
-    # chart is the source of truth for "which run is which" — chart shows
-    # only the data signal (dots, journey line, BEST VALID step line, red
-    # zone, crash indicator).
+    # Keep the chart as a chart. Run identity is preserved in the Test Runs
+    # table directly below, so per-run labels are deliberately not drawn here.
+    sorted_pts_for_labels = sorted(pts, key=lambda p: p["time"])
+    xs_num = [mdates.date2num(p["time"]) for p in sorted_pts_for_labels]
+    if xs_num:
+        ax.set_xlim(min(xs_num) - 0.01, max(xs_num) + 0.01)
+        valid_labeled = [
+            p for p in sorted_pts_for_labels
+            if INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD
+        ]
+        if valid_labeled:
+            best = min(valid_labeled, key=lambda p: p["value"])
+            ax.annotate(
+                f"BEST #{best['n']}",
+                xy=(best["time"], best["value"]),
+                xytext=(8, -14), textcoords="offset points",
+                fontsize=7.0, fontweight="bold",
+                color=DARK_ACCENT, ha="left", va="top",
+                zorder=5,
+                bbox=dict(boxstyle="square,pad=0.16",
+                          facecolor=DARK_BG,
+                          edgecolor=DARK_ACCENT,
+                          linewidth=0.55,
+                          alpha=0.92),
+            )
 
     # Baseline-to-beat — paper-white dashed (this is reference info, not
     # "active state", so it stays neutral, not accent-green).
@@ -257,12 +322,6 @@ def day_chart(out_path: str | Path,
             and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
         ax.axhline(baseline_to_beat, color=DARK_TEXT_HI, linestyle="--",
                    linewidth=0.9, alpha=0.50, zorder=1)
-        ax.annotate(f"{baseline_label.upper()} = {baseline_to_beat:.4f}",
-                    xy=(1.0, baseline_to_beat),
-                    xycoords=("axes fraction", "data"),
-                    xytext=(-4, 4), textcoords="offset points",
-                    fontsize=7.5, color=DARK_TEXT_HI, ha="right",
-                    fontweight="bold")
 
     # Time axis formatting
     span = times[-1] - times[0] if len(times) > 1 else dt.timedelta(hours=1)
@@ -282,15 +341,22 @@ def day_chart(out_path: str | Path,
     ax.set_ylabel(metric_name.upper(), labelpad=8, fontsize=9, color=DARK_TEXT)
     ax.set_title(f"{metric_name.upper()}  ·  {date}", loc="left", pad=10,
                  fontsize=10.5, fontweight="bold", color=DARK_TEXT_HI)
+    if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
+            and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
+        ax.set_title(f"PRIOR DAY {metric_name.upper()}  ·  "
+                     f"{baseline_to_beat:.4f}",
+                     loc="right", pad=22, fontsize=7.8,
+                     fontweight="bold", color=DARK_TEXT_HI)
     if len(by_camp) > 0:
-        # Lower-left of axes — clear of the top-right crash indicator and
-        # the typical mid-to-upper data band.
-        ax.legend(loc="lower left", framealpha=0.92,
+        # Centered below the time axis, outside the data grid.
+        ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.30),
+                  framealpha=0.92,
                   edgecolor=DARK_RULE_HI, facecolor=DARK_BG,
                   fontsize=7.5, ncol=3, columnspacing=1.1,
                   handletextpad=0.5, borderpad=0.5)
 
     fig.tight_layout()
+    fig.subplots_adjust(bottom=0.26, top=0.84)
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path)

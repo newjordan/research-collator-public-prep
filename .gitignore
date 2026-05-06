@@ -7,6 +7,13 @@ index.sqlite
 # Rendered output — large, regenerable. Keep one sample under demo/ instead.
 output/
 
+# Local review/workbench artifacts. Canonical template lives under templates/.
+Research Day.html
+Research Day 2.0.html
+_pw_*.mjs
+incoming/
+workbench/
+
 # Python
 __pycache__/
 *.py[cod]

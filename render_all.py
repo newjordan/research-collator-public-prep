@@ -104,15 +104,15 @@ def render_index(dates_with_results: list[dict],
     total_records = sum(d["n_records"] for d in days_summary)
     total_neural = sum(d["by_camp"].get("neural", 0) for d in days_summary)
     total_exp = sum(d["by_camp"].get("experimental", 0) for d in days_summary)
-    total_grind = sum(d["by_camp"].get("daily_grind", 0) for d in days_summary)
+    total_visible_support = sum(d.get("n_visible_support_records", 0) for d in days_summary)
     days_with_metric = len(dates_with_results)
     journey_best = min((d["best"] for d in dates_with_results), default=None)
 
     lines.append("<p>")
-    lines.append(f"<span class='stat'><strong>{total_records}</strong> artifacts</span>")
+    lines.append(f"<span class='stat'><strong>{total_records}</strong> indexed artifacts</span>")
+    lines.append(f"<span class='stat'><strong>{total_visible_support}</strong> visible support files/logs</span>")
     lines.append(f"<span class='stat'><strong>{total_neural}</strong> neural</span>")
     lines.append(f"<span class='stat'><strong>{total_exp}</strong> experimental</span>")
-    lines.append(f"<span class='stat'><strong>{total_grind}</strong> daily-grind notes</span>")
     lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with measured val_loss/val_bpb</span>")
     if journey_best is not None:
         lines.append(f"<span class='stat'>best ever: <strong>{journey_best:.4f}</strong></span>")
@@ -131,7 +131,7 @@ def render_index(dates_with_results: list[dict],
     # Day table
     lines.append("<h2>Daily reports</h2>")
     lines.append("<table><thead><tr>")
-    lines.append("<th>date</th><th>artifacts</th><th>camps</th><th>top source</th>"
+    lines.append("<th>date</th><th>artifacts</th><th>camps</th><th>visible support</th>"
                  "<th>headline metric</th><th>best of day</th><th>vs baseline</th>")
     lines.append("</tr></thead><tbody>")
     by_date = {d["date"]: d for d in days_summary}
@@ -158,7 +158,7 @@ def render_index(dates_with_results: list[dict],
             f"<tr><td>{link}</td>"
             f"<td>{ds['n_records']}</td>"
             f"<td>{' '.join(camp_badges)}</td>"
-            f"<td><code>{html.escape(ds['biggest_source'])}</code></td>"
+            f"<td><code>{html.escape(ds.get('visible_support_source') or 'no day-local files/logs')}</code></td>"
             f"<td>{html.escape(ds.get('headline_metric') or '')}</td>"
             f"<td>{best_cell}</td>"
             f"<td>{vs_cell}</td></tr>"
