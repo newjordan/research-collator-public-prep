@@ -82,15 +82,15 @@ roots:
   - path: /home/frosty40/llm_research/SOTA_FINAL
     label: SOTA_FINAL
     git_remote: newjordan/Fartmagic
-    period_hint: "2026-04-12 .. 2026-05-04"
+    period_hint: "2026-04-12 .. 2026-05-01 campaign; later artifacts are audit-only"
   - path: /home/frosty40/llm_research/sota_rascal
     label: sota_rascal
     git_remote: newjordan/rascal
-    period_hint: "2026-04-03 .. 2026-05-04"
+    period_hint: "2026-04-03 .. 2026-05-01 campaign; later artifacts are audit-only"
   - path: /home/frosty40/llm_research/pg_whale
     label: pg_whale
     git_remote: newjordan/blessed_whale
-    period_hint: "2026-04-15 .. 2026-05-04"
+    period_hint: "2026-04-15 .. 2026-05-01 campaign; later artifacts are audit-only"
   - path: /home/frosty40/llm_research/rascal-private
     label: rascal-private
     git_remote: newjordan/rascal
@@ -233,5 +233,6 @@ extraction_version: "stripper_v2"
 
 # Legacy field retained for old scripts. The daily renderer follows TEMPLATE.md:
 # day_index starts at the first proven parameter-golf research date,
-# 2026-03-18, so 2026-03-18 = DAY 001.
+# 2026-03-18, so 2026-03-18 = DAY 001, and ends at the final Mockingbird
+# submission on 2026-05-01.
 day_epoch: null

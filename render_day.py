@@ -42,6 +42,7 @@ LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locke
 LOCKED_TEMPLATE_STYLE_SHA256 = "10bdc54d95a899ae2d60a669c18807f86538ea8105482bd226e51366f070dc4e"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
 RESEARCH_START_DATE = "2026-03-18"
+RESEARCH_END_DATE = "2026-05-01"
 TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
@@ -145,6 +146,10 @@ def is_research_chronology_record(rec: dict) -> bool:
     if is_reference_baseline_record(rec):
         return False
     return (rec.get("source_label") or "") in RESEARCH_CHRONOLOGY_SOURCE_LABELS
+
+
+def is_research_campaign_date(date: str | None) -> bool:
+    return bool(date and RESEARCH_START_DATE <= date <= RESEARCH_END_DATE)
 
 
 def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
@@ -1062,8 +1067,9 @@ def _daily_template_style() -> str:
 def artifact_day_index(conn: sqlite3.Connection) -> dict[str, int]:
     """1-based index in the sorted set of research dates with artifacts.
 
-    Prelude/bootstrap artifacts before RESEARCH_START_DATE can still be rendered
-    by explicit date, but they are not counted as research days.
+    Prelude/bootstrap artifacts before RESEARCH_START_DATE and post-final
+    submission artifacts after RESEARCH_END_DATE can still be rendered by
+    explicit date, but they are not counted as research days.
     """
     global _ARTIFACT_DAY_INDEX
     if _ARTIFACT_DAY_INDEX is None:
@@ -1077,7 +1083,7 @@ def artifact_day_index(conn: sqlite3.Connection) -> dict[str, int]:
             for bd in [best_date(dict(r))]
             if bd is not None
         })
-        dates = [d for d in dates if d >= RESEARCH_START_DATE]
+        dates = [d for d in dates if is_research_campaign_date(d)]
         _ARTIFACT_DAY_INDEX = {d: i for i, d in enumerate(dates, start=1)}
     return _ARTIFACT_DAY_INDEX
 

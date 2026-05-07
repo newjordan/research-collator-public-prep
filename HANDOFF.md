@@ -35,6 +35,9 @@ superseded in code:
   `2026-03-18 = DAY 001`. Prelude/bootstrap artifacts before that date remain
   renderable by explicit date, but are not counted in the research-day ordinal.
   `day_epoch` is legacy-only.
+- The campaign ends on `2026-05-01`; the user's final submission was
+  Mockingbird on the afternoon of that date. Post-final-submission artifacts
+  can stay indexed for auditability, but they do not create campaign days.
 - `records/track_*` is mostly public upstream competition/reference material,
   not the user's chronology. The stripper now marks `records/track_*` record
   folders as `is_reference_baseline=true` unless `submission.json` identifies
@@ -160,8 +163,10 @@ Cross-day verification spread (one playwright + SQL pass per fix):
 - **Architecture-family classification.** Title-or-path matching against
   35+ families covers most of the corpus.
 - **DAY numbering stable.** Anchored to the first proven personal
-  parameter-golf research date: `2026-03-18 = DAY 001`. External/public
-  upstream records do not advance the research-day ordinal.
+  parameter-golf research date: `2026-03-18 = DAY 001`, ending on
+  `2026-05-01` with Mockingbird as the final submission. External/public
+  upstream records and post-final-submission artifacts do not advance the
+  research-day ordinal.
 - **Conversation-mined architecture events.** The local transcript miner can
   inject structured `conversation_arch_event` rows into SQLite. These events
   appear in Section 2 when a day has architecture-change evidence but sparse
@@ -222,7 +227,7 @@ cd /home/frosty40/research_collator
 rm -f index.sqlite
 python3 stripper.py     # ~30s scan, ~13.7K rows
 python3 enrich.py       # +972 git, +643 claude, +515 codex sessions
-python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-04 --index
+python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-01 --index
 python3 classify.py     # camp tagging
 
 # Render one day or all days:

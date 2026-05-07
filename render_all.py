@@ -18,6 +18,7 @@ import html
 import json
 import os
 import re
+import shutil
 import sqlite3
 import sys
 import time
@@ -27,10 +28,11 @@ from pathlib import Path
 import plot as plot_mod
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
-    RESEARCH_START_DATE,
+    RESEARCH_START_DATE, RESEARCH_END_DATE,
     best_date, fetch_day, pick_headline_metric,
     extract_metric_for_record, render_one_day,
     is_reference_baseline_record, is_research_chronology_record,
+    is_research_campaign_date,
 )
 
 
@@ -44,7 +46,7 @@ def all_dates_with_artifacts(conn: sqlite3.Connection) -> list[str]:
         if not is_research_chronology_record(rec):
             continue
         d = best_date(rec)
-        if d and d >= RESEARCH_START_DATE:
+        if is_research_campaign_date(d):
             dates.add(d)
     return sorted(dates)
 
@@ -66,6 +68,34 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
     if best_v is None:
         return None
     return {"date": date, "best": best_v, "camp": best_camp, "title": best_title}
+
+
+def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
+    """Remove date-named outputs no longer in the canonical campaign."""
+    active = set(active_dates)
+    removed = 0
+    date_file = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+    HTML_DIR.mkdir(parents=True, exist_ok=True)
+    for path in HTML_DIR.glob("????-??-??.html"):
+        if path.stem not in active:
+            path.unlink()
+            removed += 1
+
+    days_dir = OUT_ROOT / "days"
+    days_dir.mkdir(parents=True, exist_ok=True)
+    for path in days_dir.glob("????-??-??.qmd"):
+        if path.stem not in active:
+            path.unlink()
+            removed += 1
+
+    ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    for path in ASSETS_DIR.iterdir():
+        if path.is_dir() and date_file.match(path.name) and path.name not in active:
+            shutil.rmtree(path)
+            removed += 1
+
+    return removed
 
 
 def render_index(dates_with_results: list[dict],
@@ -104,7 +134,8 @@ def render_index(dates_with_results: list[dict],
         "</head><body>",
         "<h1>Research — Daily Reports</h1>",
         f"<p class='muted'>Generated {dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes')} UTC. "
-        f"Spans {len(days_summary)} research days from {RESEARCH_START_DATE}.</p>",
+        f"Spans {len(days_summary)} research days from {RESEARCH_START_DATE} to {RESEARCH_END_DATE}. "
+        "Final submission: Mockingbird.</p>",
     ]
 
     # Headline stats
@@ -182,6 +213,9 @@ def main():
     print("[1/4] enumerating dates...")
     dates = all_dates_with_artifacts(conn)
     print(f"      {len(dates)} unique dates")
+    stale_removed = remove_stale_campaign_outputs(dates)
+    if stale_removed:
+        print(f"      removed {stale_removed} stale date outputs outside campaign")
 
     print("[2/4] rendering each day...")
     days_summary: list[dict] = []

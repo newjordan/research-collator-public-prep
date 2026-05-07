@@ -239,10 +239,12 @@ For every artifact attributable to the day:
 The renderer derives these from the records and a target date:
 
 - **`day_index`** — 1-based index of this date in the sorted list of user
-  research dates with artifacts, starting at `2026-03-18`. Prelude/bootstrap
-  artifacts and public upstream competition records can be rendered by
-  explicit date, but are not counted in the research-day ordinal. This fixes
-  `2026-03-18 = DAY 001`.
+  research dates with artifacts, starting at `2026-03-18` and ending at
+  `2026-05-01`. Prelude/bootstrap artifacts, public upstream competition
+  records, and post-final-submission artifacts can be rendered by explicit
+  date, but are not counted in the research-day ordinal. This fixes
+  `2026-03-18 = DAY 001`; Mockingbird on `2026-05-01` is the final
+  campaign submission.
 - **`headline_metric`** — first of `["val_bpb", "val_loss", …]` that
   appears in ≥2 records.
 - **`chart_baseline`** — best (lowest) `headline_metric` value across all

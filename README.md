@@ -36,10 +36,11 @@ Daily pages are locked to the `daily-report-v2.0-wide-log-panel` standard:
 ## Research chronology
 
 Daily numbering starts at the first proven personal parameter-golf research
-event: `2026-03-18 = DAY 001`. Earlier DGX/studio/agent/ml-lab bootstrap
-artifacts and public upstream competition launch records may still be indexed
-and rendered by explicit date, but they do not count toward the research-day
-ordinal.
+event: `2026-03-18 = DAY 001` and ends at the final submission afternoon on
+`2026-05-01`. Mockingbird is the final campaign submission. Earlier
+DGX/studio/agent/ml-lab bootstrap artifacts, public upstream competition launch
+records, and post-final-submission artifacts may still be indexed and rendered
+by explicit date, but they do not count toward the research-day ordinal.
 
 ## Validity floor
 
@@ -68,7 +69,7 @@ conversation-derived evidence allowed into daily pages is the deterministic
 ```bash
 python3 stripper.py            # walk research roots → index.sqlite
 python3 enrich.py              # +git commits, +claude/codex sessions
-python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-04 --index
+python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-01 --index
 python3 classify.py            # tag every record with camp
 python3 scripts/verify_scraper_contract.py
 python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
