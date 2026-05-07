@@ -76,6 +76,8 @@ stripes on the neural data segment.
 ### 2.4 Section anchors (vertical rhythm)
 
 H1: 22px, top of page, no border, mark + title left, date right.
+The H1 frostmark is rendered through CSS as dark black; do not edit the
+source PNG to recolor it.
 H2: 12px ALL-CAPS with `border-bottom: 1px solid --rule-hi`. Margins
 36px above / 14px below.
 

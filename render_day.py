@@ -40,7 +40,7 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "a9cf8a6fcc54212b0c2c1b08b6b449f38263a14251421739b78a571468b225f0"
+LOCKED_TEMPLATE_STYLE_SHA256 = "2662986f1efb4c157cf0869c1970c253a64ea0af0967e7f4f26759e9dec05e69"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
