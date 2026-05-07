@@ -62,9 +62,9 @@ from BPB/loss panels.
 
 The publication cover uses `cover-v1.0-first-page` and is the intended site
 entry point at `output/preview/cover.html` and `output/preview/index.html`.
-The table of contents uses `toc-v1.0-campaign-navigation` and follows the
-cover at `output/preview/toc.html`; it uses a generated background asset and
-must not embed or reference the cover sheet.
+The table of contents uses `toc-v1.1-connected-scroll` and follows the cover
+at `output/preview/toc.html`; it uses a generated background asset, keeps the
+cover sheet out of TOC, and lazy-loads the connected report reader.
 
 ## Research chronology
 

@@ -24,7 +24,7 @@ from render_day import (
 )
 
 
-TOC_TEMPLATE_STANDARD = "toc-v1.0-campaign-navigation"
+TOC_TEMPLATE_STANDARD = "toc-v1.1-connected-scroll"
 TOC_QMD_DIR = OUT_ROOT / "toc"
 TOC_HTML_PATH = HTML_DIR / "toc.html"
 TOC_BACKGROUND_PATH = Path("assets/toc_background_generated.png")
@@ -39,9 +39,9 @@ def image_data_uri(path: str | Path) -> str:
 
 def toc_extra_style() -> str:
     bg = image_data_uri(TOC_BACKGROUND_PATH) if TOC_BACKGROUND_PATH.exists() else ""
-    if not bg:
-        return ""
-    return f"""
+    bg_css = ""
+    if bg:
+        bg_css = f"""
     body.toc-page {{
       max-width: 1280px;
       background-image:
@@ -51,6 +51,9 @@ def toc_extra_style() -> str:
       background-position: center top;
       background-attachment: fixed;
     }}
+    """
+    return f"""
+    {bg_css}
     body.toc-page .toc-kicker {{
       margin: -6px 0 18px;
       color: var(--accent);
@@ -58,6 +61,53 @@ def toc_extra_style() -> str:
       letter-spacing: 0.18em;
       text-transform: uppercase;
       font-weight: 700;
+    }}
+    body.toc-page .toc-reader {{
+      display: grid;
+      gap: 26px;
+      margin: 18px 0 0;
+    }}
+    body.toc-page .toc-reader-entry {{
+      border-top: 1px solid var(--rule-hi);
+      padding-top: 14px;
+    }}
+    body.toc-page .toc-reader-topline {{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 9px 12px;
+      background: var(--rule-hi);
+      color: var(--bg);
+      font-size: 10.5px;
+      line-height: 1.4;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }}
+    body.toc-page .toc-reader-topline strong,
+    body.toc-page .toc-reader-topline a {{
+      color: var(--bg);
+    }}
+    body.toc-page .toc-reader-open {{
+      white-space: nowrap;
+      border-bottom-color: var(--bg);
+    }}
+    body.toc-page .toc-reader-frame {{
+      display: block;
+      width: 100%;
+      min-height: 720px;
+      border: 1px solid var(--rule-hi);
+      border-top: none;
+      background: var(--bg);
+    }}
+    @media (max-width: 760px) {{
+      body.toc-page .toc-reader-topline {{
+        align-items: flex-start;
+        flex-direction: column;
+      }}
+      body.toc-page .toc-reader-frame {{
+        min-height: 560px;
+      }}
     }}
     """
 
@@ -86,7 +136,7 @@ def make_layer_table(dates: list[str],
         )
     layers = [
         ("PUBLICATION COVER", "1", "cover.html", "first page; cover image appears there only"),
-        ("TABLE OF CONTENTS", "1", "toc.html", "navigation and reading order"),
+        ("TABLE OF CONTENTS", "1", "toc.html", "navigation, reading order, and connected scroll"),
         campaign_layer,
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
@@ -176,6 +226,115 @@ def make_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) -> st
     return "\n".join(rows)
 
 
+def connected_reader_items(dates: list[str],
+                           week_summaries: list[dict[str, Any]],
+                           category_summaries: list[dict[str, Any]]) -> list[dict[str, str]]:
+    items: list[dict[str, str]] = [
+        {
+            "kind": "campaign",
+            "label": "CAMPAIGN CUMULATIVE",
+            "href": "cumulative.html",
+        },
+        {
+            "kind": "category-index",
+            "label": "CATEGORY INDEX",
+            "href": "categories/index.html",
+        },
+    ]
+    for category in category_summaries:
+        items.append({
+            "kind": "category",
+            "label": f"CATEGORY · {category['label']}",
+            "href": f"categories/{Path(category['html_path']).name}",
+        })
+    items.append({
+        "kind": "week-index",
+        "label": "WEEKLY INDEX",
+        "href": "weeks/index.html",
+    })
+    for week in week_summaries:
+        items.append({
+            "kind": "week",
+            "label": f"WEEK {int(week['week']):02d} · {week['dates'][0]} TO {week['dates'][-1]}",
+            "href": f"weeks/{Path(week['html_path']).name}",
+        })
+    for idx, date in enumerate(dates, start=1):
+        items.append({
+            "kind": "day",
+            "label": f"DAY {idx:03d} · {date}",
+            "href": f"{date}.html",
+        })
+    return items
+
+
+def make_connected_reader_html(dates: list[str],
+                               week_summaries: list[dict[str, Any]],
+                               category_summaries: list[dict[str, Any]]) -> str:
+    parts = ["<div class=\"toc-reader\" data-connected-reader=\"true\">"]
+    for idx, item in enumerate(
+        connected_reader_items(dates, week_summaries, category_summaries),
+        start=1,
+    ):
+        kind = html.escape(item["kind"], quote=True)
+        label = html.escape(item["label"])
+        href = html.escape(item["href"], quote=True)
+        parts.append(
+            f'<section class="toc-reader-entry" data-reader-kind="{kind}">'
+            f'<div class="toc-reader-topline">'
+            f'<strong>{idx:02d} / {label}</strong>'
+            f'<a class="toc-reader-open" href="{href}">open standalone</a>'
+            f'</div>'
+            f'<iframe class="toc-reader-frame" src="{href}" title="{label}" '
+            f'loading="lazy" data-reader-href="{href}" data-reader-kind="{kind}"></iframe>'
+            f'</section>'
+        )
+    parts.append("</div>")
+    return "\n".join(parts)
+
+
+def connected_reader_script() -> str:
+    return """
+<script>
+(function(){
+  function resizeFrame(frame) {
+    try {
+      var doc = frame.contentDocument;
+      if (!doc) return;
+      doc.querySelectorAll('a').forEach(function(a){ a.target = '_top'; });
+      var size = function() {
+        var body = doc.body;
+        var root = doc.documentElement;
+        var height = Math.max(
+          body ? body.scrollHeight : 0,
+          root ? root.scrollHeight : 0,
+          560
+        );
+        frame.style.height = (height + 8) + 'px';
+      };
+      size();
+      if (frame._tocResizeObserver) frame._tocResizeObserver.disconnect();
+      if (window.ResizeObserver && doc.documentElement) {
+        frame._tocResizeObserver = new ResizeObserver(size);
+        frame._tocResizeObserver.observe(doc.documentElement);
+        if (doc.body) frame._tocResizeObserver.observe(doc.body);
+      }
+      doc.addEventListener('toggle', size, true);
+      doc.defaultView && doc.defaultView.addEventListener('load', size);
+    } catch (e) {
+      frame.style.height = '900px';
+    }
+  }
+  document.querySelectorAll('.toc-reader-frame').forEach(function(frame){
+    frame.addEventListener('load', function(){ resizeFrame(frame); });
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+      resizeFrame(frame);
+    }
+  });
+})();
+</script>
+"""
+
+
 def make_summary_html(dates: list[str],
                       week_summaries: list[dict[str, Any]],
                       category_summaries: list[dict[str, Any]],
@@ -229,6 +388,9 @@ def render_toc_report(dates: list[str],
     category_table = make_category_table(category_summaries)
     week_table = make_week_table(week_summaries)
     daily_table = make_daily_table(dates, days_summary)
+    connected_reader = make_connected_reader_html(
+        dates, week_summaries, category_summaries
+    )
 
     body_parts = [
         h1_html,
@@ -246,6 +408,8 @@ def render_toc_report(dates: list[str],
         week_table,
         "<h3>DAILY REPORTS</h3>",
         daily_table,
+        "<h3>CONNECTED SCROLL</h3>",
+        connected_reader,
     ])
 
     full_html = (
@@ -253,6 +417,7 @@ def render_toc_report(dates: list[str],
         "<title>Table of Contents</title>"
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
         + "\n".join(body_parts)
+        + connected_reader_script()
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")
@@ -281,6 +446,10 @@ def render_toc_report(dates: list[str],
         "### DAILY REPORTS",
         "",
         daily_table,
+        "",
+        "### CONNECTED SCROLL",
+        "",
+        connected_reader,
         "",
     ]
     qmd_path = TOC_QMD_DIR / "toc.qmd"

@@ -68,6 +68,33 @@ def verify_toc(html_path: Path) -> dict:
     ):
         if href not in text:
             raise AssertionError(f"TOC missing link {href}: {html_path}")
+    frames = re.findall(
+        r'<iframe class="toc-reader-frame" src="([^"]+)"[^>]*data-reader-kind="([^"]+)"',
+        text,
+    )
+    if not frames:
+        raise AssertionError(f"TOC missing connected endless-scroll frames: {html_path}")
+    if 'data-connected-reader="true"' not in text or "CONNECTED SCROLL" not in text:
+        raise AssertionError(f"TOC missing connected scroll section: {html_path}")
+    if text.count('loading="lazy"') != len(frames):
+        raise AssertionError(f"TOC reader frames must all be lazy-loaded: {html_path}")
+    if 'src="cover.html"' in text or 'src="toc.html"' in text:
+        raise AssertionError(f"TOC must not recursively embed cover or itself: {html_path}")
+    daily_links = text.count("open day")
+    day_frames = [href for href, kind in frames if kind == "day"]
+    if len(day_frames) != daily_links:
+        raise AssertionError(
+            f"TOC day frame count mismatch: frames={len(day_frames)} open-day-links={daily_links}"
+        )
+    for required_frame in (
+        "cumulative.html",
+        "categories/index.html",
+        "weeks/index.html",
+        "2026-03-18.html",
+        "2026-05-01.html",
+    ):
+        if required_frame not in {href for href, _kind in frames}:
+            raise AssertionError(f"TOC connected reader missing frame {required_frame}: {html_path}")
     if "cover_sheet_final" in text:
         raise AssertionError(f"TOC embeds or references the cover sheet asset: {html_path}")
     if "MONTHLY" in text.upper():
@@ -77,7 +104,8 @@ def verify_toc(html_path: Path) -> dict:
     return {
         "html_path": str(html_path),
         "tables": text.count("<table"),
-        "daily_links": text.count("open day"),
+        "daily_links": daily_links,
+        "reader_frames": len(frames),
     }
 
 

@@ -472,8 +472,8 @@ must not embed or reference `assets/cover_sheet_final.*`.
 `render_toc.py` must produce:
 
 - `output/toc/toc.qmd` — Quarto-compatible TOC source.
-- `output/preview/toc.html` — Self-contained table-of-contents HTML using the
-  locked daily CSS.
+- `output/preview/toc.html` — table-of-contents HTML using the locked daily
+  CSS, with a lazy connected-scroll reader for the report pages.
 
 The TOC page keeps the same two-section shape:
 
@@ -482,10 +482,13 @@ The TOC page keeps the same two-section shape:
 
 The TOC is the second page after the publication cover. It links back to the
 cover, then the campaign cumulative report, category reports, weekly reports,
-every daily report, and the Mockingbird final day. If
+every daily report, and the Mockingbird final day. Section 2 also renders a
+lazy same-origin connected-scroll reader for the campaign, category, weekly,
+and daily report pages. It must not recursively embed `toc.html`, and it must
+not embed `cover.html`; the cover remains the first-page landing artifact. If
 `assets/toc_background_generated.png` is present, the TOC may use it as a
 generated navigation background. It must never embed or reference the cover
-sheet.
+sheet image asset.
 
 ---
 
