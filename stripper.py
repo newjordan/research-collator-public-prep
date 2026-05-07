@@ -43,7 +43,7 @@ METRIC_KEY_PATTERNS = (
     "elo", "passrate", "pass_rate", "perplexity", "ppl", "bleu",
     "f1", "precision", "recall", "ms", "us", "ns", "throughput",
     "tokens_per_sec", "tok_s", "size_mb", "params", "flops", "mflops",
-    "gflops", "tflops", "epochs", "step", "iter",
+    "gflops", "tflops", "epochs", "step", "iter", "bpb",
 )
 
 
@@ -535,7 +535,7 @@ RE_LOG_STEP = re.compile(
     r"step:\d+(?:/\d+)?\s+val_loss:[\d.]+\s+val_bpb:([\d.]+)"
 )
 RE_LOG_FINAL = re.compile(
-    r"final_(\w+?)\s+val_loss:[\d.]+\s+val_bpb:([\d.]+)"
+    r"(?:final_(\w+?)|(quantized_ttt_phased))\s+val_loss:[\d.]+\s+val_bpb:([\d.]+)"
 )
 RE_LOG_RANK = re.compile(r"\[rank(\d+)\]")
 RE_LOG_TRAIN_TIME = re.compile(r"train_time:(\d+)ms")
@@ -709,11 +709,11 @@ def handle_training_log(abs_path: str, size: int, max_bytes: int) -> dict[str, A
     bpbs_during = [float(m.group(1)) for m in RE_LOG_STEP.finditer(text)]
     final_evals: dict[str, float] = {}
     for m in RE_LOG_FINAL.finditer(text):
-        eval_kind = m.group(1)
+        eval_kind = m.group(1) or m.group(2)
         if eval_kind.endswith("_exact"):
             eval_kind = eval_kind[:-6]
         # Last-write wins (the "_exact" full-precision values overwrite rounded)
-        final_evals[f"val_bpb_{eval_kind}"] = float(m.group(2))
+        final_evals[f"val_bpb_{eval_kind}"] = float(m.group(3))
 
     metrics: dict[str, Any] = {}
     # Pick the canonical val_bpb: prefer final eval (post-quantization, what

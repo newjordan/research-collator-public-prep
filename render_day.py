@@ -44,6 +44,8 @@ LOCKED_TEMPLATE_STYLE_SHA256 = "6c73639e82608e847e1eef0f708307bdabfad969d1e940f2
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
+FINAL_SUBMISSION_NAME = "Mockingbird"
+FINAL_SUBMISSION_DIR_TOKEN = "2026-05-01_Mockingbird_8xH100"
 TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
@@ -207,6 +209,17 @@ def is_research_campaign_date(date: str | None) -> bool:
     return bool(date and RESEARCH_START_DATE <= date <= RESEARCH_END_DATE)
 
 
+def is_final_submission_record(rec: dict) -> bool:
+    path = (rec.get("abs_path") or "").lower()
+    return FINAL_SUBMISSION_DIR_TOKEN.lower() in path
+
+
+def final_submission_records_for_day(date: str, records: list[dict]) -> list[dict]:
+    if date != RESEARCH_END_DATE:
+        return []
+    return [r for r in records if is_final_submission_record(r)]
+
+
 def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
     """Keep daily reports aligned with the research chronology contract.
 
@@ -330,6 +343,9 @@ def extract_metric_for_record(metrics_json: str | None, metric_name: str) -> lis
         return []
     if metric_name in KERNEL_METRICS:
         return extract_kernel_ratio_metrics(md, metric_name)
+    direct = md.get(metric_name)
+    if isinstance(direct, (int, float)) and not isinstance(direct, bool):
+        return [float(direct)]
     out = []
     for k, v in md.items():
         if not isinstance(v, (int, float)) or isinstance(v, bool):
@@ -996,6 +1012,7 @@ ARCH_FAMILIES = [
     ("Rascal",               r"\brascal\w*"),
     ("Whale",                r"\b(?:blessed[\s_-]+)?whale\w*"),
     ("Megahelix",            r"\bmegahelix\w*"),
+    ("Mockingbird",          r"\bmockingb[ir]rd\w*"),
     ("Helix",                r"\bhelix\w*"),
     ("Ouroboros",            r"\bouroboros\w*"),
     ("Nitrust",              r"\bnitrust\w*"),
@@ -1032,6 +1049,18 @@ ARCH_FAMILIES = [
 ]
 
 
+def _arch_family_matches(pattern: str, *values: str | None) -> bool:
+    for value in values:
+        if not value:
+            continue
+        if re.search(pattern, value, re.IGNORECASE):
+            return True
+        normalized = re.sub(r"[^A-Za-z0-9]+", " ", value)
+        if re.search(pattern, normalized, re.IGNORECASE):
+            return True
+    return False
+
+
 def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
     """For each test row, find the FIRST matching family from ARCH_FAMILIES.
     Searches title FIRST, then falls back to abs_path so generic-named log
@@ -1044,7 +1073,7 @@ def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
         path = (row.get("abs_path") or "")
         matched = False
         for fam_name, pat in ARCH_FAMILIES:
-            if re.search(pat, title, re.IGNORECASE):
+            if _arch_family_matches(pat, title):
                 counts[fam_name] = counts.get(fam_name, 0) + 1
                 matched = True
                 break
@@ -1053,7 +1082,7 @@ def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
             # generic-named logs (run_s1337.log) that live in dirs like
             # `.../sota_v2_tttonly_*/` or `.../nightcrawler_cubed/`.
             for fam_name, pat in ARCH_FAMILIES:
-                if re.search(pat, path, re.IGNORECASE):
+                if _arch_family_matches(pat, path):
                     counts[fam_name] = counts.get(fam_name, 0) + 1
                     matched = True
                     break
@@ -1589,15 +1618,17 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
     if not valid:
         return ""
 
-    def family_of(title: str) -> str:
+    def family_of(row: dict) -> str:
+        title = row.get("title") or ""
+        path = row.get("abs_path") or ""
         for fam_name, pat in ARCH_FAMILIES:
-            if re.search(pat, title or "", re.IGNORECASE):
+            if _arch_family_matches(pat, title, path):
                 return fam_name
         return "Other"
 
     by_fam: dict[str, list[float]] = {}
     for r in valid:
-        fam = family_of(r.get("title", ""))
+        fam = family_of(r)
         by_fam.setdefault(fam, []).append(r["value"])
     # Order rows by overall arch_families ranking (count descending)
     ordered_fams = [f for f, _ in arch_families if f in by_fam]
@@ -2001,6 +2032,9 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     records = report_records_for_date(date, fetch_day(conn, date))
     if not records:
         sys.exit(f"no artifacts found for {date}")
+    final_submission_records = final_submission_records_for_day(date, records)
+    if final_submission_records:
+        records = final_submission_records
 
     # CLASSIFICATION % must reflect research output, not file-tree mass.
     # Count training-log records (excluding reference baselines) per camp;

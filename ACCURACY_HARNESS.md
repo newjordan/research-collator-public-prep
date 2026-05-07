@@ -70,6 +70,12 @@ Fatal issues mean the renderer is probably wrong:
 - `n_runs_source_count_mismatch`: row replication count no longer matches
   traced metric values.
 - `daily_grind_test_row`: narrative/session material reached Section 2.
+- `final_submission_missing`: the final campaign day has no rendered
+  Mockingbird test rows.
+- `final_submission_not_neural`: the final campaign day rendered a non-neural
+  Section 2 row.
+- `final_submission_not_mockingbird`: the final campaign day rendered a
+  Section 2 row outside the Mockingbird final-submission record.
 
 Warnings mean the row is weaker evidence or needs review:
 

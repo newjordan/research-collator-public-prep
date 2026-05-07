@@ -128,6 +128,8 @@ def classify(rec: dict) -> tuple[str, str]:
         return ("experimental", "path_ablations")
     if "/submissions/" in path or path.endswith("/submission.json"):
         return ("neural", "path_submission")
+    if "/records/track_" in path and ("mockingbird" in path or "mockingbrid" in path):
+        return ("neural", "path_final_submission_record")
     if "/baseline/" in path or "/baselines/" in path:
         return ("neural", "path_baseline")
     if "/experiments/" in path or "/exploration/" in path:

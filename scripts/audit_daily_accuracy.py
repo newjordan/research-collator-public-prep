@@ -292,6 +292,9 @@ def audit_day(conn: sqlite3.Connection, audit: Audit, date: str) -> None:
         )
 
     records = render_day.report_records_for_date(date, raw_records)
+    final_submission_records = render_day.final_submission_records_for_day(date, records)
+    if final_submission_records:
+        records = final_submission_records
     metric = render_day.pick_headline_metric(records)
     rows: list[dict] = []
     if metric:
@@ -307,6 +310,38 @@ def audit_day(conn: sqlite3.Connection, audit: Audit, date: str) -> None:
             )
         for row in rows:
             audit_row(audit, date, metric, row)
+
+        if date == render_day.RESEARCH_END_DATE:
+            by_camp: dict[str, int] = {}
+            for row in rows:
+                camp = str(row.get("camp") or "unknown")
+                by_camp[camp] = by_camp.get(camp, 0) + 1
+            bad_rows = [row for row in rows if row.get("camp") != "neural"]
+            if bad_rows:
+                audit.issue(
+                    "fatal", "final_submission_not_neural", date,
+                    "final campaign day rendered non-neural test rows",
+                    row=bad_rows[0], detail={"by_camp": by_camp},
+                )
+            missing_mockingbird = [
+                row for row in rows
+                if "mockingb" not in (
+                    f"{row.get('title') or ''} {row.get('abs_path') or ''}".lower()
+                )
+            ]
+            if missing_mockingbird:
+                audit.issue(
+                    "fatal", "final_submission_not_mockingbird", date,
+                    "final campaign day rendered a non-Mockingbird test row",
+                    row=missing_mockingbird[0],
+                    detail={"expected": render_day.FINAL_SUBMISSION_NAME},
+                )
+
+    if date == render_day.RESEARCH_END_DATE and not rows:
+        audit.issue(
+            "fatal", "final_submission_missing", date,
+            "final campaign day has no rendered Mockingbird test rows",
+        )
 
     audit.day_summaries.append({
         "date": date,
