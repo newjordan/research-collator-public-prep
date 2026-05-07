@@ -1387,9 +1387,15 @@ def make_alloc_bar_html(by_camp: dict[str, int]) -> str:
 
 
 def _classification_display_order(by_camp: dict[str, int]) -> tuple[str, ...]:
-    if by_camp.get(KERNEL_CAMP, 0):
-        return CLASSIFICATION_CAMP_ORDER
-    return ("experimental", "neural")
+    active = [
+        camp for camp in CLASSIFICATION_CAMP_ORDER
+        if by_camp.get(camp, 0) > 0
+    ]
+    active.extend(
+        camp for camp, n in sorted(by_camp.items())
+        if n > 0 and camp not in CLASSIFICATION_CAMP_ORDER
+    )
+    return tuple(active)
 
 
 def _classification_distribution_text(by_camp: dict[str, int]) -> str:

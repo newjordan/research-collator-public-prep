@@ -108,7 +108,9 @@ re-ordered without a spec revision.
 4. SECTION 2.0  TEST RUNS   Classification-isolated 8-column tables:
                               # | TIME | HW | ABLATION | <PRIMARY METRIC> | STATUS | Δ % | OPEN
                             KERNEL, EXPERIMENTAL, and NEURAL render as
-                            separate tables when present.
+                            separate tables when present. The header
+                            classification bar lists only classes active on
+                            that day; zero-count classes are omitted.
                             ABLATION defaults to deterministic raw title.
                             Optional local Nemo3 labels may replace it only
                             after promotion into approved ablation-label JSONL
