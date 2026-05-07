@@ -313,6 +313,10 @@ python3 scripts/verify_scraper_contract.py
 python3 render_all.py
 python3 scripts/verify_daily_template.py --all
 python3 scripts/verify_weekly_template.py --all
+python3 scripts/verify_category_template.py --all
+python3 scripts/verify_campaign_template.py
+python3 scripts/verify_cover_template.py
+python3 scripts/verify_toc_template.py
 ```
 
 `scripts/verify_scraper_contract.py` is the executable gate for §6. It
@@ -361,8 +365,15 @@ The `classify.py` rule order:
 The daily renderer (`render_day.py`) is the only consumer of the scraper
 output that's allowed to write the canonical daily HTML. Weekly pages
 (`render_week.py`) are rollups of rendered daily summaries: their datapoints
-are daily reports, not raw training logs. `render_all.py` calls both
-renderers and treats their return values as opaque.
+are daily reports, not raw training logs. Category pages
+(`render_category.py`) are cumulative classification drilldowns built from
+category-local daily datapoints. The campaign page (`render_campaign.py`) is
+the cumulative overlay for the whole campaign. The cover page
+(`render_cover.py`) is the static site's first page and is the only renderer
+allowed to display the cover sheet. The table-of-contents page
+(`render_toc.py`) follows the cover as the navigation entry point.
+`render_all.py` calls these renderers and treats their return values as
+opaque.
 
 `render_one_day(date: str, metric_override: str | None) -> dict` must
 produce:
@@ -396,6 +407,69 @@ weeks never plot unlike metrics on a shared y-axis; they render separate
 weekly trajectory panels. Weekly pages must keep each plotted value local to
 its source day/week: no weekly median/best/worst spread table, no carried
 prior-best baseline line, and no "best day" headline.
+
+`render_category.py` must produce:
+
+- `output/categories/<CATEGORY>.qmd` — Quarto-compatible category source.
+- `output/preview/categories/<CATEGORY>.html` — Self-contained category HTML
+  using the locked daily CSS.
+- `output/assets/categories/<CATEGORY>/window-<NN>_<START>_to_<END>_<METRIC>.png`
+  — one chart per metric inside each active two-week window.
+
+Category pages keep the same two-section shape:
+
+- `SECTION 1.0 — BI-WEEKLY TRAJECTORY`
+- `SECTION 2.0 — CATEGORY DAILY DATAPOINTS`
+
+Every category datapoint is the best valid row for that classification on
+that date for the category's preferred metric. Experimental and neural prefer
+BPB then loss; kernel prefers custom/FA3 FB ratio then FWD ratio. Mixed metrics
+never share a y-axis.
+
+`render_campaign.py` must produce:
+
+- `output/campaign/cumulative.qmd` — Quarto-compatible campaign source.
+- `output/preview/cumulative.html` — Self-contained campaign cumulative HTML
+  using the locked daily CSS.
+- `output/assets/campaign/cumulative_overlay_<METRIC>.png` — one campaign
+  overlay chart per metric.
+
+The campaign page keeps the same two-section shape:
+
+- `SECTION 1.0 — CLASSIFICATION OVERLAY`
+- `SECTION 2.0 — CAMPAIGN INDEX`
+
+The campaign overlay may span the full campaign. It may overlay
+classifications only when the metric/y-axis is shared. BPB/loss panels and
+custom-kernel/FA3 ratio panels remain separate.
+
+`render_cover.py` must produce:
+
+- `output/cover/cover.qmd` — Quarto-compatible cover source.
+- `output/preview/cover.html` — Self-contained publication cover HTML.
+- `output/preview/index.html` — Exact first-page alias for static hosting.
+
+The cover sheet is a page, not a decorative element. It must appear only on
+`cover.html` / `index.html`. TOC, campaign, category, weekly, and daily pages
+must not embed or reference `assets/cover_sheet_final.*`.
+
+`render_toc.py` must produce:
+
+- `output/toc/toc.qmd` — Quarto-compatible TOC source.
+- `output/preview/toc.html` — Self-contained table-of-contents HTML using the
+  locked daily CSS.
+
+The TOC page keeps the same two-section shape:
+
+- `SECTION 1.0 — PUBLICATION MAP`
+- `SECTION 2.0 — REPORT INDEX`
+
+The TOC is the second page after the publication cover. It links back to the
+cover, then the campaign cumulative report, category reports, weekly reports,
+every daily report, and the Mockingbird final day. If
+`assets/toc_background_generated.png` is present, the TOC may use it as a
+generated navigation background. It must never embed or reference the cover
+sheet.
 
 ---
 

@@ -1,0 +1,701 @@
+#!/usr/bin/env python3
+"""Render category cumulative reports.
+
+Three categories: experimental, neural, kernel. Each page covers the whole
+campaign but splits its trajectory into non-overlapping two-week windows so no
+single chart panel becomes a campaign-wide blob. The page reuses the locked
+daily visual language. Each category-day datapoint is the best valid row for
+that category on that date for its preferred metric.
+
+Usage:
+    python3 render_category.py --category neural
+    python3 render_category.py --all
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import datetime as dt
+import html
+import json
+import os
+import sqlite3
+import sys
+from collections import Counter
+from pathlib import Path
+from typing import Any
+
+import plot as plot_mod
+import render_day
+import render_week
+from render_day import (
+    ASSETS_DIR,
+    DAILY_TEMPLATE_STANDARD,
+    DB,
+    HTML_DIR,
+    KERNEL_CAMP,
+    KERNEL_FB_RATIO_METRIC,
+    KERNEL_FWD_RATIO_METRIC,
+    LOCKED_TEMPLATE_STYLE_SHA256,
+    OUT_ROOT,
+    RESEARCH_END_DATE,
+    RESEARCH_START_DATE,
+    _daily_template_style,
+    _embedded_log_script,
+    _frosted_flake_data_uri,
+    compute_day_index,
+    extract_test_rows,
+    fetch_day,
+    final_submission_records_for_day,
+    format_day_index,
+    format_metric_value,
+    is_valid_metric_value,
+    make_alloc_bar_html,
+    make_report_header_html,
+    metric_display_name,
+    report_records_for_date,
+)
+
+
+CATEGORY_TEMPLATE_STANDARD = "category-report-v1.0-biweekly-course"
+CATEGORIES = ("experimental", "neural", "kernel")
+CATEGORY_LABEL = {
+    "experimental": "EXPERIMENTAL",
+    "neural": "NEURAL",
+    "kernel": "KERNEL",
+}
+CATEGORY_METRIC_PRIORITY: dict[str, tuple[str, ...]] = {
+    "kernel": (KERNEL_FB_RATIO_METRIC, KERNEL_FWD_RATIO_METRIC),
+    "neural": ("val_bpb", "val_loss"),
+    "experimental": ("val_bpb", "val_loss"),
+}
+CATEGORY_QMD_DIR = OUT_ROOT / "categories"
+CATEGORY_HTML_DIR = HTML_DIR / "categories"
+CATEGORY_ASSETS_DIR = ASSETS_DIR / "categories"
+BIWEEKLY_WINDOW_WEEKS = 2
+
+
+# ---------- data --------------------------------------------------------------
+
+def all_campaign_dates(conn: sqlite3.Connection) -> list[str]:
+    return render_week.all_campaign_dates(conn)
+
+
+def biweekly_windows(dates: list[str]) -> list[dict[str, Any]]:
+    """Pair consecutive research-week windows. Final window may be a single
+    week if the campaign ends on an odd week."""
+    weekly = render_week.week_windows(dates)
+    out: list[dict[str, Any]] = []
+    n = 1
+    i = 0
+    while i < len(weekly):
+        merged: list[str] = list(weekly[i])
+        weeks = [i + 1]
+        if i + 1 < len(weekly):
+            merged += list(weekly[i + 1])
+            weeks.append(i + 2)
+        out.append({
+            "window": n,
+            "weeks": weeks,
+            "dates": merged,
+            "start": merged[0],
+            "end": merged[-1],
+        })
+        i += BIWEEKLY_WINDOW_WEEKS
+        n += 1
+    return out
+
+
+def window_for_date(windows: list[dict[str, Any]], date: str) -> dict[str, Any] | None:
+    for w in windows:
+        if w["start"] <= date <= w["end"]:
+            return w
+    return None
+
+
+def window_slug(window: dict[str, Any], metric: str | None = None) -> str:
+    base = f"window-{window['window']:02d}_{window['start']}_to_{window['end']}"
+    if metric:
+        return f"{base}_{metric}"
+    return base
+
+
+def _category_rows_for_day(conn: sqlite3.Connection,
+                           date: str,
+                           category: str,
+                           metric: str) -> list[dict[str, Any]]:
+    raw = fetch_day(conn, date)
+    records = report_records_for_date(date, raw)
+    if date == RESEARCH_END_DATE:
+        final = final_submission_records_for_day(date, records)
+        if final:
+            records = final
+    rows = extract_test_rows(records, metric, None)
+    out = []
+    for r in rows:
+        if r.get("camp") != category:
+            continue
+        if not is_valid_metric_value(metric, r.get("value")):
+            continue
+        out.append(r)
+    return out
+
+
+def build_category_datapoints(conn: sqlite3.Connection,
+                              dates: list[str],
+                              category: str,
+                              windows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """One datapoint per (category, date) where this category has a valid row.
+
+    The metric is chosen by priority: first metric in
+    CATEGORY_METRIC_PRIORITY[category] that yields ≥1 valid row. If none
+    qualify on a date, that date contributes no datapoint to this category."""
+    points: list[dict[str, Any]] = []
+    metrics = CATEGORY_METRIC_PRIORITY[category]
+    for date in dates:
+        chosen: tuple[str, list[dict[str, Any]]] | None = None
+        for metric in metrics:
+            cat_rows = _category_rows_for_day(conn, date, category, metric)
+            if cat_rows:
+                chosen = (metric, cat_rows)
+                break
+        if not chosen:
+            continue
+        metric, cat_rows = chosen
+        cat_rows.sort(key=lambda r: r["value"])
+        best = cat_rows[0]
+        win = window_for_date(windows, date)
+        points.append({
+            "date": date,
+            "category": category,
+            "metric": metric,
+            "metric_display": metric_display_name(metric),
+            "value": float(best["value"]),
+            "value_display": format_metric_value(metric, best["value"]),
+            "title": (best.get("title") or "").strip(),
+            "abs_path": best.get("abs_path") or "",
+            "source_label": best.get("source_label") or "",
+            "n_category_rows": len(cat_rows),
+            "n_runs": int(best.get("n_runs") or 1),
+            "window": win["window"] if win else None,
+            "window_start": win["start"] if win else None,
+            "window_end": win["end"] if win else None,
+        })
+    return points
+
+
+# ---------- rendering helpers -------------------------------------------------
+
+def image_data_uri(path: str | Path) -> str:
+    with open(path, "rb") as f:
+        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+
+
+def points_for_window(points: list[dict[str, Any]],
+                      window: dict[str, Any]) -> list[dict[str, Any]]:
+    return [p for p in points if window["start"] <= p["date"] <= window["end"]]
+
+
+def metrics_in_window(points: list[dict[str, Any]]) -> list[str]:
+    """Metrics ordered by the date of their first datapoint in the window.
+
+    Stacked charts read top-to-bottom as oldest-to-newest so the panel order
+    matches the chronology of the listing below them. Assumes `points` is
+    already sorted by date ascending.
+    """
+    seen: list[str] = []
+    for p in points:
+        m = p["metric"]
+        if m not in seen:
+            seen.append(m)
+    return seen
+
+
+def make_category_summary_html(category: str,
+                               points: list[dict[str, Any]],
+                               windows: list[dict[str, Any]]) -> str:
+    if not points:
+        body = (
+            f"<p>No measured {CATEGORY_LABEL[category].lower()} datapoints "
+            f"landed across the campaign window.</p>"
+        )
+    else:
+        active_days = len({p["date"] for p in points})
+        metric_counter = Counter(p["metric"] for p in points)
+        metric_blurb = "  ·  ".join(
+            f"{metric_display_name(m)} (×{n})"
+            for m, n in metric_counter.most_common()
+        )
+        first_date = min(p["date"] for p in points)
+        last_date = max(p["date"] for p in points)
+        active_windows = len({p["window"] for p in points if p["window"]})
+        body = (
+            f"<p>This page rolls up "
+            f"<strong>{len(points)} {CATEGORY_LABEL[category].lower()} "
+            f"category datapoints</strong> across "
+            f"<strong>{active_days} active research days</strong> "
+            f"({html.escape(first_date)} → {html.escape(last_date)}), grouped "
+            f"into <strong>{active_windows} of {len(windows)} two-week "
+            f"windows</strong>. Each datapoint is the best valid "
+            f"{CATEGORY_LABEL[category].lower()} row for its date on that "
+            f"day's preferred metric.</p>"
+            f"<p>Metrics used: <strong>{html.escape(metric_blurb)}</strong>. "
+            f"BPB-style and kernel-ratio metrics are never plotted on the "
+            f"same y-axis. Each window's chart panel covers at most two "
+            f"research weeks so progress stays readable inside the panel.</p>"
+        )
+    return (
+        '<aside class="day-summary">'
+        '<div class="ds-key">CATEGORY SUMMARY</div>'
+        f'<div class="ds-body">{body}</div></aside>'
+    )
+
+
+def render_window_section(conn: sqlite3.Connection,
+                          category: str,
+                          window: dict[str, Any],
+                          window_points: list[dict[str, Any]],
+                          asset_dir: Path) -> dict[str, Any]:
+    metrics = metrics_in_window(window_points)
+    chart_paths: list[str] = []
+    chart_panel_meta: list[dict[str, Any]] = []
+    for metric in metrics:
+        metric_points = [p for p in window_points if p["metric"] == metric]
+        if not metric_points:
+            continue
+        chart_input = []
+        for idx, p in enumerate(metric_points, start=1):
+            chart_input.append({
+                "date": p["date"],
+                "value": p["value"],
+                "camp": category,
+                "title": p["title"] or p["date"],
+                "n": idx,
+            })
+        slug = window_slug(window, metric)
+        out_path = asset_dir / f"{slug}.png"
+        path, n = plot_mod.week_chart(
+            out_path,
+            week_label=(
+                f"{CATEGORY_LABEL[category]} · WINDOW "
+                f"{window['window']:02d} · {window['start']} TO {window['end']}"
+            ),
+            daily_points=chart_input,
+            metric_name=metric_display_name(metric),
+        )
+        chart_paths.append(path)
+        chart_panel_meta.append({"metric": metric, "path": path, "n": n})
+
+    return {
+        "window": window,
+        "metrics": metrics,
+        "chart_paths": chart_paths,
+        "chart_panels": chart_panel_meta,
+        "n_points": len(window_points),
+        "active_days": len({p["date"] for p in window_points}),
+    }
+
+
+def make_window_table_html(category: str,
+                           window: dict[str, Any],
+                           window_points: list[dict[str, Any]]) -> str:
+    if not window_points:
+        return (
+            f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
+            f"INSIDE WINDOW {window['window']:02d}.</p>"
+        )
+    rows = [
+        "<table class='test-runs-table'><thead><tr>"
+        "<th>#</th><th>DATE</th><th>METRIC</th><th>BEST</th>"
+        "<th>ROWS</th><th>TITLE</th><th>OPEN</th>"
+        "</tr></thead><tbody>"
+    ]
+    for idx, p in enumerate(window_points, start=1):
+        title = p["title"] or "(untitled)"
+        rows.append(
+            "<tr>"
+            f"<td><strong>{idx}</strong></td>"
+            f"<td>{html.escape(p['date'])}</td>"
+            f"<td>{html.escape(p['metric_display'])}</td>"
+            f"<td>{html.escape(p['value_display'])}</td>"
+            f"<td>{int(p['n_category_rows'])}</td>"
+            f"<td>{html.escape(title[:120])}</td>"
+            "<td class='open-cell'><details class='log-toggle'>"
+            "<summary>provenance</summary></details></td>"
+            "</tr>"
+        )
+        rows.append(
+            "<tr class='log-detail-row'><td colspan='7'>"
+            "<div class='log-panel'>"
+            "<div class='log-meta'><strong>category datapoint</strong></div>"
+            f"<div class='log-meta'><strong>category</strong>: "
+            f"{html.escape(CATEGORY_LABEL[category].lower())}</div>"
+            f"<div class='log-meta'><strong>window</strong>: "
+            f"{window['window']:02d} · {html.escape(window['start'])} → "
+            f"{html.escape(window['end'])}</div>"
+            f"<div class='log-meta'><strong>date</strong>: "
+            f"{html.escape(p['date'])} "
+            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"</div>"
+            f"<div class='log-meta'><strong>metric</strong>: "
+            f"{html.escape(p['metric_display'])} "
+            f"(<code>{html.escape(p['metric'])}</code>)</div>"
+            f"<div class='log-meta'><strong>best valid value</strong>: "
+            f"{html.escape(p['value_display'])}</div>"
+            f"<div class='log-meta'><strong>category rows on date</strong>: "
+            f"{int(p['n_category_rows'])} (best value shown above)</div>"
+            f"<div class='log-meta'><strong>row title</strong>: "
+            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"<div class='log-meta'><strong>source</strong>: "
+            f"{html.escape(p['source_label'] or '—')}</div>"
+            f"<div class='log-meta'><strong>abs path</strong>: "
+            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
+            "</div></td></tr>"
+        )
+    rows.append("</tbody></table>")
+    return "\n".join(rows)
+
+
+def make_full_table_html(category: str,
+                         points: list[dict[str, Any]]) -> str:
+    if not points:
+        return (
+            f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
+            f"ACROSS THE CAMPAIGN.</p>"
+        )
+    rows = [
+        "<table class='test-runs-table'><thead><tr>"
+        "<th>#</th><th>DATE</th><th>WINDOW</th><th>METRIC</th>"
+        "<th>BEST</th><th>ROWS</th><th>TITLE</th><th>OPEN</th>"
+        "</tr></thead><tbody>"
+    ]
+    for idx, p in enumerate(points, start=1):
+        win_label = f"{p['window']:02d}" if p["window"] else "—"
+        title = p["title"] or "(untitled)"
+        rows.append(
+            "<tr>"
+            f"<td><strong>{idx}</strong></td>"
+            f"<td>{html.escape(p['date'])}</td>"
+            f"<td>{html.escape(win_label)}</td>"
+            f"<td>{html.escape(p['metric_display'])}</td>"
+            f"<td>{html.escape(p['value_display'])}</td>"
+            f"<td>{int(p['n_category_rows'])}</td>"
+            f"<td>{html.escape(title[:120])}</td>"
+            "<td class='open-cell'><details class='log-toggle'>"
+            "<summary>provenance</summary></details></td>"
+            "</tr>"
+        )
+        rows.append(
+            "<tr class='log-detail-row'><td colspan='8'>"
+            "<div class='log-panel'>"
+            "<div class='log-meta'><strong>category datapoint</strong></div>"
+            f"<div class='log-meta'><strong>category</strong>: "
+            f"{html.escape(CATEGORY_LABEL[category].lower())}</div>"
+            f"<div class='log-meta'><strong>window</strong>: "
+            f"{html.escape(win_label)} ("
+            f"{html.escape(p['window_start'] or '—')} → "
+            f"{html.escape(p['window_end'] or '—')})</div>"
+            f"<div class='log-meta'><strong>date</strong>: "
+            f"{html.escape(p['date'])} "
+            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"</div>"
+            f"<div class='log-meta'><strong>metric</strong>: "
+            f"{html.escape(p['metric_display'])} "
+            f"(<code>{html.escape(p['metric'])}</code>)</div>"
+            f"<div class='log-meta'><strong>best valid value</strong>: "
+            f"{html.escape(p['value_display'])}</div>"
+            f"<div class='log-meta'><strong>category rows on date</strong>: "
+            f"{int(p['n_category_rows'])}</div>"
+            f"<div class='log-meta'><strong>row title</strong>: "
+            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"<div class='log-meta'><strong>source</strong>: "
+            f"{html.escape(p['source_label'] or '—')}</div>"
+            f"<div class='log-meta'><strong>abs path</strong>: "
+            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
+            "</div></td></tr>"
+        )
+    rows.append("</tbody></table>")
+    return "\n".join(rows)
+
+
+# ---------- per-category render ----------------------------------------------
+
+def render_category(conn: sqlite3.Connection,
+                    category: str,
+                    dates: list[str],
+                    windows: list[dict[str, Any]]) -> dict[str, Any]:
+    if category not in CATEGORIES:
+        raise SystemExit(f"unknown category: {category}")
+
+    CATEGORY_QMD_DIR.mkdir(parents=True, exist_ok=True)
+    CATEGORY_HTML_DIR.mkdir(parents=True, exist_ok=True)
+    asset_dir = CATEGORY_ASSETS_DIR / category
+    asset_dir.mkdir(parents=True, exist_ok=True)
+
+    points = build_category_datapoints(conn, dates, category, windows)
+    points.sort(key=lambda p: p["date"])
+
+    summary_html = make_category_summary_html(category, points, windows)
+
+    window_sections: list[dict[str, Any]] = []
+    total_chart_panels = 0
+    for window in windows:
+        wp = points_for_window(points, window)
+        if not wp:
+            continue
+        section = render_window_section(conn, category, window, wp, asset_dir)
+        section["table_html"] = make_window_table_html(category, window, wp)
+        section["points"] = wp
+        window_sections.append(section)
+        total_chart_panels += len(section["chart_panels"])
+
+    metric_counter = Counter(p["metric"] for p in points)
+    metric_text = "  ·  ".join(
+        f"{metric_display_name(m)} (×{n})" for m, n in metric_counter.most_common()
+    ) or "—"
+    active_dates = sorted({p["date"] for p in points})
+    header_fields = [
+        ("CATEGORY", CATEGORY_LABEL[category]),
+        ("DATES", f"{RESEARCH_START_DATE} TO {RESEARCH_END_DATE}"),
+        ("WINDOWS", f"{len(window_sections)} ACTIVE / {len(windows)} TOTAL"),
+        ("ACTIVE DAYS", str(len(active_dates))),
+        ("DATAPOINTS", str(len(points))),
+        ("PRIMARY METRICS", metric_text),
+    ]
+    by_camp_for_alloc = {category: len(points)} if points else {}
+    report_header = make_report_header_html(
+        header_fields,
+        alloc_bar=make_alloc_bar_html(by_camp_for_alloc) if by_camp_for_alloc else None,
+    )
+
+    h1_html = (
+        '<h1>'
+        '<span class="h1-title">'
+        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
+        f'<span>{html.escape(CATEGORY_LABEL[category])} RESEARCH REPORT</span>'
+        '</span>'
+        '<span class="h1-date">CAMPAIGN</span>'
+        '</h1>'
+    )
+
+    # ----- HTML body -----
+    body_parts = [h1_html, report_header,
+                  "<h2>SECTION 1.0 — BI-WEEKLY TRAJECTORY</h2>",
+                  summary_html]
+    if not window_sections:
+        body_parts.append(
+            f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
+            f"WERE PRODUCED IN ANY TWO-WEEK WINDOW.</p>"
+        )
+    for section in window_sections:
+        win = section["window"]
+        body_parts.append(
+            f"<h3>WINDOW {win['window']:02d} · {html.escape(win['start'])} "
+            f"TO {html.escape(win['end'])}</h3>"
+        )
+        for panel in section["chart_panels"]:
+            body_parts.append(
+                "<figure>"
+                f"<img src='{image_data_uri(panel['path'])}' "
+                f"alt='{html.escape(CATEGORY_LABEL[category])} window "
+                f"{win['window']:02d} {panel['metric']}'/>"
+                "</figure>"
+            )
+        body_parts.append(section["table_html"])
+
+    body_parts.extend([
+        "<h2>SECTION 2.0 — CATEGORY DAILY DATAPOINTS</h2>",
+        make_full_table_html(category, points),
+    ])
+
+    full_html = (
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        f"<title>{CATEGORY_LABEL[category].title()} Research Report</title>"
+        f"<style>{_daily_template_style()}</style></head><body>"
+        + "\n".join(body_parts)
+        + _embedded_log_script()
+        + "</body></html>"
+    )
+    html_path = CATEGORY_HTML_DIR / f"{category}.html"
+    html_path.write_text(full_html, encoding="utf-8")
+
+    # ----- QMD mirror (markdown / image refs only) -----
+    qmd_lines = [
+        h1_html,
+        "",
+        report_header,
+        "",
+        "## SECTION 1.0 — BI-WEEKLY TRAJECTORY",
+        "",
+        summary_html,
+        "",
+    ]
+    if not window_sections:
+        qmd_lines.append(
+            f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
+            f"WERE PRODUCED IN ANY TWO-WEEK WINDOW.</p>"
+        )
+        qmd_lines.append("")
+    for section in window_sections:
+        win = section["window"]
+        qmd_lines.append(
+            f"### WINDOW {win['window']:02d} — {win['start']} to {win['end']}"
+        )
+        qmd_lines.append("")
+        for panel in section["chart_panels"]:
+            relp = os.path.relpath(panel["path"], CATEGORY_QMD_DIR)
+            qmd_lines.append(
+                f"![{CATEGORY_LABEL[category]} window {win['window']:02d} "
+                f"{panel['metric']}]({relp})"
+            )
+            qmd_lines.append("")
+        qmd_lines.append(section["table_html"])
+        qmd_lines.append("")
+    qmd_lines += [
+        "## SECTION 2.0 — CATEGORY DAILY DATAPOINTS",
+        "",
+        make_full_table_html(category, points),
+        "",
+    ]
+    qmd_path = CATEGORY_QMD_DIR / f"{category}.qmd"
+    qmd_path.write_text("\n".join(qmd_lines), encoding="utf-8")
+
+    return {
+        "category": category,
+        "label": CATEGORY_LABEL[category],
+        "html_path": str(html_path),
+        "qmd_path": str(qmd_path),
+        "asset_dir": str(asset_dir),
+        "n_points": len(points),
+        "active_days": len(active_dates),
+        "windows_total": len(windows),
+        "windows_active": len(window_sections),
+        "chart_panels": total_chart_panels,
+        "metrics_used": list(metric_counter.keys()),
+        "template_standard": CATEGORY_TEMPLATE_STANDARD,
+        "daily_template_standard": DAILY_TEMPLATE_STANDARD,
+        "template_style_sha256": LOCKED_TEMPLATE_STYLE_SHA256,
+    }
+
+
+# ---------- index -------------------------------------------------------------
+
+def render_category_index(summaries: list[dict[str, Any]],
+                          windows: list[dict[str, Any]]) -> str:
+    CATEGORY_HTML_DIR.mkdir(parents=True, exist_ok=True)
+    rows = [
+        "<table class='test-runs-table'><thead><tr>"
+        "<th>CATEGORY</th><th>ACTIVE DAYS</th><th>DATAPOINTS</th>"
+        "<th>WINDOWS (ACTIVE / TOTAL)</th><th>CHART PANELS</th>"
+        "<th>METRICS</th><th>OPEN</th>"
+        "</tr></thead><tbody>"
+    ]
+    for s in summaries:
+        metric_blurb = "  ·  ".join(
+            metric_display_name(m) for m in s.get("metrics_used", [])
+        ) or "—"
+        rows.append(
+            "<tr>"
+            f"<td><strong>{html.escape(s['label'])}</strong></td>"
+            f"<td>{int(s['active_days'])}</td>"
+            f"<td>{int(s['n_points'])}</td>"
+            f"<td>{int(s['windows_active'])} / {int(s['windows_total'])}</td>"
+            f"<td>{int(s['chart_panels'])}</td>"
+            f"<td>{html.escape(metric_blurb)}</td>"
+            f"<td><a href='{html.escape(Path(s['html_path']).name)}'>"
+            f"open category</a></td>"
+            "</tr>"
+        )
+    rows.append("</tbody></table>")
+
+    h1_html = (
+        '<h1><span class="h1-title">'
+        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
+        '<span>CATEGORY RESEARCH REPORTS</span></span>'
+        '<span class="h1-date">INDEX</span></h1>'
+    )
+    header_fields = [
+        ("CATEGORIES", str(len(summaries))),
+        ("DATES", f"{RESEARCH_START_DATE} TO {RESEARCH_END_DATE}"),
+        ("WINDOWS", f"{len(windows)} TWO-WEEK"),
+        ("TEMPLATE", CATEGORY_TEMPLATE_STANDARD),
+        ("DAILY STANDARD", DAILY_TEMPLATE_STANDARD),
+        ("WEEKLY STANDARD", render_week.WEEKLY_TEMPLATE_STANDARD),
+    ]
+    body = "\n".join([
+        h1_html,
+        make_report_header_html(header_fields),
+        "<h2>SECTION 1.0 — CATEGORY INDEX</h2>",
+        "<aside class='day-summary'><div class='ds-key'>CATEGORY INDEX</div>"
+        "<div class='ds-body'><p>Each row opens one category cumulative "
+        "report. Each category page splits the campaign into non-overlapping "
+        "two-week windows so chart panels stay readable.</p></div></aside>",
+        "<h2>SECTION 2.0 — CATEGORY REPORTS</h2>",
+        "\n".join(rows),
+    ])
+    html_path = CATEGORY_HTML_DIR / "index.html"
+    html_path.write_text(
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<title>Category Research Reports</title>"
+        f"<style>{_daily_template_style()}</style></head><body>"
+        + body
+        + "</body></html>",
+        encoding="utf-8",
+    )
+    return str(html_path)
+
+
+def render_all_categories(dates: list[str]) -> list[dict[str, Any]]:
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        windows = biweekly_windows(dates)
+        summaries: list[dict[str, Any]] = []
+        for category in CATEGORIES:
+            summaries.append(render_category(conn, category, dates, windows))
+        render_category_index(summaries, windows)
+        return summaries
+    finally:
+        conn.close()
+
+
+# ---------- CLI ---------------------------------------------------------------
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--category", choices=CATEGORIES,
+                        help="render a single category")
+    target.add_argument("--all", action="store_true",
+                        help="render every category and refresh the index")
+    args = parser.parse_args()
+
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        dates = all_campaign_dates(conn)
+    finally:
+        conn.close()
+
+    if args.all:
+        summaries = render_all_categories(dates)
+        print(json.dumps({
+            "categories": [s["category"] for s in summaries],
+            "index": str(CATEGORY_HTML_DIR / "index.html"),
+            "datapoints": {s["category"]: s["n_points"] for s in summaries},
+        }, indent=2))
+        return
+
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row
+    try:
+        windows = biweekly_windows(dates)
+        summary = render_category(conn, args.category, dates, windows)
+    finally:
+        conn.close()
+    print(json.dumps(summary, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -15,12 +15,22 @@ lab-protocol aesthetic.
 | `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
 | `render_day.py` | Builds one daily HTML report. Header dot-leader fields, classification bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios and render as their own kernel classification. Chat sessions are never rendered as supporting research files. |
 | `render_week.py` | Builds weekly HTML reports where each datapoint/row is one rendered daily report. Mixed-metric weeks render one trajectory panel per headline metric. |
-| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, and a journey-arc front page. |
-| `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory), `week_chart` (per-week daily datapoints), and `journey_chart` (50-day arc). |
+| `render_category.py` | Builds experimental, neural, and kernel cumulative category reports with two-week graph windows. |
+| `render_campaign.py` | Builds the campaign cumulative report. Classification tracks are overlaid only on homogeneous metric charts. |
+| `render_cover.py` | Builds the publication cover page. The cover sheet is rendered here only, and `index.html` mirrors this page. |
+| `render_toc.py` | Builds the table-of-contents page for the full static report set using a generated background, not the cover sheet. |
+| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, category reports, the campaign cumulative page, cover page, TOC, and legacy journey page. |
+| `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory), `week_chart` (per-week/category-window datapoints), `campaign_overlay_chart` (classification overlay), and `journey_chart` (50-day arc). |
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
 | `scripts/verify_scraper_contract.py` | Fail-closed scraper/index gate for template-critical fields, metrics, day attribution, training-log embeds, and retrieval indexes. |
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
 | `scripts/verify_weekly_template.py` | Structural gate for the weekly rollup standard. Verifies weekly pages reuse the locked daily visual system, keep two sections, and expose one dropdown row per day. |
+| `scripts/verify_category_template.py` | Structural gate for the category cumulative standard. |
+| `scripts/verify_campaign_template.py` | Structural gate for the campaign cumulative overlay standard. |
+| `scripts/verify_cover_template.py` | Structural gate enforcing the cover as first-page-only. |
+| `scripts/verify_toc_template.py` | Structural gate for the table-of-contents standard. |
+| `vercel.json` | Static Vercel configuration serving `output/preview` with `/` rewritten to `/cover.html`. |
+| `VERCEL_DEPLOY.md` | Local static deploy notes for Vercel. |
 | `scripts/audit_daily_accuracy.py` | Row-level daily accuracy harness for wrong-test/wrong-day detection and evidence provenance. |
 | `ACCURACY_HARNESS.md` | Accuracy workflow: exact audit first, targeted grep review second, RAG only as a non-authoritative search layer. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
@@ -42,6 +52,19 @@ daily CSS hash. A weekly datapoint is a rendered daily report, not a training
 run. Weekly pages are generated in 7-day research windows from Day 001 onward
 and keep values local to that weekly sheet: no median table, no carried prior
 best line, and no separate "best day" headline.
+
+Category pages use `category-report-v1.0-biweekly-course`: one cumulative
+page each for experimental, neural, and kernel, split into two-week graph
+windows. The campaign page uses
+`campaign-cumulative-v1.0-classification-overlay`: it overlays classifications
+only when the metric/y-axis is shared, and keeps kernel ratio panels separate
+from BPB/loss panels.
+
+The publication cover uses `cover-v1.0-first-page` and is the intended site
+entry point at `output/preview/cover.html` and `output/preview/index.html`.
+The table of contents uses `toc-v1.0-campaign-navigation` and follows the
+cover at `output/preview/toc.html`; it uses a generated background asset and
+must not embed or reference the cover sheet.
 
 ## Research chronology
 
@@ -99,16 +122,28 @@ python3 scripts/verify_scraper_contract.py
 python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
 python3 render_day.py --date 2026-03-28   # one day
 python3 render_week.py --week 1            # one 7-day weekly rollup
-python3 render_all.py          # all days + journey arc + index page
+python3 render_category.py --all           # category cumulative reports
+python3 render_campaign.py                 # campaign cumulative overlay
+python3 render_cover.py                    # first-page cover
+python3 render_toc.py                      # table of contents
+python3 render_all.py          # all days + all rollups + cover/TOC
 python3 scripts/verify_daily_template.py --all
 python3 scripts/verify_weekly_template.py --all
+python3 scripts/verify_category_template.py --all
+python3 scripts/verify_campaign_template.py
+python3 scripts/verify_cover_template.py
+python3 scripts/verify_toc_template.py
 python3 scripts/audit_daily_accuracy.py --all
 ```
 
 Output lands in `output/preview/<DATE>.html` (self-contained, base64 PNGs
 embedded, with training logs in full-width disclosure rows — works offline).
 Weekly output lands in `output/preview/weeks/<WEEK>.html`, with the weekly
-index at `output/preview/weeks/index.html`.
+index at `output/preview/weeks/index.html`. Category reports land in
+`output/preview/categories/`. The campaign cumulative report lands at
+`output/preview/cumulative.html`. The cover lands at
+`output/preview/cover.html` and `output/preview/index.html`. The table of
+contents lands at `output/preview/toc.html`.
 
 Optional local chat extraction, no paid API:
 

@@ -108,6 +108,20 @@ def weekly_metric_counts(days: list[dict[str, Any]]) -> Counter[str]:
     return counts
 
 
+def weekly_metrics_chrono(days: list[dict[str, Any]]) -> list[str]:
+    """Metrics ordered by the date of their first daily datapoint.
+
+    Stacked weekly charts read top-to-bottom as oldest-to-newest so the panel
+    order matches the chronology of the daily listing.
+    """
+    seen: list[str] = []
+    for day in sorted(days, key=lambda d: d.get("date") or ""):
+        metric = day.get("headline_metric")
+        if metric and metric not in seen:
+            seen.append(str(metric))
+    return seen
+
+
 def primary_week_metric(days: list[dict[str, Any]]) -> str | None:
     counts = weekly_metric_counts(days)
     if not counts:
@@ -255,9 +269,9 @@ def render_week(week_dates: list[str],
 
         by_camp = aggregate_camps(days)
         primary_metric = primary_week_metric(days)
-        chart_paths: list[str] = []
+        chart_panels: list[dict[str, Any]] = []
         chart_points = 0
-        for metric in weekly_metric_counts(days):
+        for metric in weekly_metrics_chrono(days):
             points = metric_points(days, metric)
             if not points:
                 continue
@@ -267,8 +281,9 @@ def render_week(week_dates: list[str],
                 daily_points=points,
                 metric_name=metric_display_name(metric),
             )
-            chart_paths.append(chart_path)
+            chart_panels.append({"metric": metric, "path": chart_path, "n": n})
             chart_points += n
+        chart_paths = [panel["path"] for panel in chart_panels]
 
         measured_points = sum(1 for d in days if d.get("headline_metric"))
         header_fields = [
@@ -307,10 +322,13 @@ def render_week(week_dates: list[str],
             summary,
             "",
         ]
-        if chart_paths:
-            for chart_path in chart_paths:
-                relp = os.path.relpath(chart_path, WEEK_QMD_DIR)
-                qmd_lines.append(f"![Week {week_number:02d} daily trajectory]({relp})")
+        if chart_panels:
+            for panel in chart_panels:
+                relp = os.path.relpath(panel["path"], WEEK_QMD_DIR)
+                metric_label = metric_display_name(panel["metric"])
+                qmd_lines.append(
+                    f"![Week {week_number:02d} daily trajectory · {metric_label}]({relp})"
+                )
                 qmd_lines.append("")
         else:
             qmd_lines.append('<p class="muted">NO DAILY HEADLINE METRIC RECORDED THIS WEEK.</p>')
@@ -331,13 +349,15 @@ def render_week(week_dates: list[str],
             "<h2>SECTION 1.0 — WEEK TRAJECTORY</h2>",
             summary,
         ]
-        for chart_path in chart_paths:
+        for panel in chart_panels:
+            metric_label = metric_display_name(panel["metric"])
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(chart_path)}' alt='Week {week_number:02d} daily trajectory'/>"
+                f"<img src='{image_data_uri(panel['path'])}' "
+                f"alt='Week {week_number:02d} daily trajectory · {html.escape(metric_label)}'/>"
                 "</figure>"
             )
-        if not chart_paths:
+        if not chart_panels:
             body_parts.append('<p class="muted">NO DAILY HEADLINE METRIC RECORDED THIS WEEK.</p>')
         body_parts.extend([
             "<h2>SECTION 2.0 — DAILY REPORTS</h2>",

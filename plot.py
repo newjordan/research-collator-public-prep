@@ -721,6 +721,130 @@ def week_chart(out_path: str | Path,
     return str(out_path), len(pts)
 
 
+# ---------- CHART D ----------------------------------------------------------
+
+def campaign_overlay_chart(out_path: str | Path,
+                           campaign_label: str,
+                           category_points: list[dict],
+                           metric_name: str = "val_bpb") -> tuple[str, int]:
+    """Campaign cumulative plot with classifications overlaid.
+
+    Each point is one category-local daily datapoint. The caller must keep the
+    metric homogeneous; this helper overlays classifications on one y-axis but
+    never mixes BPB with kernel-ratio values.
+    category_points: {"date": "YYYY-MM-DD", "value": float, "camp": str,
+                      "title": str, "n": int}
+    """
+    if not category_points:
+        return _stub(out_path, f"{metric_name} - {campaign_label}", "no category points"), 0
+
+    pts = []
+    for p in category_points:
+        value = p.get("value")
+        if not isinstance(value, (int, float)) or not math.isfinite(value):
+            continue
+        try:
+            date = dt.datetime.strptime(str(p.get("date")), "%Y-%m-%d")
+        except ValueError:
+            continue
+        pts.append({
+            "date": date,
+            "value": float(value),
+            "camp": p.get("camp") or p.get("category") or "neural",
+            "title": p.get("title", ""),
+            "n": int(p.get("n") or len(pts) + 1),
+        })
+    if not pts:
+        return _stub(out_path, f"{metric_name} - {campaign_label}", "no plottable category points"), 0
+    pts.sort(key=lambda p: (p["date"], p["camp"]))
+
+    fig, ax = plt.subplots(figsize=(10.8, 4.0))
+    dates = [p["date"] for p in pts]
+    values = [p["value"] for p in pts]
+    is_bpb = _is_bpb_metric(metric_name)
+
+    if is_bpb:
+        ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID_ZONE,
+                   alpha=1.0, edgecolor="none", linewidth=0, zorder=0)
+        ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_RULE_HI, linestyle="-",
+                   linewidth=0.65, alpha=0.55, zorder=1)
+
+    order = ("kernel", "experimental", "neural", "daily_grind")
+    by_camp: dict[str, list[dict]] = {}
+    for p in pts:
+        by_camp.setdefault(p["camp"], []).append(p)
+    ordered_camps = [c for c in order if c in by_camp] + [
+        c for c in sorted(by_camp) if c not in order
+    ]
+
+    for camp in ordered_camps:
+        items = sorted(by_camp[camp], key=lambda p: p["date"])
+        color = CAMP_COLOR.get(camp, DARK_TEXT_MUTE)
+        if len(items) >= 2:
+            ax.plot([it["date"] for it in items],
+                    [it["value"] for it in items],
+                    color=color, linewidth=0.9, alpha=0.55,
+                    zorder=1, label="_nolegend_")
+        ax.scatter([it["date"] for it in items],
+                   [it["value"] for it in items],
+                   color=color,
+                   marker=CAMP_MARKER.get(camp, "o"),
+                   s=POINT_SIZE, alpha=0.95,
+                   edgecolors=DARK_BG, linewidths=POINT_EDGE_WIDTH,
+                   label=f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}",
+                   zorder=3)
+        ax.plot([it["date"] for it in items],
+                [it["value"] for it in items],
+                linestyle="None", marker="+",
+                markersize=POINT_PIN_SIZE,
+                markeredgewidth=POINT_PIN_WIDTH,
+                color=DARK_BG,
+                zorder=4, label="_nolegend_")
+
+    real_values = [p["value"] for p in pts if (not is_bpb) or p["value"] <= 3.0]
+    if real_values:
+        data_min = min(real_values)
+        data_max = max(real_values)
+        if is_bpb:
+            y_lo = min(INVALID_VAL_BPB_FLOOR - 0.12, data_min - 0.04)
+            y_lo = max(0.4, y_lo)
+            data_range = max(0.4, data_max - y_lo)
+            y_hi = data_max + 0.12 * data_range
+        else:
+            data_range = max(0.04, data_max - data_min)
+            y_lo = max(0.0, data_min - 0.18 * data_range)
+            y_hi = data_max + 0.18 * data_range
+        ax.set_ylim(y_lo, y_hi)
+
+    start = dates[0] - dt.timedelta(days=2)
+    end = dates[-1] + dt.timedelta(days=2)
+    if start == end:
+        end = start + dt.timedelta(days=1)
+    ax.set_xlim(start, end)
+    ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO, interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d"))
+
+    ax.set_xlabel("DATE (UTC) - LEFT->RIGHT = CAMPAIGN COURSE",
+                  labelpad=8, fontsize=8.5, color=DARK_TEXT,
+                  fontweight="normal")
+    ax.set_ylabel(metric_name.upper(), labelpad=8, fontsize=9, color=DARK_TEXT)
+    ax.set_title(f"{metric_name.upper()}  ·  {campaign_label}", loc="left", pad=10,
+                 fontsize=10.5, fontweight="bold", color=DARK_TEXT_HI)
+    ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.26),
+              framealpha=0.92,
+              edgecolor=DARK_RULE_HI, facecolor=DARK_BG,
+              fontsize=7.5, ncol=max(1, min(3, len(ordered_camps))),
+              columnspacing=1.1, handletextpad=0.5, borderpad=0.5)
+
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.25, top=0.86)
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path)
+    plt.close(fig)
+    return str(out_path), len(pts)
+
+
 # ---------- shared helper ----------------------------------------------------
 
 def _stub(out_path: str | Path, title: str, msg: str) -> str:

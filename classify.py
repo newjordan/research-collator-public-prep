@@ -11,12 +11,17 @@ Schema additions:
 Order of precedence (first match wins):
   0. user override (camp_override) — never auto-rewrites these
   1. source codex_rollouts → daily_grind          (these are session narrative; not tests)
-  2. path: /legs/ → neural                        (SOTA_FINAL, sota_rascal racing legs)
-  3. path: /crawler/, /concepts/, /ablations?/ → experimental
-  4. path: submission.json or /submissions/ → neural
-  5. title/summary keyword: experimental list
-  6. title/summary keyword: neural list
-  7. source-label default
+  2. STRONG_EXP_KW match in title+summary+path → experimental
+     (so an ouroboros submission.json or a megahelix /legs/ training_log is
+      classified by the architecture family, not by the surrounding folder
+      convention — honors the docstring claim "even in competitive sources")
+  3. path: /legs/ → neural                        (SOTA_FINAL, sota_rascal racing legs)
+  4. path: /crawler/, /concepts/, /ablations?/ → experimental
+  5. path: submission.json or /submissions/ → neural
+  6. competitive source identity → neural
+  7. WEAK_EXP_KW in title+summary → experimental
+  8. NEURAL_KW in title+summary → neural
+  9. source-label default
 
 Run:
     python3 classify.py
@@ -117,7 +122,22 @@ def classify(rec: dict) -> tuple[str, str]:
     if label == "conversation_architecture":
         return ("experimental", "source_conversation_architecture")
 
-    # 2. Path strong signals
+    # 2. Strong experimental keywords — always pull experimental, even in
+    #    competitive sources or on submission/legs/baseline paths. Scans
+    #    title+summary+path because the architecture family name often only
+    #    appears in the parent directory (e.g. train_gpt.py living inside
+    #    ouroboros_4k/, submission.json inside 2026-04-03_Ouroboros_8xH100/,
+    #    or training logs under SOTA_FINAL/legs/.../megahelix/).
+    strong_text = f"{title} {summary} {path}"
+    for kw in STRONG_EXP_KW:
+        if kw in strong_text:
+            return ("experimental", f"kw_strong_exp:{kw.strip()}")
+    # Weak / neural keyword scans below stay on title+summary only — path
+    # tokens like "submission.json" or "/legs/" are already handled by the
+    # explicit path rules a few lines down.
+    text = f"{title} {summary}"
+
+    # 3. Path strong signals
     if "/legs/" in path:
         return ("neural", "path_legs")
     if "/crawler/" in path or "/crawlers/" in path:
@@ -134,12 +154,6 @@ def classify(rec: dict) -> tuple[str, str]:
         return ("neural", "path_baseline")
     if "/experiments/" in path or "/exploration/" in path:
         return ("experimental", "path_experiments")
-
-    # 2. Strong experimental keywords — always pull experimental.
-    text = f"{title} {summary}"
-    for kw in STRONG_EXP_KW:
-        if kw in text:
-            return ("experimental", f"kw_strong_exp:{kw.strip()}")
 
     # 3. Competitive-source identity — for SOTA_FINAL / sota_rascal, source wins
     #    over weak experimental keywords ("hypothesis"/"ablation" inside competitive

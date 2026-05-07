@@ -1,14 +1,22 @@
 #!/usr/bin/env python3
 """Render every date with artifacts. Generates:
 
-  output/preview/index.html        — front page with journey chart + day list
-  output/preview/<DATE>.html       — one page per day
-  output/preview/weeks/<WEEK>.html — one page per 7-day research week
-  output/preview/weeks/index.html  — weekly report index
-  output/days/<DATE>.qmd           — Quarto-ready
-  output/assets/<DATE>/*.png       — chart PNGs
-  output/weeks/<WEEK>.qmd          — weekly Quarto-ready
-  output/assets/journey.png        — front-page arc chart
+  output/preview/index.html             — publication cover page alias
+  output/preview/cover.html             — publication cover page
+  output/preview/journey.html           — legacy journey chart + day list
+  output/preview/toc.html               — table of contents
+  output/preview/<DATE>.html            — one page per day
+  output/preview/weeks/<WEEK>.html      — one page per 7-day research week
+  output/preview/weeks/index.html       — weekly report index
+  output/preview/categories/index.html  — category report index
+  output/preview/categories/<CAT>.html  — one page per category cumulative report
+  output/preview/cumulative.html        — campaign cumulative overlay report
+  output/days/<DATE>.qmd                — Quarto-ready
+  output/assets/<DATE>/*.png            — daily chart PNGs
+  output/weeks/<WEEK>.qmd               — weekly Quarto-ready
+  output/categories/<CAT>.qmd           — category Quarto-ready
+  output/campaign/cumulative.qmd        — campaign cumulative Quarto-ready
+  output/assets/journey.png             — legacy journey arc chart
 
 Usage:
     python3 render_all.py
@@ -29,6 +37,10 @@ from collections import defaultdict
 from pathlib import Path
 
 import plot as plot_mod
+import render_campaign
+import render_category
+import render_cover
+import render_toc
 import render_week
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
@@ -107,8 +119,11 @@ def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
 def render_index(dates_with_results: list[dict],
                  days_summary: list[dict],
                  journey_chart_path: str,
-                 week_summaries: list[dict] | None = None) -> str:
-    """Build the front index.html."""
+                 week_summaries: list[dict] | None = None,
+                 category_summaries: list[dict] | None = None,
+                 campaign_summary: dict | None = None,
+                 toc_summary: dict | None = None) -> str:
+    """Build the legacy journey.html page."""
     style = """
     body { font-family: -apple-system, system-ui, sans-serif; max-width: 1080px;
            margin: 24px auto; padding: 0 22px; color: #222; line-height: 1.45; }
@@ -165,6 +180,38 @@ def render_index(dates_with_results: list[dict],
         lines.append(f"<span class='stat'>best ever: <strong>{journey_best:.4f}</strong></span>")
     lines.append("</p>")
 
+    if campaign_summary:
+        if toc_summary:
+            lines.append("<h2>Table of contents</h2>")
+            lines.append("<table><thead><tr>")
+            lines.append("<th>report</th><th>daily</th><th>weekly</th><th>categories</th><th>open</th>")
+            lines.append("</tr></thead><tbody>")
+            lines.append(
+                f"<tr><td>Publication map</td>"
+                f"<td>{int(toc_summary.get('n_days') or 0)}</td>"
+                f"<td>{int(toc_summary.get('n_weeks') or 0)}</td>"
+                f"<td>{int(toc_summary.get('n_categories') or 0)}</td>"
+                "<td><a href='toc.html'>open TOC</a></td></tr>"
+            )
+            lines.append("</tbody></table>")
+
+        lines.append("<h2>Campaign cumulative report</h2>")
+        lines.append("<table><thead><tr>")
+        lines.append("<th>report</th><th>days</th><th>categories</th><th>datapoints</th>"
+                     "<th>chart panels</th><th>metrics</th>")
+        lines.append("</tr></thead><tbody>")
+        href = Path(campaign_summary["html_path"]).name
+        metrics_blurb = campaign_summary.get("metric_text") or "—"
+        lines.append(
+            f"<tr><td><a href='{html.escape(href)}'>Campaign cumulative</a></td>"
+            f"<td>{int(campaign_summary.get('n_days') or 0)}</td>"
+            f"<td>{int(campaign_summary.get('n_categories') or 0)}</td>"
+            f"<td>{int(campaign_summary.get('n_points') or 0)}</td>"
+            f"<td>{int(campaign_summary.get('chart_panels') or 0)}</td>"
+            f"<td>{html.escape(metrics_blurb)}</td></tr>"
+        )
+        lines.append("</tbody></table>")
+
     # Journey chart
     if journey_chart_path:
         rel = os.path.relpath(journey_chart_path, HTML_DIR)
@@ -177,6 +224,10 @@ def render_index(dates_with_results: list[dict],
 
     if week_summaries:
         lines.append("<h2>Weekly reports</h2>")
+        lines.append(
+            "<p class='muted'>Index: "
+            "<a href='weeks/index.html'>weeks/index.html</a></p>"
+        )
         lines.append("<table><thead><tr>")
         lines.append("<th>week</th><th>dates</th><th>days</th><th>primary metric</th>"
                      "<th>datapoints</th><th>classification</th>")
@@ -191,6 +242,30 @@ def render_index(dates_with_results: list[dict],
                 f"<td>{html.escape(week.get('primary_metric_display') or '')}</td>"
                 f"<td>{int(week.get('daily_datapoints') or 0)}</td>"
                 f"<td>{html.escape(render_week.format_camp_counts(week.get('by_camp')))}</td></tr>"
+            )
+        lines.append("</tbody></table>")
+
+    if category_summaries:
+        lines.append("<h2>Category cumulative reports</h2>")
+        lines.append(
+            "<p class='muted'>Two-week non-overlapping windows. Index: "
+            "<a href='categories/index.html'>categories/index.html</a></p>"
+        )
+        lines.append("<table><thead><tr>")
+        lines.append("<th>category</th><th>active days</th><th>datapoints</th>"
+                     "<th>windows (active / total)</th><th>chart panels</th>"
+                     "<th>metrics</th>")
+        lines.append("</tr></thead><tbody>")
+        for cat in category_summaries:
+            href = f"categories/{Path(cat['html_path']).name}"
+            metrics_blurb = ", ".join(cat.get("metrics_used") or []) or "—"
+            lines.append(
+                f"<tr><td><a href='{href}'>{html.escape(cat['label'].title())}</a></td>"
+                f"<td>{int(cat.get('active_days') or 0)}</td>"
+                f"<td>{int(cat.get('n_points') or 0)}</td>"
+                f"<td>{int(cat.get('windows_active') or 0)} / {int(cat.get('windows_total') or 0)}</td>"
+                f"<td>{int(cat.get('chart_panels') or 0)}</td>"
+                f"<td>{html.escape(metrics_blurb)}</td></tr>"
             )
         lines.append("</tbody></table>")
 
@@ -242,14 +317,14 @@ def main():
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
 
-    print("[1/5] enumerating dates...")
+    print("[1/9] enumerating dates...")
     dates = all_dates_with_artifacts(conn)
     print(f"      {len(dates)} unique dates")
     stale_removed = remove_stale_campaign_outputs(dates)
     if stale_removed:
         print(f"      removed {stale_removed} stale date outputs outside campaign")
 
-    print("[2/5] rendering each day...")
+    print("[2/9] rendering each day...")
     days_summary: list[dict] = []
     t0 = time.perf_counter()
     for i, d in enumerate(dates, 1):
@@ -261,11 +336,39 @@ def main():
         if i % 10 == 0 or i == len(dates):
             print(f"      {i}/{len(dates)} ({time.perf_counter() - t0:.1f}s)")
 
-    print("[3/5] rendering weekly reports...")
+    print("[3/9] rendering weekly reports...")
     week_summaries = render_week.render_all_weeks(dates, days_summary)
     print(f"      {len(week_summaries)} weekly reports")
 
-    print("[4/5] computing per-day bests for journey chart...")
+    print("[4/9] rendering category cumulative reports...")
+    category_summaries = render_category.render_all_categories(dates)
+    print(
+        f"      {len(category_summaries)} category reports"
+        f" ({sum(c.get('chart_panels') or 0 for c in category_summaries)}"
+        f" chart panels)"
+    )
+
+    print("[5/9] rendering campaign cumulative report...")
+    campaign_summary = render_campaign.render_campaign_report(
+        dates, week_summaries, category_summaries
+    )
+    print(
+        f"      {campaign_summary.get('chart_panels', 0)} overlay panels, "
+        f"{campaign_summary.get('n_points', 0)} category datapoints"
+    )
+
+    print("[6/9] rendering publication cover...")
+    cover_summary = render_cover.render_cover_page()
+    print(f"      cover page: {cover_summary.get('html_path')}")
+
+    print("[7/9] rendering table of contents...")
+    toc_summary = render_toc.render_toc_report(
+        dates, days_summary, week_summaries, category_summaries,
+        campaign_summary,
+    )
+    print(f"      toc page: {toc_summary.get('html_path')}")
+
+    print("[8/9] computing per-day bests for journey chart...")
     # Pick the metric with broadest coverage across the corpus.
     metric_used = "val_loss"
     per_day = []
@@ -284,7 +387,7 @@ def main():
     print(f"      {len(per_day)} days have a best {metric_used}")
 
     # Render journey chart
-    print("[5/5] rendering journey arc + index.html...")
+    print("[9/9] rendering journey arc + journey.html...")
     journey_path = ""
     if per_day:
         journey_path, _ = plot_mod.journey_chart(
@@ -295,14 +398,25 @@ def main():
             # would just clutter the panel.
         )
 
-    index_html = render_index(per_day, days_summary, journey_path, week_summaries)
+    journey_html = render_index(
+        per_day, days_summary, journey_path, week_summaries,
+        category_summaries, campaign_summary, toc_summary
+    )
     HTML_DIR.mkdir(parents=True, exist_ok=True)
-    (HTML_DIR / "index.html").write_text(index_html)
+    (HTML_DIR / "journey.html").write_text(journey_html)
 
-    # Copy / link the journey chart into preview/ so the index can serve it
-    # as a relative path. We point at the assets dir directly via relative URL.
-    print(f"\ndone. {len(days_summary)} day pages, {len(week_summaries)} week pages, {len(per_day)} on journey arc.")
-    print(f"front page: {HTML_DIR / 'index.html'}")
+    # The legacy journey page points at the assets dir directly via relative URL.
+    print(
+        f"\ndone. {len(days_summary)} day pages, "
+        f"{len(week_summaries)} week pages, "
+        f"{len(category_summaries)} category pages, "
+        f"1 campaign cumulative page, "
+        f"1 cover page, "
+        f"1 toc page, "
+        f"{len(per_day)} on journey arc."
+    )
+    print(f"front page: {HTML_DIR / 'cover.html'}")
+    print(f"journey page: {HTML_DIR / 'journey.html'}")
 
 
 if __name__ == "__main__":

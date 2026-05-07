@@ -1,0 +1,22 @@
+{
+  "buildCommand": "python3 render_all.py",
+  "outputDirectory": "output/preview",
+  "installCommand": "",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/cover.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    }
+  ]
+}
