@@ -45,10 +45,8 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
     require("CONVERSATION_ARCHITECTURE" not in upper, f"{date}: conversation ledger path leaked into body")
     require("CLAUDE_SESSION" not in upper and "CODEX_SESSION" not in upper,
             f"{date}: raw chat-session kind leaked into body")
-    require("report-footer" not in raw and "rf-dotgrid" not in raw,
-            f"{date}: removed footer leaked back into page")
-    require("body::after" in raw and "border-bottom: 1px solid var(--rule-hi);" in raw,
-            f"{date}: missing canonical bottom dither/border treatment")
+    require("report-footer" not in raw and "rf-dotgrid" not in raw and "body::after" not in raw,
+            f"{date}: removed footer or bottom treatment leaked back into page")
     if expect_tests:
         require("class='test-runs-table'" in body, f"{date}: missing canonical test table")
         require("details class='log-toggle'" in body, f"{date}: missing Section 2 dropdown toggle")

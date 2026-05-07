@@ -23,11 +23,9 @@ LEAK_RE = re.compile(
 )
 
 
-def _require_bottom_dither(text: str, html_path: Path) -> None:
-    if "report-footer" in text or "rf-dotgrid" in text:
-        raise AssertionError(f"removed footer leaked back into page: {html_path}")
-    if "body::after" not in text or "border-bottom: 1px solid var(--rule-hi);" not in text:
-        raise AssertionError(f"missing canonical bottom dither/border treatment: {html_path}")
+def _require_clean_bottom(text: str, html_path: Path) -> None:
+    if "report-footer" in text or "rf-dotgrid" in text or "body::after" in text:
+        raise AssertionError(f"removed footer or bottom treatment leaked back into page: {html_path}")
 
 
 def verify_toc(html_path: Path) -> dict:
@@ -36,7 +34,7 @@ def verify_toc(html_path: Path) -> dict:
     text = html_path.read_text(encoding="utf-8", errors="replace")
     if "TABLE OF CONTENTS" not in text:
         raise AssertionError(f"missing TOC h1 marker: {html_path}")
-    _require_bottom_dither(text, html_path)
+    _require_clean_bottom(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(f"TOC page must have exactly two h2 sections: {html_path}")
     for heading in (

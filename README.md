@@ -40,7 +40,7 @@ lab-protocol aesthetic.
 
 ## Template lock
 
-Daily pages are locked to the `daily-report-v2.2-bottom-dither` standard:
+Daily pages are locked to the `daily-report-v2.3-clean-bottom` standard:
 
 - base visual lock: `templates/daily_report_locked.html`
 - executable spec: `TEMPLATE.md`

@@ -31,7 +31,7 @@ fonts, or surface treatments without first updating this section.
 The locked base CSS source is `templates/daily_report_locked.html`. The
 renderer refuses to run if that file's `<style>` block does not match
 `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
-`daily-report-v2.2-bottom-dither`.
+`daily-report-v2.3-clean-bottom`.
 
 ### 2.1 Palette (single source of truth)
 
@@ -72,13 +72,11 @@ summary, chart frame, table headers, and training-log expansion panels use
 `--rule-hi` as a black field with `--bg` text/detailing.
 Tables and lists keep orange body rows for scan density. Key frames use small
 black/orange register marks and corner ticks; these are CSS-only
-micro-graphics, not content fields. The page terminates with a CSS-only
-bottom dither band: sparse black halftone rows above a thin dark-black bottom
-rule. It is an edge treatment, not a footer or content section.
+micro-graphics, not content fields. There is no footer and no decorative
+bottom edge treatment.
 No grey-black fills, no shadows, and no off-palette gradients. The only
 allowed gradients are the low-opacity black grunge texture on the page field
-the bottom halftone/rule treatment, and the 45° diagonal stripes on the neural
-data segment.
+and the 45° diagonal stripes on the neural data segment.
 
 ### 2.4 Section anchors (vertical rhythm)
 
@@ -224,9 +222,8 @@ of these break, the page is wrong.
 2. **Inversion is intentional and limited.** Only report header, section
    anchors, daily summary, chart frame, table headers, and log expansion panels
    use black fields. Body rows/lists remain orange.
-3. **Micro-graphics are CSS-only.** Register marks, corner ticks, and the
-   bottom halftone/rule treatment use `--bg` and `--rule-hi`; no bitmap embeds
-   and no extra data fields.
+3. **Micro-graphics are CSS-only.** Register marks and corner ticks use `--bg`
+   and `--rule-hi`; no bitmap embeds and no extra data fields.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
    matches across the chart and the Test Runs table.
 5. **INVALID rows are BPB-only** and always muted (text), with red on the

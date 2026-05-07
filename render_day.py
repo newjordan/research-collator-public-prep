@@ -40,8 +40,8 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "e6f06c407334654ce76f63ffe3c7616fa47e4149205dade7ab4de8e5f2b8e3e6"
-DAILY_TEMPLATE_STANDARD = "daily-report-v2.2-bottom-dither"
+LOCKED_TEMPLATE_STYLE_SHA256 = "c960d8fe97c5d702916d196895efe438236d073471b7e990ed0f1558e2ddf63a"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.3-clean-bottom"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
 FINAL_SUBMISSION_NAME = "Mockingbird"
@@ -1256,8 +1256,6 @@ def _daily_template_style() -> str:
         ".alloc-seg-kernel",
         ".supporting-section",
         ".bpb-table",
-        "body::after",
-        "border-bottom: 1px solid var(--rule-hi);",
     ]
     missing = [needle for needle in required if needle not in style]
     if missing:
