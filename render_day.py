@@ -2374,6 +2374,26 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             format_metric_value(headline_metric, best_headline_value)
             if best_headline_value is not None else ""
         ),
+        "best_headline_title": (
+            min(
+                (
+                    r for r in test_rows
+                    if is_valid_metric_value(headline_metric, r["value"])
+                ),
+                key=lambda r: r["value"],
+                default={},
+            ).get("title", "")
+            if headline_metric else ""
+        ),
+        "n_test_rows": len(test_rows),
+        "valid_test_rows": valid_count,
+        "invalid_test_rows": invalid_count,
+        "crash_test_rows": crash_count,
+        "arch_families": [
+            {"name": name, "count": count}
+            for name, count in arch_families
+        ],
+        "arch_families_display": format_arch_families(arch_families),
         "chart_n_points": chart_n,
         "chart_panels": len(chart_paths),
         "chart_baseline_to_beat": chart_baseline,

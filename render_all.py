@@ -3,8 +3,11 @@
 
   output/preview/index.html        — front page with journey chart + day list
   output/preview/<DATE>.html       — one page per day
+  output/preview/weeks/<WEEK>.html — one page per 7-day research week
+  output/preview/weeks/index.html  — weekly report index
   output/days/<DATE>.qmd           — Quarto-ready
   output/assets/<DATE>/*.png       — chart PNGs
+  output/weeks/<WEEK>.qmd          — weekly Quarto-ready
   output/assets/journey.png        — front-page arc chart
 
 Usage:
@@ -26,6 +29,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import plot as plot_mod
+import render_week
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
     RESEARCH_START_DATE, RESEARCH_END_DATE,
@@ -102,7 +106,8 @@ def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
 
 def render_index(dates_with_results: list[dict],
                  days_summary: list[dict],
-                 journey_chart_path: str) -> str:
+                 journey_chart_path: str,
+                 week_summaries: list[dict] | None = None) -> str:
     """Build the front index.html."""
     style = """
     body { font-family: -apple-system, system-ui, sans-serif; max-width: 1080px;
@@ -170,6 +175,25 @@ def render_index(dates_with_results: list[dict],
                      "Kernel days use their own custom/FA3 daily headline metric.</figcaption>")
         lines.append("</figure>")
 
+    if week_summaries:
+        lines.append("<h2>Weekly reports</h2>")
+        lines.append("<table><thead><tr>")
+        lines.append("<th>week</th><th>dates</th><th>days</th><th>primary metric</th>"
+                     "<th>datapoints</th><th>classification</th>")
+        lines.append("</tr></thead><tbody>")
+        for week in week_summaries:
+            href = f"weeks/{Path(week['html_path']).name}"
+            dates = week["dates"]
+            lines.append(
+                f"<tr><td><a href='{href}'>Week {int(week['week']):02d}</a></td>"
+                f"<td>{html.escape(dates[0])} to {html.escape(dates[-1])}</td>"
+                f"<td>{week['n_days']} ({week['n_measured_days']} measured)</td>"
+                f"<td>{html.escape(week.get('primary_metric_display') or '')}</td>"
+                f"<td>{int(week.get('daily_datapoints') or 0)}</td>"
+                f"<td>{html.escape(render_week.format_camp_counts(week.get('by_camp')))}</td></tr>"
+            )
+        lines.append("</tbody></table>")
+
     # Day table
     lines.append("<h2>Daily reports</h2>")
     lines.append("<table><thead><tr>")
@@ -218,14 +242,14 @@ def main():
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
 
-    print("[1/4] enumerating dates...")
+    print("[1/5] enumerating dates...")
     dates = all_dates_with_artifacts(conn)
     print(f"      {len(dates)} unique dates")
     stale_removed = remove_stale_campaign_outputs(dates)
     if stale_removed:
         print(f"      removed {stale_removed} stale date outputs outside campaign")
 
-    print("[2/4] rendering each day...")
+    print("[2/5] rendering each day...")
     days_summary: list[dict] = []
     t0 = time.perf_counter()
     for i, d in enumerate(dates, 1):
@@ -237,7 +261,11 @@ def main():
         if i % 10 == 0 or i == len(dates):
             print(f"      {i}/{len(dates)} ({time.perf_counter() - t0:.1f}s)")
 
-    print("[3/4] computing per-day bests for journey chart...")
+    print("[3/5] rendering weekly reports...")
+    week_summaries = render_week.render_all_weeks(dates, days_summary)
+    print(f"      {len(week_summaries)} weekly reports")
+
+    print("[4/5] computing per-day bests for journey chart...")
     # Pick the metric with broadest coverage across the corpus.
     metric_used = "val_loss"
     per_day = []
@@ -256,7 +284,7 @@ def main():
     print(f"      {len(per_day)} days have a best {metric_used}")
 
     # Render journey chart
-    print("[4/4] rendering journey arc + index.html...")
+    print("[5/5] rendering journey arc + index.html...")
     journey_path = ""
     if per_day:
         journey_path, _ = plot_mod.journey_chart(
@@ -267,13 +295,13 @@ def main():
             # would just clutter the panel.
         )
 
-    index_html = render_index(per_day, days_summary, journey_path)
+    index_html = render_index(per_day, days_summary, journey_path, week_summaries)
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     (HTML_DIR / "index.html").write_text(index_html)
 
     # Copy / link the journey chart into preview/ so the index can serve it
     # as a relative path. We point at the assets dir directly via relative URL.
-    print(f"\ndone. {len(days_summary)} day pages, {len(per_day)} on journey arc.")
+    print(f"\ndone. {len(days_summary)} day pages, {len(week_summaries)} week pages, {len(per_day)} on journey arc.")
     print(f"front page: {HTML_DIR / 'index.html'}")
 
 

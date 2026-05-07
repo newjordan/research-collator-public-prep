@@ -14,11 +14,13 @@ lab-protocol aesthetic.
 | `enrich.py` | Adds git commits + Claude session JSONLs + Codex session JSONLs to the index. Pulls val_bpb / val_loss out of commit messages with delta-vs-absolute classification + sanity floor. |
 | `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
 | `render_day.py` | Builds one daily HTML report. Header dot-leader fields, classification bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios and render as their own kernel classification. Chat sessions are never rendered as supporting research files. |
-| `render_all.py` | Batch-renders every date with activity + a journey-arc front page. |
-| `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory) and `journey_chart` (50-day arc). |
+| `render_week.py` | Builds weekly HTML reports where each datapoint/row is one rendered daily report. Mixed-metric weeks render one trajectory panel per headline metric. |
+| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, and a journey-arc front page. |
+| `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory), `week_chart` (per-week daily datapoints), and `journey_chart` (50-day arc). |
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
 | `scripts/verify_scraper_contract.py` | Fail-closed scraper/index gate for template-critical fields, metrics, day attribution, training-log embeds, and retrieval indexes. |
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
+| `scripts/verify_weekly_template.py` | Structural gate for the weekly rollup standard. Verifies weekly pages reuse the locked daily visual system, keep two sections, and expose one dropdown row per day. |
 | `scripts/audit_daily_accuracy.py` | Row-level daily accuracy harness for wrong-test/wrong-day detection and evidence provenance. |
 | `ACCURACY_HARNESS.md` | Accuracy workflow: exact audit first, targeted grep review second, RAG only as a non-authoritative search layer. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
@@ -34,6 +36,12 @@ Daily pages are locked to the `daily-report-v2.0-wide-log-panel` standard:
 - executable spec: `TEMPLATE.md`
 - renderer gate: `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`
 - verification gate: `python3 scripts/verify_daily_template.py --all`
+
+Weekly pages use `weekly-report-v1.0-daily-rollup` and reuse the same locked
+daily CSS hash. A weekly datapoint is a rendered daily report, not a training
+run. Weekly pages are generated in 7-day research windows from Day 001 onward
+and keep values local to that weekly sheet: no median table, no carried prior
+best line, and no separate "best day" headline.
 
 ## Research chronology
 
@@ -90,13 +98,17 @@ python3 classify.py            # tag every record with camp
 python3 scripts/verify_scraper_contract.py
 python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
 python3 render_day.py --date 2026-03-28   # one day
+python3 render_week.py --week 1            # one 7-day weekly rollup
 python3 render_all.py          # all days + journey arc + index page
 python3 scripts/verify_daily_template.py --all
+python3 scripts/verify_weekly_template.py --all
 python3 scripts/audit_daily_accuracy.py --all
 ```
 
 Output lands in `output/preview/<DATE>.html` (self-contained, base64 PNGs
 embedded, with training logs in full-width disclosure rows — works offline).
+Weekly output lands in `output/preview/weeks/<WEEK>.html`, with the weekly
+index at `output/preview/weeks/index.html`.
 
 Optional local chat extraction, no paid API:
 

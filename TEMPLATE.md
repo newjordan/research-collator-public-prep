@@ -312,6 +312,7 @@ python3 classify.py
 python3 scripts/verify_scraper_contract.py
 python3 render_all.py
 python3 scripts/verify_daily_template.py --all
+python3 scripts/verify_weekly_template.py --all
 ```
 
 `scripts/verify_scraper_contract.py` is the executable gate for §6. It
@@ -357,10 +358,11 @@ The `classify.py` rule order:
 
 ## 7. RENDERER CONTRACT
 
-The renderer (`render_day.py`) is the only consumer of the scraper output
-that's allowed to write the canonical HTML. Other tools (e.g.
-`render_all.py`) call `render_one_day` and treat its return value as
-opaque.
+The daily renderer (`render_day.py`) is the only consumer of the scraper
+output that's allowed to write the canonical daily HTML. Weekly pages
+(`render_week.py`) are rollups of rendered daily summaries: their datapoints
+are daily reports, not raw training logs. `render_all.py` calls both
+renderers and treats their return values as opaque.
 
 `render_one_day(date: str, metric_override: str | None) -> dict` must
 produce:
@@ -374,6 +376,26 @@ produce:
 The `.html` file is the canonical rendered template instance. The `.qmd`
 exists for future Quarto book assembly; it must NOT be the source of
 truth for layout (the HTML is).
+
+`render_week.py` must produce:
+
+- `output/weeks/week-<NN>_<START>_to_<END>.qmd` — Quarto-compatible weekly
+  source.
+- `output/preview/weeks/week-<NN>_<START>_to_<END>.html` — Self-contained
+  weekly HTML using the locked daily CSS.
+- `output/assets/weeks/week-<NN>_<START>_to_<END>/week_chart_<METRIC>.png`
+  — one weekly trajectory chart per headline metric in that week.
+
+Weekly pages keep the same two-section shape:
+
+- `SECTION 1.0 — WEEK TRAJECTORY`
+- `SECTION 2.0 — DAILY REPORTS`
+
+Every Section 2 row is one daily report with an `OPEN` dropdown. Mixed-metric
+weeks never plot unlike metrics on a shared y-axis; they render separate
+weekly trajectory panels. Weekly pages must keep each plotted value local to
+its source day/week: no weekly median/best/worst spread table, no carried
+prior-best baseline line, and no "best day" headline.
 
 ---
 

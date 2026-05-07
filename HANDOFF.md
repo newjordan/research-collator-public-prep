@@ -1,6 +1,15 @@
 # Research Collator — Session Handoff (2026-05-05)
 
-## Active Claude Work Order (2026-05-06)
+## Active Claude Work Order (2026-05-07)
+
+For the current rollup work, use
+[`CLAUDE_CATEGORY_REPORTS_HANDOFF.md`](CLAUDE_CATEGORY_REPORTS_HANDOFF.md).
+
+That document supersedes the month-report idea. Keep the weekly reports, then
+build cumulative category reports for experimental, neural, and kernel work
+using two-week graph windows.
+
+## Prior Claude Work Order (2026-05-06)
 
 For the current bookkeeping-heavy campaign rebuild, use
 [`CLAUDE_DAILY_REPORTS_HANDOFF.md`](CLAUDE_DAILY_REPORTS_HANDOFF.md).
