@@ -29,10 +29,10 @@ import plot as plot_mod
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
     RESEARCH_START_DATE, RESEARCH_END_DATE,
-    best_date, fetch_day, pick_headline_metric,
+    best_date, fetch_day,
     extract_metric_for_record, render_one_day,
     is_reference_baseline_record, is_research_chronology_record,
-    is_research_campaign_date,
+    is_research_campaign_date, is_valid_metric_value,
 )
 
 
@@ -61,6 +61,8 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
             continue
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         for v in vals:
+            if not is_valid_metric_value(metric, v):
+                continue
             if best_v is None or v < best_v:
                 best_v = v
                 best_title = rec.get("title") or "(untitled)"
@@ -100,8 +102,7 @@ def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
 
 def render_index(dates_with_results: list[dict],
                  days_summary: list[dict],
-                 journey_chart_path: str,
-                 reference_baseline: float | None) -> str:
+                 journey_chart_path: str) -> str:
     """Build the front index.html."""
     style = """
     body { font-family: -apple-system, system-ui, sans-serif; max-width: 1080px;
@@ -143,7 +144,7 @@ def render_index(dates_with_results: list[dict],
     total_neural = sum(d["by_camp"].get("neural", 0) for d in days_summary)
     total_exp = sum(d["by_camp"].get("experimental", 0) for d in days_summary)
     total_visible_support = sum(d.get("n_visible_support_records", 0) for d in days_summary)
-    days_with_metric = len(dates_with_results)
+    days_with_metric = sum(1 for d in days_summary if d.get("headline_metric"))
     journey_best = min((d["best"] for d in dates_with_results), default=None)
 
     lines.append("<p>")
@@ -151,7 +152,7 @@ def render_index(dates_with_results: list[dict],
     lines.append(f"<span class='stat'><strong>{total_visible_support}</strong> visible support files/logs</span>")
     lines.append(f"<span class='stat'><strong>{total_neural}</strong> neural</span>")
     lines.append(f"<span class='stat'><strong>{total_exp}</strong> experimental</span>")
-    lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with measured val_loss/val_bpb</span>")
+    lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with headline metrics</span>")
     if journey_best is not None:
         lines.append(f"<span class='stat'>best ever: <strong>{journey_best:.4f}</strong></span>")
     lines.append("</p>")
@@ -162,8 +163,8 @@ def render_index(dates_with_results: list[dict],
         lines.append("<h2>Journey arc</h2>")
         lines.append("<figure>")
         lines.append(f"<img src='{rel}' alt='journey arc'/>")
-        lines.append("<figcaption class='muted'>Best val_loss/val_bpb per day. "
-                     "Black line = personal-best running minimum.</figcaption>")
+        lines.append("<figcaption class='muted'>Journey arc tracks best val_loss/val_bpb per day. "
+                     "Kernel days use their own custom/FA3 daily headline metric.</figcaption>")
         lines.append("</figure>")
 
     # Day table
@@ -173,10 +174,8 @@ def render_index(dates_with_results: list[dict],
                  "<th>headline metric</th><th>best of day</th><th>vs baseline</th>")
     lines.append("</tr></thead><tbody>")
     by_date = {d["date"]: d for d in days_summary}
-    bests = {d["date"]: d for d in dates_with_results}
     for d in sorted(by_date.keys()):
         ds = by_date[d]
-        b = bests.get(d)
         camp_badges = []
         for camp in ("neural", "experimental", "daily_grind"):
             n = ds["by_camp"].get(camp, 0)
@@ -185,11 +184,17 @@ def render_index(dates_with_results: list[dict],
                     f"<span class='badge badge-{camp}'>{camp[:6]}: {n}</span>"
                 )
         link = f"<a href='{d}.html'>{d}</a>"
-        best_cell = f"{b['best']:.4f}" if b else ""
-        if b and reference_baseline is not None:
-            delta = b["best"] - reference_baseline
+        best_value = ds.get("best_headline_value")
+        best_cell = html.escape(ds.get("best_headline_value_display") or "")
+        baseline = ds.get("chart_baseline_to_beat")
+        if (
+            isinstance(best_value, (int, float))
+            and isinstance(baseline, (int, float))
+            and baseline
+        ):
+            delta = best_value - baseline
             arrow = "↓" if delta < 0 else "↑"
-            vs_cell = f"{arrow} {abs(delta):.4f}"
+            vs_cell = f"{arrow} {abs(100.0 * delta / baseline):.1f}%"
         else:
             vs_cell = ""
         lines.append(
@@ -197,7 +202,7 @@ def render_index(dates_with_results: list[dict],
             f"<td>{ds['n_records']}</td>"
             f"<td>{' '.join(camp_badges)}</td>"
             f"<td><code>{html.escape(ds.get('visible_support_source') or 'no day-local files/logs')}</code></td>"
-            f"<td>{html.escape(ds.get('headline_metric') or '')}</td>"
+            f"<td>{html.escape(ds.get('headline_metric_display') or ds.get('headline_metric') or '')}</td>"
             f"<td>{best_cell}</td>"
             f"<td>{vs_cell}</td></tr>"
         )
@@ -247,9 +252,6 @@ def main():
 
     print(f"      {len(per_day)} days have a best {metric_used}")
 
-    # Reference baseline — best ever in the corpus
-    reference_baseline = min((p["best"] for p in per_day), default=None)
-
     # Render journey chart
     print("[4/4] rendering journey arc + index.html...")
     journey_path = ""
@@ -258,12 +260,11 @@ def main():
             ASSETS_DIR / "journey.png",
             per_day_bests=per_day,
             metric_name=metric_used,
-            # Don't pass reference_baseline for journey chart (the running-min
-            # line tells the story; the dashed baseline would just be the
-            # leftmost value and clutter the panel).
+            # The running-min line tells the story; a separate dashed baseline
+            # would just clutter the panel.
         )
 
-    index_html = render_index(per_day, days_summary, journey_path, reference_baseline)
+    index_html = render_index(per_day, days_summary, journey_path)
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     (HTML_DIR / "index.html").write_text(index_html)
 

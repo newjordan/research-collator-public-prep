@@ -19,6 +19,7 @@ import datetime as dt
 import hashlib
 import html
 import json
+import math
 import os
 import re
 import sqlite3
@@ -68,7 +69,17 @@ HARDWARE_PATTERNS = (
     (r"\b4[\s_-]*x\b",     "4 GPU"),
 )
 
-HEADLINE_METRICS = ("val_bpb", "val_loss", "val_bits_per_byte", "bpb")
+KERNEL_FB_RATIO_METRIC = "kernel_fb_ratio"
+KERNEL_FWD_RATIO_METRIC = "kernel_fwd_ratio"
+KERNEL_METRICS = (KERNEL_FB_RATIO_METRIC, KERNEL_FWD_RATIO_METRIC)
+HEADLINE_METRICS = (
+    KERNEL_FB_RATIO_METRIC,
+    KERNEL_FWD_RATIO_METRIC,
+    "val_bpb",
+    "val_loss",
+    "val_bits_per_byte",
+    "bpb",
+)
 BPB_METRICS = {"val_bpb", "val_bits_per_byte", "bpb"}
 INVALID_VAL_BPB_FLOOR = 1.06
 CRASH_VAL_BPB_THRESHOLD = 3.0
@@ -89,6 +100,14 @@ CAMP_DISPLAY_LABEL = {
     "experimental": "experimental",
     "neural": "neural",
     "daily_grind": "daily grind",
+}
+METRIC_DISPLAY_LABEL = {
+    KERNEL_FB_RATIO_METRIC: "CUSTOM/FA3 FB RATIO",
+    KERNEL_FWD_RATIO_METRIC: "CUSTOM/FA3 FWD RATIO",
+    "val_bpb": "VAL_BPB",
+    "val_loss": "VAL_LOSS",
+    "val_bits_per_byte": "VAL_BITS_PER_BYTE",
+    "bpb": "BPB",
 }
 RESEARCH_CHRONOLOGY_SOURCE_LABELS = {
     "parameter-golf-lab", "git:parameter-golf-lab",
@@ -112,6 +131,22 @@ def is_bpb_metric(metric: str | None) -> bool:
     return metric in BPB_METRICS or metric.startswith("val_bpb")
 
 
+def is_kernel_metric(metric: str | None) -> bool:
+    return metric in KERNEL_METRICS
+
+
+def metric_display_name(metric: str | None) -> str:
+    if not metric:
+        return "METRIC"
+    return METRIC_DISPLAY_LABEL.get(metric, metric.upper())
+
+
+def format_metric_value(metric: str | None, value: float) -> str:
+    if is_kernel_metric(metric):
+        return f"{value:.3f}×"
+    return f"{value:.4f}"
+
+
 def is_below_floor(metric: str | None, value: float) -> bool:
     return is_bpb_metric(metric) and value < INVALID_VAL_BPB_FLOOR
 
@@ -121,6 +156,12 @@ def is_crash_value(metric: str | None, value: float) -> bool:
 
 
 def is_valid_metric_value(metric: str | None, value: float) -> bool:
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(float(value))
+    ):
+        return False
     if not is_bpb_metric(metric):
         return True
     return INVALID_VAL_BPB_FLOOR <= value <= CRASH_VAL_BPB_THRESHOLD
@@ -274,6 +315,8 @@ def extract_metric_for_record(metrics_json: str | None, metric_name: str) -> lis
         md = json.loads(metrics_json)
     except json.JSONDecodeError:
         return []
+    if metric_name in KERNEL_METRICS:
+        return extract_kernel_ratio_metrics(md, metric_name)
     out = []
     for k, v in md.items():
         if not isinstance(v, (int, float)) or isinstance(v, bool):
@@ -284,8 +327,70 @@ def extract_metric_for_record(metrics_json: str | None, metric_name: str) -> lis
     return out
 
 
+def extract_kernel_ratio_metrics(md: dict, metric_name: str) -> list[float]:
+    """Derived custom-kernel/FA3 timing ratio. Lower means custom is faster."""
+    if not isinstance(md, dict):
+        return []
+    mode = "fb" if metric_name == KERNEL_FB_RATIO_METRIC else "fwd"
+    values: list[float] = []
+
+    source_custom = md.get(f"source_metrics.whale_{mode}_mean_ms")
+    source_fa3 = md.get(f"source_metrics.fa3_{mode}_mean_ms")
+    if _positive_number(source_custom) and _positive_number(source_fa3):
+        values.append(float(source_custom) / float(source_fa3))
+
+    custom_by_idx: dict[str, float] = {}
+    fa3_by_idx: dict[str, float] = {}
+    pattern = re.compile(
+        rf"^results\[(\d+)\]\.backends\.(whale_fast|whale|custom|kernel|blessed_whale)\.{mode}_mean_ms$"
+    )
+    fa3_pattern = re.compile(
+        rf"^results\[(\d+)\]\.backends\.fa3\.{mode}_mean_ms$"
+    )
+    for key, value in md.items():
+        if not _positive_number(value):
+            continue
+        m = pattern.match(str(key))
+        if m:
+            custom_by_idx.setdefault(m.group(1), float(value))
+            continue
+        fm = fa3_pattern.match(str(key))
+        if fm:
+            fa3_by_idx.setdefault(fm.group(1), float(value))
+    for idx in sorted(set(custom_by_idx) & set(fa3_by_idx), key=int):
+        values.append(custom_by_idx[idx] / fa3_by_idx[idx])
+    return values
+
+
+def _positive_number(value: object) -> bool:
+    return (
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value))
+        and float(value) > 0
+    )
+
+
+def metric_count(records: list[dict], metric: str) -> int:
+    n = 0
+    for rec in records:
+        if is_reference_baseline_record(rec):
+            continue
+        n += len(extract_metric_for_record(rec.get("metrics_json"), metric))
+    return n
+
+
 def pick_headline_metric(records: list[dict]) -> str | None:
+    # Kernel-heavy whale/crawler days are about custom kernel vs FA3 timing,
+    # even when adjacent files also contain validation BPB. Treat those timing
+    # ratios as the primary metric whenever at least two comparable benchmarks
+    # are present.
+    for metric in KERNEL_METRICS:
+        if metric_count(records, metric) >= 2:
+            return metric
     for metric in HEADLINE_METRICS:
+        if metric in KERNEL_METRICS:
+            continue
         n = 0
         for rec in records:
             if is_reference_baseline_record(rec):
@@ -645,6 +750,7 @@ def extract_test_rows(records: list[dict], metric: str,
         run_script = _find_run_script(rec)
 
         best_val = min(vals)
+        row_camp = "experimental" if is_kernel_metric(metric) else rec["camp"]
         cur = by_title.get(title)
         if cur is None:
             row = {
@@ -656,7 +762,7 @@ def extract_test_rows(records: list[dict], metric: str,
                 "hardware": hardware,
                 "hardware_priority": hw_priority if hardware else 99,
                 "wallclock_seconds": wallclock,
-                "camp": rec["camp"],
+                "camp": row_camp,
                 "source_label": rec["source_label"],
                 "abs_path": rec["abs_path"],
                 "link_label": link_label,
@@ -1191,14 +1297,15 @@ def assert_daily_template_contract(date: str,
             f"daily report day-local contract failed for {date}: {sample}"
         )
 
+    metric_header = metric_display_name(metric)
     expected_header = (
-        f"| # | TIME | HW | ABLATION | {metric.upper()} | STATUS | Δ % | OPEN |"
+        f"| # | TIME | HW | ABLATION | {metric_header} | STATUS | Δ % | OPEN |"
     )
     expected_html_header = (
         "<thead><tr>"
         + "".join(
             f"<th>{html.escape(c)}</th>"
-            for c in ["#", "TIME", "HW", "ABLATION", metric.upper(), "STATUS", "Δ %", "OPEN"]
+            for c in ["#", "TIME", "HW", "ABLATION", metric_header, "STATUS", "Δ %", "OPEN"]
         )
         + "</tr></thead>"
     )
@@ -1263,7 +1370,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
                             by_camp: dict[str, int]) -> str:
     """Two-paragraph callout that sits between SECTION 1.0 and the chart.
     Generated deterministically from the day's numbers — no LLM."""
-    metric = (headline_metric or "metric").upper()
+    metric = metric_display_name(headline_metric)
     floor = INVALID_VAL_BPB_FLOOR
     exp = by_camp.get("experimental", 0)
     neu = by_camp.get("neural", 0)
@@ -1275,8 +1382,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
 
     # Zero measured validation rows — don't fabricate "allocation skew" or
     # "the day was about hammering X variants" when the day has support files
-    # but no explicit val_bpb/val_loss output. Common causes: infra/studio
-    # days, kernel-benchmark days, and session-only days.
+    # but no explicit headline metric output. Common causes: infra/studio,
+    # artifact-only, and session-only days.
     if n_tests == 0:
         return (
             '<aside class="day-summary">'
@@ -1312,15 +1419,27 @@ def make_daily_summary_html(date: str, day_index: int | None,
             f"eval-error floor and <strong>{invalid_count} below-floor</strong> "
             "readings discarded"
         )
+    elif is_kernel_metric(headline_metric):
+        validity_phrase = (
+            f"with <strong>{valid_count}</strong> custom-kernel-vs-FA3 timing rows"
+        )
     else:
         validity_phrase = f"with <strong>{valid_count}</strong> measured rows"
 
-    para1 = (
-        f"{day_ref} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
-        f"{validity_phrase}. "
-        f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
-        f"{arch_phrase}."
-    )
+    if is_kernel_metric(headline_metric):
+        para1 = (
+            f"{day_ref} ran {n_tests} kernel benchmarks against "
+            f"<strong>{html.escape(metric)}</strong>, {validity_phrase}. "
+            f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+            f"{arch_phrase}."
+        )
+    else:
+        para1 = (
+            f"{day_ref} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
+            f"{validity_phrase}. "
+            f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+            f"{arch_phrase}."
+        )
 
     # Para 2: best-of-day, PB comparison
     valid_rows = [
@@ -1331,21 +1450,28 @@ def make_daily_summary_html(date: str, day_index: int | None,
         best = min(valid_rows, key=lambda r: r["value"])
         best_value = best["value"]
         best_title = best.get("title", "(unknown)")
+        best_phrase = "Best valid" if is_bpb_metric(headline_metric) else "Best"
         if chart_baseline is not None and best_value < chart_baseline:
-            pb_line = (f"<strong>NEW PERSONAL BEST.</strong> Best valid "
-                       f"<strong>{best_value:.4f}</strong> beats prior bar "
-                       f"<strong>{chart_baseline:.4f}</strong>.")
+            pb_line = (f"<strong>NEW PERSONAL BEST.</strong> {best_phrase} "
+                       f"<strong>{format_metric_value(headline_metric, best_value)}</strong> "
+                       "beats prior bar "
+                       f"<strong>{format_metric_value(headline_metric, chart_baseline)}</strong>.")
         elif chart_baseline is not None:
-            pb_line = (f"No new personal best. Best valid of the day = "
-                       f"<strong>{best_value:.4f}</strong> "
+            pb_line = (f"No new personal best. {best_phrase} of the day = "
+                       f"<strong>{format_metric_value(headline_metric, best_value)}</strong> "
                        f"({html.escape(best_title[:60])}); "
-                       f"best-before-today = <strong>{chart_baseline:.4f}</strong> still stands.")
+                       "best-before-today = "
+                       f"<strong>{format_metric_value(headline_metric, chart_baseline)}</strong> still stands.")
         else:
-            pb_line = (f"Best valid of the day = <strong>{best_value:.4f}</strong> "
+            pb_line = (f"{best_phrase} of the day = "
+                       f"<strong>{format_metric_value(headline_metric, best_value)}</strong> "
                        f"({html.escape(best_title[:60])}). "
                        f"No prior baseline to compare against.")
     else:
-        pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
+        if is_bpb_metric(headline_metric):
+            pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
+        else:
+            pb_line = "<strong>No measured rows.</strong> No finite metric values were available."
 
     # Crash flag
     crash_count = sum(
@@ -1369,10 +1495,9 @@ def make_daily_summary_html(date: str, day_index: int | None,
     )
 
 
-def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
-                             arch_families: list[tuple[str, int]]) -> str:
-    """VAL_BPB spread per architecture family — n / min / median / max,
-    valid runs only. Returns rendered HTML directly (custom .bpb-table class)."""
+def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
+                                arch_families: list[tuple[str, int]]) -> str:
+    """Primary-metric spread per architecture family — n/min/median/max."""
     valid = [
         r for r in test_rows
         if is_valid_metric_value(headline_metric, r["value"])
@@ -1396,7 +1521,7 @@ def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
         if f not in ordered_fams:
             ordered_fams.append(f)
 
-    metric = (headline_metric or "metric").upper()
+    metric = metric_display_name(headline_metric)
     rows = [f'<table class="bpb-table"><thead><tr>'
             f'<th>{metric} SPREAD</th><th>n</th><th>min</th>'
             f'<th>median</th><th>max</th></tr></thead><tbody>']
@@ -1413,8 +1538,9 @@ def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
             med = (vals[n // 2 - 1] + vals[n // 2]) / 2.0
         rows.append(
             f'<tr><td>{html.escape(fam.upper())}</td>'
-            f'<td>{n}</td><td>{mn:.4f}</td>'
-            f'<td>{med:.4f}</td><td>{mx:.4f}</td></tr>'
+            f'<td>{n}</td><td>{format_metric_value(headline_metric, mn)}</td>'
+            f'<td>{format_metric_value(headline_metric, med)}</td>'
+            f'<td>{format_metric_value(headline_metric, mx)}</td></tr>'
         )
     # All-valid row
     all_vals = sorted(v for vs in by_fam.values() for v in vs)
@@ -1423,8 +1549,9 @@ def make_bpb_spread_table_md(test_rows: list[dict], headline_metric: str,
         med = all_vals[n // 2] if n % 2 == 1 else (all_vals[n // 2 - 1] + all_vals[n // 2]) / 2.0
         rows.append(
             f'<tr><td>ALL VALID</td>'
-            f'<td>{n}</td><td>{all_vals[0]:.4f}</td>'
-            f'<td>{med:.4f}</td><td>{all_vals[-1]:.4f}</td></tr>'
+            f'<td>{n}</td><td>{format_metric_value(headline_metric, all_vals[0])}</td>'
+            f'<td>{format_metric_value(headline_metric, med)}</td>'
+            f'<td>{format_metric_value(headline_metric, all_vals[-1])}</td></tr>'
         )
     rows.append('</tbody></table>')
     return "\n".join(rows)
@@ -1608,11 +1735,11 @@ def make_test_table_md(rows: list[dict], metric: str,
                        reference_baseline: float | None) -> str:
     if not rows:
         return (
-            f'<p class="muted">No tests with measured {html.escape(metric)} '
+            f'<p class="muted">No tests with measured {html.escape(metric_display_name(metric))} '
             "on this date.</p>"
         )
     out = []
-    headers = ["#", "TIME", "HW", "ABLATION", metric.upper(), "STATUS", "Δ %", "OPEN"]
+    headers = ["#", "TIME", "HW", "ABLATION", metric_display_name(metric), "STATUS", "Δ %", "OPEN"]
     out.append(
         "<table class='test-runs-table'><thead><tr>"
         + "".join(f"<th>{html.escape(h)}</th>" for h in headers)
@@ -1634,7 +1761,7 @@ def make_test_table_md(rows: list[dict], metric: str,
             delta_str = "—"
         status_str = "<strong>INVALID</strong>" if is_invalid else ("CRASH" if is_crash else "OK")
         # Mark invalid val_bpb cell with class hook (used by HTML CSS)
-        val_str = f"{r['value']:.4f}"
+        val_str = format_metric_value(metric, r["value"])
         if is_invalid:
             val_str = f"<code>{html.escape(val_str)}</code>"
         tr_class = ' class="invalid"' if is_invalid else ""
@@ -1788,7 +1915,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             asset_dir / f"day_chart_{headline_metric}.png",
             date=date,
             records=chart_input,
-            metric_name=headline_metric,
+            metric_name=metric_display_name(headline_metric),
             baseline_to_beat=chart_baseline,
             baseline_label="best before today",
         )
@@ -1857,11 +1984,20 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     # dropped per design feedback — the experimental/neural % is now inline
     # inside the LAST (CLASSIFICATION) row as a 30px allocation bar.
     arch_families = detect_arch_families(test_rows)
-    test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"
+    if is_bpb_metric(headline_metric):
+        test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"
+    elif is_kernel_metric(headline_metric):
+        test_count_text = f"{len(test_rows)} kernel benchmarks"
+    else:
+        test_count_text = f"{len(test_rows)} measured rows"
+    best_headline_value = min(
+        (r["value"] for r in test_rows if is_valid_metric_value(headline_metric, r["value"])),
+        default=None,
+    )
     header_fields = [
         ("DATE", date),
         ("DAY", format_day_index(day_index)),
-        ("PRIMARY METRIC", (headline_metric or "—").upper()),
+        ("PRIMARY METRIC", metric_display_name(headline_metric) if headline_metric else "—"),
         ("TESTS RUN", test_count_text),
         ("ARCHITECTURE FAMILY", format_arch_families(arch_families)),
         ("CLASSIFICATION", "—"),  # replaced by alloc bar when measured tests exist
@@ -1890,10 +2026,10 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         by_camp=by_camp,
     )
 
-    # VAL_BPB SPREAD per family (small table after the chart)
-    spread_table = make_bpb_spread_table_md(test_rows,
-                                            headline_metric or "metric",
-                                            arch_families)
+    # Primary-metric spread per family (small table after the chart)
+    spread_table = make_metric_spread_table_md(test_rows,
+                                               headline_metric or "metric",
+                                               arch_families)
 
     qmd_lines = [
         h1_html,
@@ -1909,9 +2045,9 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         for idx, chart_path in enumerate(chart_paths, start=1):
             relp = os.path.relpath(chart_path, QMD_DIR)
             if len(chart_paths) == 1:
-                alt = f"{headline_metric} for {date}"
+                alt = f"{metric_display_name(headline_metric)} for {date}"
             else:
-                alt = f"{headline_metric} for {date} panel {idx} of {len(chart_paths)}"
+                alt = f"{metric_display_name(headline_metric)} for {date} panel {idx} of {len(chart_paths)}"
             qmd_lines.append(f"![{alt}]({relp})")
             qmd_lines.append("")
         if spread_table:
@@ -1919,7 +2055,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             qmd_lines.append("")
     else:
         qmd_lines.append(
-            '<p class="muted">NO HEADLINE METRIC (VAL_BPB / VAL_LOSS) '
+            '<p class="muted">NO HEADLINE METRIC (VAL_BPB / VAL_LOSS / KERNEL RATIO) '
             "RECORDED ON THIS DATE.</p>"
         )
         qmd_lines.append("")
@@ -2070,6 +2206,12 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "visible_support_source": visible_support_source,
         "n_visible_support_records": len(visible_support_records),
         "headline_metric": headline_metric,
+        "headline_metric_display": metric_display_name(headline_metric) if headline_metric else "",
+        "best_headline_value": best_headline_value,
+        "best_headline_value_display": (
+            format_metric_value(headline_metric, best_headline_value)
+            if best_headline_value is not None else ""
+        ),
         "chart_n_points": chart_n,
         "chart_panels": len(chart_paths),
         "chart_baseline_to_beat": chart_baseline,

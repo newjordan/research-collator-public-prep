@@ -90,7 +90,8 @@ re-ordered without a spec revision.
                               DATE
                               DAY                  (3-digit zero-padded index)
                               PRIMARY METRIC
-                              TESTS RUN            "N unique  (V valid / I below floor)"
+                              TESTS RUN            BPB: "N unique  (V valid / I below floor)"
+                                                   kernel: "N kernel benchmarks"
                               ARCHITECTURE FAMILY  "FAM (×N)  ·  FAM (×N)  ·  ..."
                               CLASSIFICATION       ← inline allocation bar (240×30)
 
@@ -100,11 +101,11 @@ re-ordered without a spec revision.
                               ¶1 — runs · valid/invalid · allocation tone · top archs
                               ¶2 — best valid + PB comparison + crash flag
 3.2   CHART                 PNG, framed in a 1px-bordered figure block.
-3.3   VAL_BPB SPREAD        Compact tabular-num table, n / min / median / max
+3.3   METRIC SPREAD         Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
 4. SECTION 2.0  TEST RUNS   Camp-isolated 8-column tables:
-                              # | TIME | HW | ABLATION | VAL_BPB | STATUS | Δ % | OPEN
+                              # | TIME | HW | ABLATION | <PRIMARY METRIC> | STATUS | Δ % | OPEN
                             EXPERIMENTAL and NEURAL render as separate tables
                             when present.
                             ABLATION defaults to deterministic raw title.
@@ -116,7 +117,8 @@ re-ordered without a spec revision.
                             full-table-width detail row beneath that run with
                             the escaped log text plus the original file link.
                             Non-log artifacts remain normal links.
-                            INVALID rows: muted text, red val_bpb cell, red STATUS.
+                            INVALID rows: BPB-only muted text, red metric cell,
+                            red STATUS.
                             Conversation-derived events never render in the
                             canonical daily page. Conversation mining may exist
                             as an offline audit lane only.
@@ -140,32 +142,38 @@ Long trajectories render as multiple figure blocks.
   the trajectory into multiple chronological panels. Sparse recovered records
   are split by occupied run-time clusters instead of inserting empty half-day
   panels. Locator picks 1h / 2h / 3h ticks based on each panel span.
-- Y-axis: primary metric (`val_bpb` preferred, `val_loss` fallback).
+- Y-axis: primary metric. Kernel-heavy whale/crawler days use
+  `CUSTOM/FA3 FB RATIO` when comparable custom-vs-FA3 timing rows exist;
+  otherwise `val_bpb` is preferred with `val_loss` fallback.
 
 ### 4.2 Y-axis range
 
-```
-y_lo  = max(0.4, min(invalid_values) - 0.08)
-        OR INVALID_VAL_BPB_FLOOR - 0.15 if no invalids
-data_max = max value in [INVALID_VAL_BPB_FLOOR, CRASH_THRESHOLD]
+For BPB charts:
+
+```text
+y_lo       = max(0.4, min(invalid_values) - 0.08)
+             OR INVALID_VAL_BPB_FLOOR - 0.15 if no invalids
+data_max   = max value in [INVALID_VAL_BPB_FLOOR, CRASH_THRESHOLD]
 data_range = max(0.4, data_max - y_lo)
-label_gutter = 0.22 * data_range
-y_hi  = data_max + 0.05 + label_gutter
+y_hi       = data_max + 0.12 * data_range
 ```
 
-The top 22% of the y-axis is reserved as a **label gutter** — no data
-points may render there.
+For non-BPB charts, including custom-kernel/FA3 ratios, the axis is a tight
+finite-data range with no invalid zone.
 
 ### 4.3 Validity zones
 
-- `val_bpb < INVALID_VAL_BPB_FLOOR` (= **1.06**): quiet invalid zone,
+- BPB only: `val_bpb < INVALID_VAL_BPB_FLOOR` (= **1.06**): quiet invalid zone,
   slightly different background, subtle solid floor line. Project-wide
   convention (don't get excited about scores in the quiet zone — known eval
   errors).
-- `INVALID_VAL_BPB_FLOOR ≤ val_bpb ≤ CRASH_THRESHOLD` (= 3.0): valid range.
-- `val_bpb > CRASH_THRESHOLD`: crashed-early runs. Off-scale, summarized
+- BPB only: `INVALID_VAL_BPB_FLOOR ≤ val_bpb ≤ CRASH_THRESHOLD` (= 3.0):
+  valid range.
+- BPB only: `val_bpb > CRASH_THRESHOLD`: crashed-early runs. Off-scale, summarized
   by a single top-right indicator (`▲ N CRASH RUNS OFF-SCALE  (max=…)`).
   These points are **not plotted** but their count + max are surfaced.
+- Non-BPB metrics: every finite value is valid; no invalid zone, no crash
+  indicator.
 
 ### 4.4 Marks
 
@@ -179,7 +187,7 @@ points may render there.
 | PB-baseline ref   | White dashed, lw 0.9, alpha 0.50.                           |
 | Crash indicator   | Top-right above grid, accent border + accent text on bg.    |
 | Legend            | Centered below the time axis, outside the data grid.         |
-| Prior-day marker  | Top-right title: `PRIOR DAY VAL_BPB · N.NNNN`; no inline label on dashed line. |
+| Prior-day marker  | Top-right title: `PRIOR DAY <METRIC> · <value>`; kernel ratios render with `×`. No inline label on dashed line. |
 
 ### 4.5 Run identity labels
 
@@ -199,8 +207,8 @@ of these break, the page is wrong.
 3. **Single border per panel.** No card fills, no shadows, no double-rules.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
    matches across the chart and the Test Runs table.
-5. **INVALID rows are always muted** (text), with red on the val_bpb cell
-   and red on the STATUS strong tag.
+5. **INVALID rows are BPB-only** and always muted (text), with red on the
+   metric cell and red on the STATUS strong tag.
 6. **The validity floor is never a header field.** It's a project-wide
    convention shown only on the chart.
 7. **Self-contained.** The HTML embeds chart + frosted-flake mark as base64
@@ -247,8 +255,10 @@ The renderer derives these from the records and a target date:
   date, but are not counted in the research-day ordinal. This fixes
   `2026-03-18 = DAY 001`; Mockingbird on `2026-05-01` is the final
   campaign submission.
-- **`headline_metric`** — first of `["val_bpb", "val_loss", …]` that
-  appears in ≥2 records.
+- **`headline_metric`** — first metric with enough evidence. Kernel ratio
+  metrics (`kernel_fb_ratio`, then `kernel_fwd_ratio`) win when ≥2 comparable
+  custom-kernel-vs-FA3 timing rows exist; otherwise fall back through
+  `val_bpb`, `val_loss`, `val_bits_per_byte`, `bpb`.
 - **`chart_baseline`** — best (lowest) `headline_metric` value across all
   records strictly before this date.
 - **`test_rows`** — one row per unique title (collapsing seed replicas),
@@ -259,7 +269,8 @@ The renderer derives these from the records and a target date:
   are not renderer inputs and must never appear in daily-page body content.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
-- **`valid_count` / `invalid_count`** — `value ≥/< INVALID_VAL_BPB_FLOOR`.
+- **`valid_count` / `invalid_count`** — BPB uses the
+  `INVALID_VAL_BPB_FLOOR`; non-BPB metrics count every finite value as valid.
 
 ### 6.3 Required metric keys (when present in source)
 
@@ -271,6 +282,8 @@ canonical keys:
 | `val_bpb`                | bits-per-byte. Sanity floor: ≥ 0.1.                     |
 | `val_loss`               | natural-log loss.                                        |
 | `val_bpb_int6_*`         | per-quantization variant from `final_*` lines.           |
+| `source_metrics.whale_*_mean_ms` + `source_metrics.fa3_*_mean_ms` | source timing pairs used to derive custom/FA3 ratio metrics. |
+| `results[*].backends.<custom>.{fb,fwd}_mean_ms` + `results[*].backends.fa3.{fb,fwd}_mean_ms` | flattened benchmark timing pairs used to derive custom/FA3 ratio metrics. Custom backend names include `whale_fast`, `whale`, `custom`, `kernel`, and `blessed_whale`. |
 | `n_ranks`                | distinct rank IDs in training-log output (HW signal).    |
 | `train_time_seconds`     | last `train_time:Nms` in log content.                    |
 | `step_final`             | last `step:N/M` in log content.                          |

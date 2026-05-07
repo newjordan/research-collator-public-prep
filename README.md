@@ -13,7 +13,7 @@ lab-protocol aesthetic.
 | `stripper.py` | File walker → SQLite. Handlers for `.md`, `.json`, `.py`, `.csv`, `.tsv`, `.log`, `.out`, `.pt` (metadata only). Strict patterns; no LLM. |
 | `enrich.py` | Adds git commits + Claude session JSONLs + Codex session JSONLs to the index. Pulls val_bpb / val_loss out of commit messages with delta-vs-absolute classification + sanity floor. |
 | `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
-| `render_day.py` | Builds one daily HTML report. Header dot-leader fields, camp ratio bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Chat sessions are never rendered as supporting research files. |
+| `render_day.py` | Builds one daily HTML report. Header dot-leader fields, camp ratio bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios. Chat sessions are never rendered as supporting research files. |
 | `render_all.py` | Batch-renders every date with activity + a journey-arc front page. |
 | `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory) and `journey_chart` (50-day arc). |
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
@@ -46,7 +46,8 @@ by explicit date, but they do not count toward the research-day ordinal.
 
 Project convention: any `val_bpb < 1.06` is a known eval error, plotted
 inside a quiet invalid zone on the chart and excluded from the running-min
-`BEST VALID` line. Marked `INVALID` in the test-runs table.
+`BEST VALID` line. Marked `INVALID` in the test-runs table. This rule is
+BPB-only; custom-kernel/FA3 ratio charts do not render the invalid BPB zone.
 
 ## Camp axis
 

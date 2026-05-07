@@ -60,6 +60,11 @@ def _desaturate(color: str, factor: float = 0.5) -> str:
     h, l, s = colorsys.rgb_to_hls(r, g, b)
     return mcolors.to_hex(colorsys.hls_to_rgb(h, l, s * factor))
 
+
+def _is_bpb_metric(metric_name: str | None) -> bool:
+    metric = (metric_name or "").lower()
+    return "bpb" in metric or "bits_per_byte" in metric
+
 plt.rcParams.update({
     "figure.dpi": 130,
     "savefig.dpi": 130,
@@ -202,16 +207,18 @@ def day_chart(out_path: str | Path,
     times = [p["time"] for p in pts]
     values = [p["value"] for p in pts]
     CRASH_THRESHOLD = 3.0
+    is_bpb = _is_bpb_metric(metric_name)
 
-    # Invalid region: quiet background shift only. The floor line stays subtle
-    # so below-floor runs are legible without turning the whole band into an
-    # alert state.
-    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID_ZONE,
-               alpha=1.0, edgecolor="none", linewidth=0, zorder=0)
-    ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_RULE_HI, linestyle="-",
-               linewidth=0.65, alpha=0.55, zorder=1)
-    ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_BG,
-               alpha=0.22, edgecolor="none", linewidth=0, zorder=2.8)
+    if is_bpb:
+        # Invalid region: quiet background shift only. The floor line stays
+        # subtle so below-floor runs are legible without turning the whole band
+        # into an alert state.
+        ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_INVALID_ZONE,
+                   alpha=1.0, edgecolor="none", linewidth=0, zorder=0)
+        ax.axhline(INVALID_VAL_BPB_FLOOR, color=DARK_RULE_HI, linestyle="-",
+                   linewidth=0.65, alpha=0.55, zorder=1)
+        ax.axhspan(0, INVALID_VAL_BPB_FLOOR, facecolor=DARK_BG,
+                   alpha=0.22, edgecolor="none", linewidth=0, zorder=2.8)
 
     # Light journey line across consecutive in-scale valid tests only. Invalid
     # and crash-class points remain visible as points, but they do not drag the
@@ -219,7 +226,7 @@ def day_chart(out_path: str | Path,
     journey_segments: list[list[dict]] = []
     current_segment: list[dict] = []
     for p in pts:
-        if INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD:
+        if (not is_bpb) or (INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD):
             current_segment.append(p)
         elif current_segment:
             journey_segments.append(current_segment)
@@ -243,10 +250,10 @@ def day_chart(out_path: str | Path,
         color = CAMP_COLOR.get(camp, DARK_TEXT_MUTE)
         label = f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}"
         nominal_items = [
-            it for it in items if it["value"] >= INVALID_VAL_BPB_FLOOR
+            it for it in items if (not is_bpb) or it["value"] >= INVALID_VAL_BPB_FLOOR
         ]
         invalid_items = [
-            it for it in items if it["value"] < INVALID_VAL_BPB_FLOOR
+            it for it in items if is_bpb and it["value"] < INVALID_VAL_BPB_FLOOR
         ]
         if nominal_items:
             ax.scatter([it["time"] for it in nominal_items],
@@ -273,7 +280,7 @@ def day_chart(out_path: str | Path,
     # Running-min line — best valid value seen so far. Below-floor eval bugs
     # and crash-class values never move the personal-best step.
     valid_pairs = [(t, v) for t, v in zip(times, values)
-                   if INVALID_VAL_BPB_FLOOR <= v <= CRASH_THRESHOLD]
+                   if (not is_bpb) or (INVALID_VAL_BPB_FLOOR <= v <= CRASH_THRESHOLD)]
     if valid_pairs:
         valid_times = [p[0] for p in valid_pairs]
         valid_values = [p[1] for p in valid_pairs]
@@ -286,23 +293,27 @@ def day_chart(out_path: str | Path,
             running_min.append(cur)
         ax.step(valid_times, running_min, where="post",
                 color=DARK_ACCENT, linewidth=1.2, alpha=0.95, zorder=2,
-                label="BEST VALID")
+                label="BEST VALID" if is_bpb else "BEST")
 
     # Tight y-clip focused on the day's actual curve. Crash-class values are
     # summarized separately instead of stretching the chart scale.
-    real_values = [v for v in values if v <= CRASH_THRESHOLD]
+    real_values = [v for v in values if (not is_bpb) or v <= CRASH_THRESHOLD]
     if real_values:
-        below_floor = [v for v in values if v < INVALID_VAL_BPB_FLOOR]
-        if below_floor:
+        below_floor = [v for v in values if is_bpb and v < INVALID_VAL_BPB_FLOOR]
+        if is_bpb and below_floor:
             y_lo = max(0.4, min(below_floor) - 0.08)
-        else:
+        elif is_bpb:
             y_lo = INVALID_VAL_BPB_FLOOR - 0.15
+        else:
+            data_min = min(real_values)
+            data_range = max(0.08, max(real_values) - data_min)
+            y_lo = max(0.0, data_min - 0.18 * data_range)
         data_max = max(real_values)
-        data_range = max(0.4, data_max - y_lo)
-        y_hi = data_max + 0.12 * data_range
+        data_range = max(0.4 if is_bpb else 0.04, data_max - y_lo)
+        y_hi = data_max + (0.12 if is_bpb else 0.18) * data_range
         ax.set_ylim(y_lo, y_hi)
 
-        crashes = [v for v in values if v > CRASH_THRESHOLD]
+        crashes = [v for v in values if is_bpb and v > CRASH_THRESHOLD]
         if crashes:
             # Crash-class runs sit outside the plotting area so the grid and
             # data remain readable.
@@ -343,7 +354,7 @@ def day_chart(out_path: str | Path,
         ax.set_xlim(x_start, x_end)
         valid_labeled = [
             p for p in sorted_pts_for_labels
-            if INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD
+            if (not is_bpb) or (INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD)
         ]
         if valid_labeled:
             best = min(valid_labeled, key=lambda p: p["value"])
@@ -364,7 +375,7 @@ def day_chart(out_path: str | Path,
     # Baseline-to-beat — paper-white dashed (this is reference info, not
     # "active state", so it stays neutral, not accent-green).
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
-            and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
+            and ((not is_bpb) or baseline_to_beat >= INVALID_VAL_BPB_FLOOR)):
         ax.axhline(baseline_to_beat, color=DARK_TEXT_HI, linestyle="--",
                    linewidth=0.9, alpha=0.50, zorder=1)
 
@@ -394,9 +405,9 @@ def day_chart(out_path: str | Path,
                 fontsize=7.2, color=DARK_TEXT_MUTE, ha="left", va="bottom",
                 fontweight="bold")
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
-            and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
-        ax.set_title(f"PRIOR DAY {metric_name.upper()}  ·  "
-                     f"{baseline_to_beat:.4f}",
+            and ((not is_bpb) or baseline_to_beat >= INVALID_VAL_BPB_FLOOR)):
+        baseline_value = f"{baseline_to_beat:.4f}" if is_bpb else f"{baseline_to_beat:.3f}×"
+        ax.set_title(f"PRIOR DAY {metric_name.upper()}  ·  {baseline_value}",
                      loc="right", pad=22, fontsize=7.8,
                      fontweight="bold", color=DARK_TEXT_HI)
     if len(by_camp) > 0:
@@ -500,7 +511,7 @@ def day_charts(out_path: str | Path,
         for _, rec in chunk:
             v = rec.get("value")
             if (isinstance(v, (int, float)) and math.isfinite(v)
-                    and INVALID_VAL_BPB_FLOOR <= v <= 3.0):
+                    and ((not _is_bpb_metric(metric_name)) or INVALID_VAL_BPB_FLOOR <= v <= 3.0)):
                 prior_best = v if prior_best is None else min(prior_best, v)
     return paths, total
 

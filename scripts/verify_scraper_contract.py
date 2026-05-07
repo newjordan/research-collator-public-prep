@@ -306,10 +306,12 @@ def verify_metrics(conn: sqlite3.Connection, report: ContractReport) -> None:
     if bad_gpu_counts:
         report.fail(f"bad n_gpus values: {bad_gpu_counts[:report.sample_limit]}")
 
-    headline_counts = {
-        key: metric_key_counts.get(key, 0)
-        for key in render_day.HEADLINE_METRICS
-    }
+    # Count through the renderer extractor, not only literal JSON keys. Kernel
+    # headline metrics are derived from custom/FA3 timing pairs.
+    headline_counts = {key: 0 for key in render_day.HEADLINE_METRICS}
+    for row in rows:
+        for key in headline_counts:
+            headline_counts[key] += len(render_day.extract_metric_for_record(row["metrics_json"], key))
     report.stats["headline_metric_counts"] = headline_counts
 
 
