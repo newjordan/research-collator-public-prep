@@ -1,5 +1,15 @@
 # Research Collator — Session Handoff (2026-05-05)
 
+## Active Claude Work Order (2026-05-06)
+
+For the current bookkeeping-heavy campaign rebuild, use
+[`CLAUDE_DAILY_REPORTS_HANDOFF.md`](CLAUDE_DAILY_REPORTS_HANDOFF.md).
+
+That document supersedes the command/status details below for this exact task.
+The current local SQLite index should be treated as partial state: start from a
+clean `index.sqlite`, then run the full deterministic scrape, enrich,
+conversation-architecture mining, classify, render, and verification pipeline.
+
 ## What this is
 
 A deterministic per-day report generator for ~50 days of LLM/parameter-golf
