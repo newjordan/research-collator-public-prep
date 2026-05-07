@@ -51,12 +51,6 @@ def toc_extra_style() -> str:
       background-position: center top;
       background-attachment: fixed;
     }}
-    body.toc-page .report-header,
-    body.toc-page table,
-    body.toc-page .day-summary {{
-      background: rgba(137,56,14,0.88);
-      backdrop-filter: none;
-    }}
     body.toc-page .toc-kicker {{
       margin: -6px 0 18px;
       color: var(--accent);

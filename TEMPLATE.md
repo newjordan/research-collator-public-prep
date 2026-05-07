@@ -66,12 +66,15 @@ tabular-nums`) on every value column.
 
 ### 2.3 Surface treatment
 
-Cover-orange field with a subtle dark-black grunge texture. Every panel
-(header block, table, log detail row, day summary, figure frame) is enclosed
-by exactly one `1px solid var(--rule-hi)` border. No grey-black fills, no
-box-shadows, no off-palette gradients. The only allowed gradients are the
-low-opacity black grunge texture on the page field and the 45° diagonal
-stripes on the neural data segment.
+Cover-orange field with a subtle dark-black grunge texture. Primary reading
+zones are intentionally inverted: report header, section anchors, daily
+summary, chart frame, table headers, and training-log expansion panels use
+`--rule-hi` as a black field with `--bg` text/detailing. Tables and lists keep
+orange body rows for scan density. Key frames use small black/orange register
+marks and corner ticks; these are CSS-only micro-graphics, not content fields.
+No grey-black fills, no shadows, and no off-palette gradients. The only
+allowed gradients are the low-opacity black grunge texture on the page field
+and the 45° diagonal stripes on the neural data segment.
 
 ### 2.4 Section anchors (vertical rhythm)
 
@@ -92,7 +95,7 @@ re-ordered without a spec revision.
 1. H1                       DAILY RESEARCH REPORT  ⨂  YYYY-MM-DD
                             ↑ frosted_flake mark (32×32)         ↑ right-pinned
 
-2. REPORT HEADER            Flat bordered block, 6 dot-leader rows:
+2. REPORT HEADER            Inverted black evidence block, 6 rows:
                               DATE
                               DAY                  (3-digit zero-padded index)
                               PRIMARY METRIC
@@ -102,11 +105,11 @@ re-ordered without a spec revision.
                               CLASSIFICATION       ← inline allocation bar (240×30)
 
 3. SECTION 1.0  TRAJECTORY
-3.1   DAILY SUMMARY         2-col callout (160px label | 1fr body),
-                            dark-black left rule, two short paragraphs:
+3.1   DAILY SUMMARY         Inverted 2-col callout (160px label | 1fr body),
+                            black field, orange text, two short paragraphs:
                               ¶1 — runs · valid/invalid · allocation tone · top archs
                               ¶2 — best valid + PB comparison + crash flag
-3.2   CHART                 PNG, framed in a 1px-bordered figure block.
+3.2   CHART                 PNG, framed in an inverted black figure block.
 3.3   METRIC SPREAD         Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
@@ -213,8 +216,11 @@ Renderers MUST maintain these. Tests live in `render_day.py` itself; if any
 of these break, the page is wrong.
 
 1. **Palette locked.** No page element introduces a color outside §2.1.
-2. **One black.** All surfaces use `--bg`. No alternate backgrounds.
-3. **Single border per panel.** No card fills, no shadows, no double-rules.
+2. **Inversion is intentional and limited.** Only report header, section
+   anchors, daily summary, chart frame, table headers, and log expansion panels
+   use black fields. Body rows/lists remain orange.
+3. **Micro-graphics are CSS-only.** Register marks and corner ticks are
+   pseudo-elements using `--bg` and `--rule-hi`; no extra DOM content fields.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
    matches across the chart and the Test Runs table.
 5. **INVALID rows are BPB-only** and always muted (text), with red on the

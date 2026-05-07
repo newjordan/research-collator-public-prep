@@ -40,7 +40,7 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "2662986f1efb4c157cf0869c1970c253a64ea0af0967e7f4f26759e9dec05e69"
+LOCKED_TEMPLATE_STYLE_SHA256 = "c960d8fe97c5d702916d196895efe438236d073471b7e990ed0f1558e2ddf63a"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
@@ -1140,17 +1140,32 @@ def _embedded_log_style() -> str:
     .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
     .log-detail-row.is-open { display: table-row; }
     .log-detail-row td {
-        padding: 0 14px 14px;
+        padding: 12px 14px 16px;
         border-top: none;
-        color: var(--ink);
+        color: var(--bg);
+        background: var(--rule-hi);
     }
     .log-panel {
-        border-top: 1px solid var(--rule);
-        padding-top: 9px;
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
     }
+    .log-panel::before,
+    .log-panel::after {
+        content: "";
+        position: absolute;
+        width: 42px;
+        height: 7px;
+        border-top: 1px solid var(--bg);
+        border-bottom: 1px solid var(--bg);
+        pointer-events: none;
+    }
+    .log-panel::before { left: 10px; top: 8px; }
+    .log-panel::after { right: 10px; bottom: 8px; }
     .log-panel + .log-panel { margin-top: 14px; }
     .log-meta {
-        color: var(--ink-mute);
+        color: var(--bg);
         font-size: 10.5px;
         line-height: 1.4;
         margin: 0 0 7px;
@@ -1166,8 +1181,16 @@ def _embedded_log_style() -> str:
         font-family: var(--mono);
         font-size: 11px;
         line-height: 1.45;
-        color: var(--ink);
+        color: var(--bg);
         background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code,
+    .log-panel a {
+        color: var(--bg);
+    }
+    .log-panel a:hover {
+        border-bottom-color: var(--bg);
     }
     .open-extra {
         margin-top: 6px;

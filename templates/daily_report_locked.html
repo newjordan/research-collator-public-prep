@@ -30,7 +30,8 @@
     }
     body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
            color: var(--ink);
-           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px; }
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
 
     /* H1: clean bold block, no border, sits above header block */
     h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
@@ -49,11 +50,23 @@
     /* Hide legacy CRT terminal bar entirely — no longer needed */
     .terminal-bar { display: none; }
 
-    h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
          text-transform: uppercase; margin: 36px 0 14px;
-         padding: 0 0 8px;
-         border-bottom: 1px solid var(--rule-hi);
-         color: var(--ink-hi); }
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
     h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
          text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
     p { margin: 8px 0; color: var(--ink); }
@@ -62,25 +75,50 @@
            color: var(--ink-hi); font-weight: 600; }
     .muted { color: var(--ink-mute); }
     em, i { font-style: normal; color: var(--ink-mute); }
-    figure { margin: 16px 0; text-align: center;
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
              border: 1px solid var(--rule-hi);
-             padding: 14px;
-             background-color: transparent; }
-    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure::before,
+    figure::after {
+             content: "";
+             position: absolute;
+             width: 54px;
+             height: 10px;
+             border-top: 1px solid var(--bg);
+             border-bottom: 1px solid var(--bg); }
+    figure::before { left: 12px; top: 10px; }
+    figure::after { right: 12px; bottom: 10px; }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
 
-    /* Report header — flat bordered block, no stripe, no card fill */
-    .report-header { border: 1px solid var(--rule-hi);
-                     padding: 14px 18px;
+    /* Report header — inverted black evidence block with fine register marks */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
                      margin: 0 0 20px;
-                     background-color: transparent; }
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .report-header::before,
+    .report-header::after {
+                     content: "";
+                     position: absolute;
+                     height: 14px;
+                     width: 88px;
+                     border-top: 1px solid var(--bg);
+                     border-bottom: 1px solid var(--bg);
+                     pointer-events: none; }
+    .report-header::before { left: 12px; top: 10px; }
+    .report-header::after { right: 12px; bottom: 10px; }
     .rh-row { display: flex; align-items: baseline;
-              padding: 5px 0; font-size: 12.5px; color: var(--ink-hi); }
-    .rh-row + .rh-row { border-top: 1px solid var(--rule); }
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
     .rh-key { white-space: nowrap; font-weight: 500;
               letter-spacing: 0.04em;
-              min-width: 220px; color: var(--ink-mute); }
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
     .rh-dots { display: none; }
-    .rh-val { white-space: nowrap; font-weight: 600; color: var(--ink-hi); }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
 
     /* Camp ratio bar — muted, with hairline border to match group style */
     .camp-bar { display: flex; height: 10px;
@@ -103,9 +141,20 @@
     .alloc-bar { display: inline-flex; height: 30px; width: 240px;
                  border: 1px solid var(--rule-hi); background: var(--rule);
                  overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
     .alloc-seg-exp { background: var(--data-exp); height: 100%; }
     .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
     .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
                      background-image: repeating-linear-gradient(
                        45deg,
                        rgba(5,6,5,0.72) 0,
@@ -118,16 +167,21 @@
     .alloc-text-neu { color: var(--data-neu); }
     .alloc-text-kernel { color: var(--data-kernel); }
     .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
 
     /* Tables — flat bordered, no card fill */
-    table { border-collapse: collapse; width: 100%; font-size: 12px;
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
             margin: 10px 0 18px;
             border: 1px solid var(--rule-hi);
             background-color: transparent; }
-    th { text-align: left; color: var(--ink-mute); font-weight: 600;
+    th { text-align: left; color: var(--bg); font-weight: 600;
          text-transform: uppercase; letter-spacing: 0.08em;
          padding: 10px 14px;
-         background: transparent;
+         background: var(--rule-hi);
          border-bottom: 1px solid var(--rule-hi);
          font-size: 10.5px; }
     td { padding: 9px 14px;
@@ -143,8 +197,18 @@
     tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
 
     /* Lists — wrapped in a flat bordered block, internal hairlines */
-    ul { padding: 0; list-style: none; margin: 10px 0 18px;
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
          border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
     li { margin: 0; font-size: 12px; color: var(--ink);
          padding: 9px 14px; border-bottom: 1px solid var(--rule);
          line-height: 1.6; }
@@ -158,22 +222,35 @@
 
     ::selection { background: var(--accent); color: var(--bg); }
 
-    /* Daily summary callout — sits between section heading and chart */
-    .day-summary { display: grid;
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
         grid-template-columns: 160px 1fr;
         gap: 24px;
         border: 1px solid var(--rule-hi);
-        border-left: 4px solid var(--data-exp);
+        border-left: 4px solid var(--rule-hi);
         padding: 18px 22px;
         margin: 14px 0 22px;
-        background: rgba(5,6,5,0.05); }
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary::before,
+    .day-summary::after {
+        content: "";
+        position: absolute;
+        width: 48px;
+        height: 8px;
+        border-top: 1px solid var(--bg);
+        border-bottom: 1px solid var(--bg); }
+    .day-summary::before { left: 12px; top: 10px; }
+    .day-summary::after { right: 12px; bottom: 10px; }
     .day-summary .ds-key {
         font-size: 10.5px; letter-spacing: 0.10em;
         text-transform: uppercase; font-weight: 700;
-        color: var(--ink-mute); padding-top: 2px; }
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
     .day-summary .ds-body p { margin: 0 0 10px; }
     .day-summary .ds-body p:last-child { margin-bottom: 0; }
-    .day-summary strong { color: var(--ink-hi); font-weight: 600; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
 
     /* Supporting files — left camp indicator stripe down the list */
     .supporting-section { position: relative; padding-left: 22px; }
@@ -220,6 +297,24 @@
     .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
     .bpb-table td:not(:first-child),
     .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      table { display: block; overflow-x: auto; }
+    }
     </style></head><body><h1><span class="h1-title"><img class="h1-mark" src="assets/frosted_flake.png" alt=""><span>DAILY RESEARCH REPORT</span></span><span class="h1-date">2026-03-28</span></h1>
 
 <div class="terminal-bar"><span class="tb-led"></span><span class="tb-text">DAY 022  ·  35 TESTS LOGGED  ·  VAL_BPB   ·  PB BAR 0.3200</span><span class="tb-tail">[READY]</span></div>
