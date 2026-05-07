@@ -38,7 +38,6 @@ from render_day import (
     _frosted_flake_data_uri,
     format_metric_value,
     make_alloc_bar_html,
-    make_report_footer_html,
     make_report_header_html,
     metric_display_name,
 )
@@ -355,7 +354,6 @@ def render_campaign_report(dates: list[str] | None = None,
         "<title>Campaign Cumulative Report</title>"
         f"<style>{_daily_template_style()}</style></head><body>"
         + "\n".join(body_parts)
-        + make_report_footer_html("campaign cumulative report", "campaign-cumulative")
         + _embedded_log_script()
         + "</body></html>"
     )

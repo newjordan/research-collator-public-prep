@@ -31,7 +31,7 @@ fonts, or surface treatments without first updating this section.
 The locked base CSS source is `templates/daily_report_locked.html`. The
 renderer refuses to run if that file's `<style>` block does not match
 `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
-`daily-report-v2.1-black-footer`.
+`daily-report-v2.2-bottom-dither`.
 
 ### 2.1 Palette (single source of truth)
 
@@ -68,14 +68,17 @@ tabular-nums`) on every value column.
 
 Cover-orange field with a subtle dark-black grunge texture. Primary reading
 zones are intentionally inverted: report header, section anchors, daily
-summary, chart frame, table headers, training-log expansion panels, and the
-report footer use `--rule-hi` as a black field with `--bg` text/detailing.
+summary, chart frame, table headers, and training-log expansion panels use
+`--rule-hi` as a black field with `--bg` text/detailing.
 Tables and lists keep orange body rows for scan density. Key frames use small
-black/orange register marks, corner ticks, dot grids, barcode lines, chevrons,
-and eye/orbit marks; these are CSS-only micro-graphics, not content fields.
+black/orange register marks and corner ticks; these are CSS-only
+micro-graphics, not content fields. The page terminates with a CSS-only
+bottom dither band: sparse black halftone rows above a thin dark-black bottom
+rule. It is an edge treatment, not a footer or content section.
 No grey-black fills, no shadows, and no off-palette gradients. The only
 allowed gradients are the low-opacity black grunge texture on the page field
-and the 45° diagonal stripes on the neural data segment.
+the bottom halftone/rule treatment, and the 45° diagonal stripes on the neural
+data segment.
 
 ### 2.4 Section anchors (vertical rhythm)
 
@@ -137,11 +140,6 @@ re-ordered without a spec revision.
                             canonical daily page. Conversation mining may exist
                             as an offline audit lane only.
 
-5. REPORT FOOTER            Inverted dark-black archive tag shared by daily,
-                            weekly, category, campaign, and TOC reports.
-                            Contains only report identity plus tiny CSS-only
-                            surreal/register elements: dot grid, eye/orbit,
-                            chevron run, and barcode/register lines.
 ```
 
 DAILY GRIND — explicitly **not** in the canonical layout. Codex/Claude
@@ -224,11 +222,11 @@ of these break, the page is wrong.
 
 1. **Palette locked.** No page element introduces a color outside §2.1.
 2. **Inversion is intentional and limited.** Only report header, section
-   anchors, daily summary, chart frame, table headers, log expansion panels,
-   and report footer use black fields. Body rows/lists remain orange.
-3. **Micro-graphics are CSS-only.** Register marks, corner ticks, footer dot
-   grids, barcode lines, chevrons, and eye/orbit marks use `--bg` and
-   `--rule-hi`; no bitmap embeds and no extra data fields.
+   anchors, daily summary, chart frame, table headers, and log expansion panels
+   use black fields. Body rows/lists remain orange.
+3. **Micro-graphics are CSS-only.** Register marks, corner ticks, and the
+   bottom halftone/rule treatment use `--bg` and `--rule-hi`; no bitmap embeds
+   and no extra data fields.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
    matches across the chart and the Test Runs table.
 5. **INVALID rows are BPB-only** and always muted (text), with red on the

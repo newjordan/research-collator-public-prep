@@ -20,7 +20,6 @@ from render_day import (
     RESEARCH_START_DATE,
     _daily_template_style,
     _frosted_flake_data_uri,
-    make_report_footer_html,
     make_report_header_html,
 )
 
@@ -262,7 +261,6 @@ def render_toc_report(dates: list[str],
         "<title>Table of Contents</title>"
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
         + "\n".join(body_parts)
-        + make_report_footer_html("publication navigation", "toc")
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")

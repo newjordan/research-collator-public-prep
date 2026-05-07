@@ -52,7 +52,6 @@ from render_day import (
     format_metric_value,
     is_valid_metric_value,
     make_alloc_bar_html,
-    make_report_footer_html,
     make_report_header_html,
     metric_display_name,
     report_records_for_date,
@@ -515,7 +514,6 @@ def render_category(conn: sqlite3.Connection,
         f"<title>{CATEGORY_LABEL[category].title()} Research Report</title>"
         f"<style>{_daily_template_style()}</style></head><body>"
         + "\n".join(body_parts)
-        + make_report_footer_html(f"{CATEGORY_LABEL[category]} research report", f"category-{category}")
         + _embedded_log_script()
         + "</body></html>"
     )
@@ -642,7 +640,6 @@ def render_category_index(summaries: list[dict[str, Any]],
         "<title>Category Research Reports</title>"
         f"<style>{_daily_template_style()}</style></head><body>"
         + body
-        + make_report_footer_html("category report index", "categories-index")
         + "</body></html>",
         encoding="utf-8",
     )

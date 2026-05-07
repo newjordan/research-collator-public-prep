@@ -39,12 +39,11 @@ FORBIDDEN_GLOBAL_MARKERS = (
 )
 
 
-def _require_footer(text: str, html_path: Path) -> None:
-    if text.count('class="report-footer"') != 1:
-        raise AssertionError(f"missing canonical black report footer: {html_path}")
-    for marker in ("rf-dotgrid", "rf-eye", "rf-bars"):
-        if marker not in text:
-            raise AssertionError(f"footer micro-graphic {marker!r} missing: {html_path}")
+def _require_bottom_dither(text: str, html_path: Path) -> None:
+    if "report-footer" in text or "rf-dotgrid" in text:
+        raise AssertionError(f"removed footer leaked back into page: {html_path}")
+    if "body::after" not in text or "border-bottom: 1px solid var(--rule-hi);" not in text:
+        raise AssertionError(f"missing canonical bottom dither/border treatment: {html_path}")
 
 
 def _verify_index(html_path: Path) -> dict:
@@ -53,7 +52,7 @@ def _verify_index(html_path: Path) -> dict:
     text = html_path.read_text(encoding="utf-8", errors="replace")
     if "CATEGORY RESEARCH REPORTS" not in text:
         raise AssertionError(f"missing category index h1 marker: {html_path}")
-    _require_footer(text, html_path)
+    _require_bottom_dither(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"category index must have exactly two h2 sections: {html_path}"
@@ -94,7 +93,7 @@ def _verify_category(summary: dict) -> dict:
 
     if "RESEARCH REPORT" not in text:
         raise AssertionError(f"missing category h1 marker: {html_path}")
-    _require_footer(text, html_path)
+    _require_bottom_dither(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"category page must have exactly two h2 sections: {html_path}"
