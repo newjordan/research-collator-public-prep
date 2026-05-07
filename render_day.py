@@ -1072,7 +1072,7 @@ _ARTIFACT_DAY_INDEX: dict[str, int] | None = None
 
 def _embedded_log_style() -> str:
     return """
-    /* Embedded training logs: compact toggle in OPEN, full-width panel below. */
+    /* Section 2 details: compact toggle in OPEN, full-width panel below. */
     .test-runs-table td.open-cell { min-width: 150px; }
     .log-toggle { margin: 0; }
     .log-toggle + .log-toggle { margin-top: 6px; }
@@ -1735,13 +1735,16 @@ def _training_log_summary_label(idx: int, total: int) -> str:
     return "training_log" if total == 1 else f"training_log {idx}"
 
 
-def _training_log_toggle_html(idx: int, total: int) -> str:
-    summary = _training_log_summary_label(idx, total)
+def _detail_toggle_html(summary: str) -> str:
     return (
         "<details class='log-toggle'>"
         f"<summary>{html.escape(summary)}</summary>"
         "</details>"
     )
+
+
+def _training_log_toggle_html(idx: int, total: int) -> str:
+    return _detail_toggle_html(_training_log_summary_label(idx, total))
 
 
 def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
@@ -1763,32 +1766,68 @@ def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
     )
 
 
+def _row_evidence_panel_html(row: dict) -> str:
+    links: list[str] = []
+    if row.get("link_href"):
+        links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
+    if row.get("run_script"):
+        links.append(_anchor_html("run.sh", row["run_script"]))
+
+    facts: list[tuple[str, str]] = [
+        ("source", str(row.get("source_label") or "unknown")),
+        ("classification", CAMP_DISPLAY_LABEL.get(row.get("camp"), str(row.get("camp") or "unknown"))),
+        ("metric_source", str(row.get("val_bpb_source") or "unknown")),
+        ("path", str(row.get("abs_path") or "unknown")),
+    ]
+    if row.get("time_iso"):
+        facts.insert(0, ("time", str(row["time_iso"])))
+    if row.get("hardware"):
+        facts.insert(1, ("hardware", str(row["hardware"])))
+    if row.get("wallclock_seconds"):
+        try:
+            facts.insert(2, ("wallclock_s", f"{float(row['wallclock_seconds']):.1f}"))
+        except (TypeError, ValueError):
+            facts.insert(2, ("wallclock_s", str(row["wallclock_seconds"])))
+
+    fact_html = "".join(
+        "<div class='log-meta'>"
+        f"<strong>{html.escape(k)}</strong>: {html.escape(v)}"
+        "</div>"
+        for k, v in facts
+    )
+    link_html = (
+        "<div class='log-meta'><strong>open</strong>: " + " · ".join(links) + "</div>"
+        if links else
+        "<div class='log-meta'><strong>open</strong>: no source link recovered</div>"
+    )
+    title = html.escape(str(row.get("title") or "(untitled)"))
+    return (
+        "<div class='log-panel'>"
+        "<div class='log-meta'><strong>row evidence</strong></div>"
+        f"<div class='log-meta'><strong>ablation</strong>: {title}</div>"
+        f"{fact_html}{link_html}"
+        "</div>"
+    )
+
+
 def make_open_cell_html(row: dict) -> str:
     parts: list[str] = []
     logs = row.get("training_logs") or []
     for idx, ref in enumerate(logs, start=1):
         parts.append(_training_log_toggle_html(idx, len(logs)))
 
-    extra_links: list[str] = []
-    if not logs and row.get("link_href"):
-        extra_links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
-    elif row.get("link_href") and all(ref.get("href") != row["link_href"] for ref in logs):
-        extra_links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
-    if row.get("run_script"):
-        extra_links.append(_anchor_html("run.sh", row["run_script"]))
-    if extra_links:
-        parts.append("<div class='open-extra'>" + " · ".join(extra_links) + "</div>")
+    if not logs:
+        parts.append(_detail_toggle_html("details"))
     return "".join(parts) if parts else "—"
 
 
 def make_log_detail_row_html(row: dict) -> str:
     logs = row.get("training_logs") or []
-    if not logs:
-        return ""
     panels = "".join(
         _training_log_panel_html(ref, idx, len(logs))
         for idx, ref in enumerate(logs, start=1)
     )
+    panels += _row_evidence_panel_html(row)
     return f"<tr class='log-detail-row'><td colspan='8'>{panels}</td></tr>"
 
 
@@ -1843,9 +1882,7 @@ def make_test_table_md(rows: list[dict], metric: str,
             + _td_html(make_open_cell_html(r), "open-cell")
             + "</tr>"
         )
-        log_detail_row = make_log_detail_row_html(r)
-        if log_detail_row:
-            out.append(log_detail_row)
+        out.append(make_log_detail_row_html(r))
     out.append("</tbody></table>")
     return "\n".join(out)
 

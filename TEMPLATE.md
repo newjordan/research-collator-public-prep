@@ -115,11 +115,13 @@ re-ordered without a spec revision.
                             Optional local Nemo3 labels may replace it only
                             after promotion into approved ablation-label JSONL
                             keyed by date, row number, and raw-title hash.
-                            OPEN renders training logs as a compact
-                            `<details>` toggle. Opening it reveals a
-                            full-table-width detail row beneath that run with
-                            the escaped log text plus the original file link.
-                            Non-log artifacts remain normal links.
+                            OPEN renders a compact `<details>` toggle on every
+                            test row. Opening it reveals a full-table-width
+                            detail row beneath that run. Rows with training
+                            logs include escaped full log text plus the
+                            original file link; rows without logs expose the
+                            recovered source/run metadata in the same dropdown
+                            pattern.
                             INVALID rows: BPB-only muted text, red metric cell,
                             red STATUS.
                             Conversation-derived events never render in the

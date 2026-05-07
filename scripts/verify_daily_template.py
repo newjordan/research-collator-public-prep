@@ -47,6 +47,17 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
             f"{date}: raw chat-session kind leaked into body")
     if expect_tests:
         require("class='test-runs-table'" in body, f"{date}: missing canonical test table")
+        require("details class='log-toggle'" in body, f"{date}: missing Section 2 dropdown toggle")
+        require("tr class='log-detail-row'><td colspan='8'>" in body,
+                f"{date}: Section 2 dropdown panel is not full-table-width")
+        data_rows = re.findall(
+            r"<tr(?: class=\"invalid\")?><td><strong>\d+</strong></td>.*?</tr>",
+            body,
+            flags=re.DOTALL,
+        )
+        detail_rows = body.count("tr class='log-detail-row'><td colspan='8'>")
+        require(detail_rows == len(data_rows),
+                f"{date}: every Section 2 row must have a full-width dropdown panel")
     require(body.count("<h2>SECTION ") == 2, f"{date}: expected exactly two top sections")
 
     if expect_logs:
@@ -56,14 +67,8 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
         require("<script>(function(){function sync(d)" in body,
                 f"{date}: missing disclosure sync script")
 
-        first_detail = re.search(
-            r"<tr class='log-detail-row'><td colspan='8'>(.*?)</td></tr>",
-            body,
-            flags=re.DOTALL,
-        )
-        require(first_detail is not None, f"{date}: no detail row body found")
-        require("<pre class='log-text'>" in first_detail.group(1),
-                f"{date}: full-width detail row does not contain log text")
+        require("<pre class='log-text'>" in body,
+                f"{date}: no full training-log text found in dropdown panels")
 
     return {
         "date": date,

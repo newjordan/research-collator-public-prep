@@ -69,6 +69,10 @@ Daily rendering adds one presentation-only classification:
 The daily header classification bar is active-only: it does not print
 zero-count labels for classifications that were not worked on that day.
 
+Section 2.0 rows always use the locked dropdown pattern in `OPEN`: training-log
+rows expand to full log text, and non-log rows expand to recovered source/run
+metadata.
+
 Daily reports do not present Codex/Claude conversations as research evidence.
 There is no Section 3 in the canonical daily page. Conversation-derived
 artifacts may be indexed for offline audit, but they must never render in the
