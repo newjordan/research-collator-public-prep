@@ -36,7 +36,7 @@ from render_day import (
 
 def all_dates_with_artifacts(conn: sqlite3.Connection) -> list[str]:
     rows = conn.execute(
-        "SELECT abs_path, rel_path, source_label, mtime_iso, metrics_json FROM artifacts"
+        "SELECT abs_path, rel_path, source_label, file_kind, mtime_iso, metrics_json FROM artifacts"
     ).fetchall()
     dates: set[str] = set()
     for r in rows:

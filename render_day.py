@@ -181,6 +181,11 @@ def best_date(rec: dict) -> str | None:
     abs_path = rec.get("abs_path") or ""
     rel_path = rec.get("rel_path") or ""
 
+    # Git commit identities are SHA strings; their hex can accidentally contain
+    # calendar-looking substrings. Commit rows must date by commit mtime only.
+    if rec.get("file_kind") == "git_commit":
+        return _mtime_local_date(rec)
+
     # 1. Filename only (basename)
     for src in (abs_path, rel_path):
         if not src:
@@ -210,14 +215,18 @@ def best_date(rec: dict) -> str | None:
     # extracting the date. The stripper records mtime in UTC; the user
     # thinks in CDT (UTC-5). Without this, late-evening runs roll into
     # the next day's report (e.g. Apr 20 23:30 local → Apr 21 UTC).
-    if rec.get("mtime_iso"):
-        try:
-            utc = dt.datetime.fromisoformat(rec["mtime_iso"].replace("Z", "+00:00"))
-            local = utc - dt.timedelta(hours=5)  # CDT
-            return local.date().isoformat()
-        except (ValueError, TypeError):
-            return rec["mtime_iso"][:10]
-    return None
+    return _mtime_local_date(rec)
+
+
+def _mtime_local_date(rec: dict) -> str | None:
+    if not rec.get("mtime_iso"):
+        return None
+    try:
+        utc = dt.datetime.fromisoformat(rec["mtime_iso"].replace("Z", "+00:00"))
+        local = utc - dt.timedelta(hours=5)  # CDT
+        return local.date().isoformat()
+    except (ValueError, TypeError):
+        return rec["mtime_iso"][:10]
 
 
 def fetch_day(conn: sqlite3.Connection, date: str) -> list[dict]:
@@ -1059,7 +1068,7 @@ def artifact_day_index(conn: sqlite3.Connection) -> dict[str, int]:
     global _ARTIFACT_DAY_INDEX
     if _ARTIFACT_DAY_INDEX is None:
         rows = conn.execute(
-            "SELECT abs_path, rel_path, source_label, mtime_iso, metrics_json FROM artifacts"
+            "SELECT abs_path, rel_path, source_label, file_kind, mtime_iso, metrics_json FROM artifacts"
         ).fetchall()
         dates = sorted({
             bd
