@@ -98,7 +98,7 @@ def walk_git_repo(repo: dict) -> list[dict]:
         return []
 
     fmt = "%H%x1f%aI%x1f%an%x1f%ae%x1f%s%x1f%b%x1e"
-    cmd = ["git", "-C", repo_path, "log", "--no-merges"]
+    cmd = ["git", "-C", repo_path, "log", "--all", "--no-merges"]
     if repo.get("since"):
         cmd.append(f"--since={repo['since']}")
     if repo.get("until"):
