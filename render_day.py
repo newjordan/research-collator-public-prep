@@ -713,6 +713,28 @@ _VAL_BPB_SOURCE_RANK = {
 }
 
 
+def _test_row_source_ref(rec: dict, metric: str, vals: list[float],
+                         title: str, time_iso: str | None,
+                         bpb_source: str) -> dict:
+    return {
+        "id": rec.get("id"),
+        "title": title,
+        "metric": metric,
+        "metric_values": list(vals),
+        "selected_value": min(vals) if vals else None,
+        "time_iso": time_iso,
+        "best_date": best_date(rec),
+        "mtime_iso": rec.get("mtime_iso"),
+        "source_label": rec.get("source_label"),
+        "file_kind": rec.get("file_kind"),
+        "camp": rec.get("camp"),
+        "abs_path": rec.get("abs_path"),
+        "rel_path": rec.get("rel_path"),
+        "metrics_json": rec.get("metrics_json"),
+        "val_bpb_source": bpb_source,
+    }
+
+
 def extract_test_rows(records: list[dict], metric: str,
                       reference_baseline: float | None) -> list[dict]:
     """One Test Run row per unique title, sorted by RUN TIME (chronological).
@@ -764,6 +786,7 @@ def extract_test_rows(records: list[dict], metric: str,
 
         best_val = min(vals)
         row_camp = KERNEL_CAMP if is_kernel_metric(metric) else rec["camp"]
+        source_ref = _test_row_source_ref(rec, metric, vals, title, time_iso, bpb_source)
         cur = by_title.get(title)
         if cur is None:
             row = {
@@ -784,12 +807,14 @@ def extract_test_rows(records: list[dict], metric: str,
                 "val_bpb_source": bpb_source,
                 "val_bpb_priority": bpb_priority,
                 "training_logs": [],
+                "source_records": [source_ref],
             }
             _append_training_log_ref(row, rec)
             by_title[title] = row
             continue
 
         cur["n_runs"] += len(vals)
+        cur.setdefault("source_records", []).append(source_ref)
         _append_training_log_ref(cur, rec)
         # Hardware: prefer the highest-priority source we've seen.
         if hardware and hw_priority < cur.get("hardware_priority", 99):

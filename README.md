@@ -19,6 +19,8 @@ lab-protocol aesthetic.
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
 | `scripts/verify_scraper_contract.py` | Fail-closed scraper/index gate for template-critical fields, metrics, day attribution, training-log embeds, and retrieval indexes. |
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
+| `scripts/audit_daily_accuracy.py` | Row-level daily accuracy harness for wrong-test/wrong-day detection and evidence provenance. |
+| `ACCURACY_HARNESS.md` | Accuracy workflow: exact audit first, targeted grep review second, RAG only as a non-authoritative search layer. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
 | `ablation_label_local.py` | Separate, optional Nemo3 ablation-label suggestion lane. Calls only local vLLM, writes review artifacts, and only approved JSONL labels affect rendering. |
 | `scripts/mine_conversation_architecture.py` | Deterministic Claude/Codex transcript miner for offline audit only. No LLM. Its artifacts are never rendered into daily report pages. |
@@ -90,6 +92,7 @@ python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
 python3 render_day.py --date 2026-03-28   # one day
 python3 render_all.py          # all days + journey arc + index page
 python3 scripts/verify_daily_template.py --all
+python3 scripts/audit_daily_accuracy.py --all
 ```
 
 Output lands in `output/preview/<DATE>.html` (self-contained, base64 PNGs
