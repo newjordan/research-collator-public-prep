@@ -56,11 +56,11 @@ def render_cover_page() -> dict:
   <title>Parameter Golf Campaign Cover</title>
   <style>
     :root {{
-      --bg: #050505;
+      --bg: #050605;
       --ink: #f4f0e9;
-      --muted: #a97540;
-      --accent: #c06b27;
-      --rule: rgba(192,107,39,0.45);
+      --muted: #89380e;
+      --accent: #89380e;
+      --rule: rgba(5,6,5,0.85);
       --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
               ui-monospace, "SF Mono", Consolas, monospace;
     }}
@@ -93,8 +93,8 @@ def render_cover_page() -> dict:
       width: auto;
       height: auto;
       border: 1px solid var(--rule);
-      box-shadow: 0 0 0 1px rgba(0,0,0,0.65), 0 28px 90px rgba(0,0,0,0.78);
-      background: #111;
+      box-shadow: 0 0 0 1px rgba(5,6,5,0.65), 0 28px 90px rgba(5,6,5,0.78);
+      background: #050605;
     }}
     .enter-row {{
       display: flex;
@@ -113,11 +113,11 @@ def render_cover_page() -> dict:
       text-decoration: none;
       border: 1px solid var(--rule);
       padding: 9px 12px;
-      background: rgba(192,107,39,0.08);
+      background: rgba(5,6,5,0.10);
     }}
     .enter-row a:hover {{
       border-color: var(--accent);
-      color: #fff;
+      color: #f4f0e9;
     }}
     @media (max-width: 640px) {{
       .enter-row {{ flex-direction: column; align-items: stretch; }}

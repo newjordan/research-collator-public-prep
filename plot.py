@@ -39,19 +39,19 @@ except ImportError:
 INVALID_VAL_BPB_FLOOR = 1.06
 MAX_DAY_CHART_WINDOW_HOURS = 12.0
 
-# Chart palette from the Claude Design reference chart: dark lab plot,
-# phosphor grid/running-best line, gold experimental points, slate neural
-# points. This is intentionally higher contrast than the surrounding page.
-DARK_BG       = "#0a0d0a"
-DARK_AXIS_BG  = "#0a0d0a"
-DARK_TEXT     = "#c8d4c0"
-DARK_TEXT_HI  = "#f0f4ed"
-DARK_TEXT_MUTE = "#6a766a"
-DARK_RULE     = "#7dff7d33"
-DARK_RULE_HI  = "#7dff7d66"
-DARK_GRID     = "#7dff7d22"
-DARK_ACCENT   = "#7dff7d"
-DARK_INVALID_ZONE = "#101510"
+# Cover-derived chart palette: orange field, dark-black details.
+COVER_ORANGE = "#89380e"
+COVER_BLACK = "#050605"
+DARK_BG       = COVER_ORANGE
+DARK_AXIS_BG  = COVER_ORANGE
+DARK_TEXT     = COVER_BLACK
+DARK_TEXT_HI  = COVER_BLACK
+DARK_TEXT_MUTE = "#1b0f08"
+DARK_RULE     = COVER_BLACK
+DARK_RULE_HI  = COVER_BLACK
+DARK_GRID     = COVER_BLACK
+DARK_ACCENT   = COVER_BLACK
+DARK_INVALID_ZONE = "#78300b"
 
 
 def _desaturate(color: str, factor: float = 0.5) -> str:
@@ -117,14 +117,14 @@ plt.rcParams.update({
 })
 
 CAMP_COLOR = {
-    "kernel":       "#e3b341",
-    "neural":       "#6196c4",
-    "experimental": "#d8a040",
-    "daily_grind":  "#6a766a",
+    "kernel":       COVER_BLACK,
+    "neural":       "#2b1607",
+    "experimental": "#130a04",
+    "daily_grind":  "#3b1b08",
 }
 CAMP_MARKER = {
-    "kernel":       "o",
-    "neural":       "o",
+    "kernel":       "s",
+    "neural":       "^",
     "experimental": "o",
     "daily_grind":  "x",
 }
@@ -171,7 +171,7 @@ def day_chart(out_path: str | Path,
 
     X = time of day (UTC). Y = metric value.
     Each test = numbered dot at its run time.
-    Light gray line connects consecutive tests in time order = the journey.
+    Dark-black line connects consecutive tests in time order = the journey.
     Bold step line = personal-best-of-day-so-far running minimum.
     Horizontal dashed = best before today (the bar to beat).
 
@@ -375,8 +375,7 @@ def day_chart(out_path: str | Path,
                           alpha=0.92),
             )
 
-    # Baseline-to-beat — paper-white dashed (this is reference info, not
-    # "active state", so it stays neutral, not accent-green).
+    # Baseline-to-beat: dark-black dashed reference line.
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
             and ((not is_bpb) or baseline_to_beat >= INVALID_VAL_BPB_FLOOR)):
         ax.axhline(baseline_to_beat, color=DARK_TEXT_HI, linestyle="--",
@@ -552,9 +551,9 @@ def journey_chart(out_path: str | Path,
         by_camp.setdefault(c, []).append((x, y))
     for c, items in by_camp.items():
         ax.scatter([x for x, _ in items], [y for _, y in items],
-                   color=CAMP_COLOR.get(c, "#444"),
+                   color=CAMP_COLOR.get(c, DARK_TEXT_MUTE),
                    marker=CAMP_MARKER.get(c, "o"),
-                   s=34, alpha=0.85, edgecolors="white", linewidths=0.4,
+                   s=34, alpha=0.85, edgecolors=DARK_BG, linewidths=0.4,
                    label=f"{CAMP_LABEL.get(c, c)} ({len(items)})",
                    zorder=3)
 
@@ -564,18 +563,18 @@ def journey_chart(out_path: str | Path,
     for v in bests:
         cur = min(cur, v)
         running_min.append(cur)
-    ax.plot(dates, running_min, color="#222222", linewidth=1.4,
+    ax.plot(dates, running_min, color=DARK_ACCENT, linewidth=1.4,
             alpha=0.7, zorder=2, label="personal best (running min)")
 
     # Reference baseline
     if reference_baseline is not None and math.isfinite(reference_baseline):
-        ax.axhline(reference_baseline, color="#aa4444", linestyle="--",
+        ax.axhline(reference_baseline, color="#2b0000", linestyle="--",
                    linewidth=1.0, alpha=0.8, zorder=1)
         ax.annotate(f"{reference_label} = {reference_baseline:.4f}",
                     xy=(1.0, reference_baseline),
                     xycoords=("axes fraction", "data"),
                     xytext=(-2, 4), textcoords="offset points",
-                    fontsize=8, color="#aa4444", ha="right")
+                    fontsize=8, color="#2b0000", ha="right")
 
     # Record callouts
     if annotate_records:
@@ -587,8 +586,8 @@ def journey_chart(out_path: str | Path,
             ax.annotate(r.get("label", "record"),
                         xy=(dx, r["best"]),
                         xytext=(0, -16), textcoords="offset points",
-                        fontsize=7.5, color="#111111", ha="center",
-                        arrowprops=dict(arrowstyle="-", color="#777",
+                        fontsize=7.5, color=DARK_TEXT, ha="center",
+                        arrowprops=dict(arrowstyle="-", color=DARK_RULE,
                                         lw=0.5, shrinkA=0, shrinkB=1))
 
     ax.xaxis.set_major_locator(mdates.WeekdayLocator(byweekday=mdates.MO))

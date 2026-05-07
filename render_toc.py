@@ -45,7 +45,7 @@ def toc_extra_style() -> str:
     body.toc-page {{
       max-width: 1280px;
       background-image:
-        linear-gradient(rgba(17,19,21,0.76), rgba(17,19,21,0.86)),
+        linear-gradient(rgba(137,56,14,0.74), rgba(137,56,14,0.82)),
         url('{bg}');
       background-size: cover;
       background-position: center top;
@@ -54,8 +54,8 @@ def toc_extra_style() -> str:
     body.toc-page .report-header,
     body.toc-page table,
     body.toc-page .day-summary {{
-      background: rgba(17,19,21,0.82);
-      backdrop-filter: blur(1px);
+      background: rgba(137,56,14,0.88);
+      backdrop-filter: none;
     }}
     body.toc-page .toc-kicker {{
       margin: -6px 0 18px;

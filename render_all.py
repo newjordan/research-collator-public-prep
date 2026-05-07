@@ -126,28 +126,30 @@ def render_index(dates_with_results: list[dict],
     """Build the legacy journey.html page."""
     style = """
     body { font-family: -apple-system, system-ui, sans-serif; max-width: 1080px;
-           margin: 24px auto; padding: 0 22px; color: #222; line-height: 1.45; }
-    h1 { font-size: 1.8em; border-bottom: 2px solid #ddd; padding-bottom: 4px; }
-    h2 { font-size: 1.25em; margin-top: 1.6em; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-    .muted { color: #888; }
+           margin: 24px auto; padding: 0 22px; color: #050605; line-height: 1.45;
+           background: #89380e; }
+    html { background: #89380e; }
+    h1 { font-size: 1.8em; border-bottom: 2px solid #050605; padding-bottom: 4px; }
+    h2 { font-size: 1.25em; margin-top: 1.6em; border-bottom: 1px solid #050605; padding-bottom: 3px; }
+    .muted { color: #1b0f08; }
     figure { margin: 18px 0; text-align: center; }
     figure img { max-width: 100%; height: auto; }
     table { border-collapse: collapse; width: 100%; font-size: 0.93em; }
-    th, td { padding: 5px 9px; text-align: left; border-bottom: 1px solid #eee;
+    th, td { padding: 5px 9px; text-align: left; border-bottom: 1px solid #050605;
              vertical-align: top; }
-    th { color: #555; font-weight: 600; }
-    tr:hover td { background: #f9f9f9; }
-    a { color: #1f5fb4; text-decoration: none; }
+    th { color: #1b0f08; font-weight: 600; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    a { color: #050605; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .badge { display: inline-block; font-size: 0.78em; padding: 1px 6px;
-             border-radius: 9px; color: #fff; }
-    .badge-kernel { background: #b88724; }
-    .badge-neural { background: #1f77b4; }
-    .badge-experimental { background: #ff7f0e; }
-    .badge-daily_grind { background: #888; }
+             border-radius: 9px; color: #89380e; }
+    .badge-kernel { background: #050605; }
+    .badge-neural { background: #2b1607; }
+    .badge-experimental { background: #130a04; }
+    .badge-daily_grind { background: #3b1b08; }
     .stat { display: inline-block; margin: 0 14px 4px 0; }
-    .stat strong { font-size: 1.1em; color: #111; }
-    code { background: #f3f3f3; padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+    .stat strong { font-size: 1.1em; color: #050605; }
+    code { background: rgba(5,6,5,0.10); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
     """
     lines = [
         "<!doctype html><html><head><meta charset='utf-8'>",

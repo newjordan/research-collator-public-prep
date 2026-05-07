@@ -37,22 +37,23 @@ renderer refuses to run if that file's `<style>` block does not match
 
 | Token         | Value      | Purpose                                          |
 |---------------|------------|--------------------------------------------------|
-| `--bg`        | `#111315`  | Page background. The ONLY black.                 |
-| `--surface`   | `#17191c`  | (reserved; currently unused — no card fills)     |
-| `--rule`      | `#2a2d31`  | Hairline dividers (table rows, section seps).    |
-| `--rule-hi`   | `#3a3e44`  | Stronger borders (panels, table outline, axes).  |
-| `--ink`       | `#d6d8db`  | Primary body text.                               |
-| `--ink-hi`    | `#f4f5f7`  | Emphasized values, headings.                     |
-| `--ink-mute`  | `#8a8d92`  | Labels, dot-leader keys, footnotes.              |
-| `--accent`    | `#e3b341`  | Yellow stripe accent — used SPARINGLY.           |
-| `--warn`      | `#e25a4a`  | INVALID-row red. Used only for invalidity.       |
-| `--link`      | `#7ab4ff`  | Quiet blue. Underline on hover only.             |
-| `--data-exp`  | `#3a6e3a`  | Dark green. Experimental camp (DATA color).      |
-| `--data-neu`  | `#6fbf6f`  | Lighter green + 45° diagonal stripes. Neural.    |
-| `--data-kernel` | `--accent` | Yellow. Rendered kernel classification.       |
+| `--bg`        | `#89380e`  | Cover-orange/grunge page field.                  |
+| `--surface`   | `#89380e`  | Reserved; no separate grey-black fill.           |
+| `--rule`      | `#050605`  | Dark-black hairline dividers.                    |
+| `--rule-hi`   | `#050605`  | Dark-black stronger rules.                       |
+| `--ink`       | `#050605`  | Primary body text.                               |
+| `--ink-hi`    | `#050605`  | Emphasized text.                                 |
+| `--ink-mute`  | `#1b0f08`  | Muted cover-black labels and footnotes.          |
+| `--accent`    | `#050605`  | Dark-black accent.                               |
+| `--warn`      | `#2b0000`  | INVALID dark red. Used only for invalidity.      |
+| `--link`      | `#050605`  | Dark-black link text. Underline on hover only.   |
+| `--data-exp`  | `#050605`  | Dark-black experimental.                         |
+| `--data-neu`  | `#2b1607`  | Cover-brown + dark-black diagonal stripes.       |
+| `--data-kernel` | `#050605` | Dark-black kernel classification.              |
 
-Total: 13 tokens. No greys outside this set, no off-palette accents, no
-phosphor green outside the legacy CRT mode (which is deprecated).
+Total: 13 tokens. No grey-black surfaces and no off-palette accents. The
+orange and black are sampled from `assets/cover_sheet_final.jpeg`: orange
+median `#89380e`, black median `#050605`.
 
 ### 2.2 Typography
 
@@ -65,10 +66,12 @@ tabular-nums`) on every value column.
 
 ### 2.3 Surface treatment
 
-Single-rule, no fills. Every panel (header block, table, log detail row,
-day summary, figure frame) is enclosed by exactly one `1px solid var(--rule-hi)`
-border. No box-shadows, no gradients (except the 45° diagonal stripes on the
-neural data segment), no card-style background tints.
+Cover-orange field with a subtle dark-black grunge texture. Every panel
+(header block, table, log detail row, day summary, figure frame) is enclosed
+by exactly one `1px solid var(--rule-hi)` border. No grey-black fills, no
+box-shadows, no off-palette gradients. The only allowed gradients are the
+low-opacity black grunge texture on the page field and the 45° diagonal
+stripes on the neural data segment.
 
 ### 2.4 Section anchors (vertical rhythm)
 
@@ -98,7 +101,7 @@ re-ordered without a spec revision.
 
 3. SECTION 1.0  TRAJECTORY
 3.1   DAILY SUMMARY         2-col callout (160px label | 1fr body),
-                            dark-green left rule, two short paragraphs:
+                            dark-black left rule, two short paragraphs:
                               ¶1 — runs · valid/invalid · allocation tone · top archs
                               ¶2 — best valid + PB comparison + crash flag
 3.2   CHART                 PNG, framed in a 1px-bordered figure block.
@@ -185,8 +188,8 @@ finite-data range with no invalid zone.
 | Element           | Style                                                       |
 |-------------------|-------------------------------------------------------------|
 | Camp scatter      | Compact circular dots (`s=42`, invalid `s=38`) with page-bg edge and a tiny center pin at the exact `(time, value)` coordinate. |
-| Journey line      | Green-rule grey, alpha 0.55, lw 0.7, connects in-scale valid segments only. |
-| Best-valid step   | Accent green, lw 1.2, where='post'. Excludes invalids/crashes.|
+| Journey line      | Dark-black, alpha 0.55, lw 0.7, connects in-scale valid segments only. |
+| Best-valid step   | Dark-black accent, lw 1.2, where='post'. Excludes invalids/crashes.|
 | Validity floor    | Subtle solid rule, lw 0.65, alpha 0.55.                     |
 | Invalid zone      | Quiet background shift only; below-floor points are 50% desaturated. |
 | PB-baseline ref   | White dashed, lw 0.9, alpha 0.50.                           |
@@ -480,8 +483,9 @@ To avoid feature creep, these are **rejected proposals**:
 - A "Daily Grind" section that summarizes session activity. Sessions
   appear in Supporting Files; their stripe color encodes camp.
 - Additional accent colors. The five-token palette is the lock.
-- Card-fill backgrounds, drop shadows, gradients (except the neural
-  diagonal-stripe pattern).
+- Card-fill backgrounds, drop shadows, off-palette gradients. The only
+  gradients allowed are the subtle cover-field grunge texture and the neural
+  diagonal-stripe pattern.
 - Cyan, amber, lime, pastels. No.
 - A floating side-panel / sticky nav. The page is a printed-document
   metaphor. Scroll is the only navigation.
