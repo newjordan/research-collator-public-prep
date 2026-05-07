@@ -40,8 +40,8 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "e889e0172105702e28097869ae19f35d21464b31bed40ddfeb4082e6776f91a5"
-DAILY_TEMPLATE_STANDARD = "daily-report-v2.4-frostmark-home"
+LOCKED_TEMPLATE_STYLE_SHA256 = "f59278126e43d905677e3fdeb5d8f0f19e9e0a319f2f726484f5db3b0632ca73"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.5-master-back"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
 FINAL_SUBMISSION_NAME = "Mockingbird"
@@ -1120,8 +1120,24 @@ def _frosted_flake_data_uri() -> str:
     return _FROSTED_FLAKE_DATA_URI
 
 
-def make_report_h1_html(title: str, right_label: str, home_href: str = "index.html") -> str:
+def make_report_h1_html(
+    title: str,
+    right_label: str,
+    home_href: str = "index.html",
+    master_href: str | None = None,
+    master_label: str = "BACK TO MASTER SHEET",
+) -> str:
     """Report title with the frostmark wired back to the publication landing page."""
+    if master_href:
+        right_html = (
+            '<span class="h1-right">'
+            f'<a class="h1-master" href="{html.escape(master_href, quote=True)}">'
+            f'{html.escape(master_label)}</a>'
+            f'<span class="h1-date">{html.escape(right_label)}</span>'
+            '</span>'
+        )
+    else:
+        right_html = f'<span class="h1-date">{html.escape(right_label)}</span>'
     return (
         '<h1>'
         '<span class="h1-title">'
@@ -1130,7 +1146,7 @@ def make_report_h1_html(title: str, right_label: str, home_href: str = "index.ht
         '</a>'
         f'<span>{html.escape(title)}</span>'
         '</span>'
-        f'<span class="h1-date">{html.escape(right_label)}</span>'
+        f'{right_html}'
         '</h1>'
     )
 
@@ -1166,18 +1182,6 @@ def _embedded_log_style() -> str:
         padding: 12px 14px;
         background: var(--rule-hi);
     }
-    .log-panel::before,
-    .log-panel::after {
-        content: "";
-        position: absolute;
-        width: 42px;
-        height: 7px;
-        border-top: 1px solid var(--bg);
-        border-bottom: 1px solid var(--bg);
-        pointer-events: none;
-    }
-    .log-panel::before { left: 10px; top: 8px; }
-    .log-panel::after { right: 10px; bottom: 8px; }
     .log-panel + .log-panel { margin-top: 14px; }
     .log-meta {
         color: var(--bg);
@@ -1272,6 +1276,7 @@ def _daily_template_style() -> str:
         ".supporting-section",
         ".bpb-table",
         ".h1-home",
+        ".h1-master",
     ]
     missing = [needle for needle in required if needle not in style]
     if missing:
@@ -2206,7 +2211,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     alloc_bar_html = make_alloc_bar_html(by_camp) if test_rows else None
     report_header = make_report_header_html(header_fields, alloc_bar=alloc_bar_html)
 
-    h1_html = make_report_h1_html("DAILY RESEARCH REPORT", date)
+    h1_html = make_report_h1_html("DAILY RESEARCH REPORT", date, master_href="toc.html")
 
     # Daily summary callout (between SECTION 1.0 and the chart)
     daily_summary = make_daily_summary_html(

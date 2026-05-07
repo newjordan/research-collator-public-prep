@@ -19,7 +19,7 @@ links plus any actionable failures.
 - Do not use any LLM inside the scraper, classifier, or renderer.
 - Keep `stripper.py`, `enrich.py`, `classify.py`, `render_day.py`,
   `render_all.py`, and template verification deterministic.
-- Daily pages must strictly follow `daily-report-v2.4-frostmark-home`.
+- Daily pages must strictly follow `daily-report-v2.5-master-back`.
 - `TEMPLATE.md` is authoritative. If code and `TEMPLATE.md` disagree, fix code
   or update both deliberately in the same patch.
 - Do not add a Section 3.0 or supporting-files body section. The canonical daily

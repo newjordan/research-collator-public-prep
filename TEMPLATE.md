@@ -31,7 +31,7 @@ fonts, or surface treatments without first updating this section.
 The locked base CSS source is `templates/daily_report_locked.html`. The
 renderer refuses to run if that file's `<style>` block does not match
 `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
-`daily-report-v2.4-frostmark-home`.
+`daily-report-v2.5-master-back`.
 
 ### 2.1 Palette (single source of truth)
 
@@ -70,10 +70,9 @@ Cover-orange field with a subtle dark-black grunge texture. Primary reading
 zones are intentionally inverted: report header, section anchors, daily
 summary, chart frame, table headers, and training-log expansion panels use
 `--rule-hi` as a black field with `--bg` text/detailing.
-Tables and lists keep orange body rows for scan density. Key frames use small
-black/orange register marks and corner ticks; these are CSS-only
-micro-graphics, not content fields. There is no footer and no decorative
-bottom edge treatment.
+Tables and lists keep orange body rows for scan density. Key frames stay flat:
+no corner double-line micrographics on charts, report headers, daily summaries,
+or log panels. There is no footer and no decorative bottom edge treatment.
 No grey-black fills, no shadows, and no off-palette gradients. The only
 allowed gradients are the low-opacity black grunge texture on the page field
 and the 45° diagonal stripes on the neural data segment.
@@ -84,6 +83,8 @@ H1: 22px, top of page, no border, mark + title left, date right.
 The H1 frostmark is rendered through CSS as dark black; do not edit the
 source PNG to recolor it. The frostmark is a link back to the publication
 landing page (`index.html`, or `../index.html` from nested report folders).
+Daily pages also include a right-side `BACK TO MASTER SHEET` control that links
+to `toc.html`.
 H2: 12px ALL-CAPS with `border-bottom: 1px solid --rule-hi`. Margins
 36px above / 14px below.
 
@@ -224,8 +225,9 @@ of these break, the page is wrong.
 2. **Inversion is intentional and limited.** Only report header, section
    anchors, daily summary, chart frame, table headers, and log expansion panels
    use black fields. Body rows/lists remain orange.
-3. **Micro-graphics are CSS-only.** Register marks and corner ticks use `--bg`
-   and `--rule-hi`; no bitmap embeds and no extra data fields.
+3. **Micro-graphics are limited.** No corner double-line micrographics are
+   allowed on charts, report headers, daily summaries, or log panels. Keep only
+   necessary section/header rules and data/classification stripes.
 4. **Numbered badge ↔ table row #** is always 1-indexed by run time and
    matches across the chart and the Test Runs table.
 5. **INVALID rows are BPB-only** and always muted (text), with red on the
