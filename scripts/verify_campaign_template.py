@@ -25,6 +25,14 @@ LEAK_RE = re.compile(
 )
 
 
+def _require_footer(text: str, html_path: Path) -> None:
+    if text.count('class="report-footer"') != 1:
+        raise AssertionError(f"missing canonical black report footer: {html_path}")
+    for marker in ("rf-dotgrid", "rf-eye", "rf-bars"):
+        if marker not in text:
+            raise AssertionError(f"footer micro-graphic {marker!r} missing: {html_path}")
+
+
 def verify_campaign(summary: dict) -> dict:
     html_path = Path(summary["html_path"])
     if not html_path.exists():
@@ -33,6 +41,7 @@ def verify_campaign(summary: dict) -> dict:
 
     if "CAMPAIGN CUMULATIVE REPORT" not in text:
         raise AssertionError(f"missing campaign h1 marker: {html_path}")
+    _require_footer(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"campaign page must have exactly two h2 sections: {html_path}"

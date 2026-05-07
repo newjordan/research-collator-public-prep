@@ -23,12 +23,21 @@ LEAK_RE = re.compile(
 )
 
 
+def _require_footer(text: str, html_path: Path) -> None:
+    if text.count('class="report-footer"') != 1:
+        raise AssertionError(f"missing canonical black report footer: {html_path}")
+    for marker in ("rf-dotgrid", "rf-eye", "rf-bars"):
+        if marker not in text:
+            raise AssertionError(f"footer micro-graphic {marker!r} missing: {html_path}")
+
+
 def verify_toc(html_path: Path) -> dict:
     if not html_path.exists():
         raise AssertionError(f"missing TOC html: {html_path}")
     text = html_path.read_text(encoding="utf-8", errors="replace")
     if "TABLE OF CONTENTS" not in text:
         raise AssertionError(f"missing TOC h1 marker: {html_path}")
+    _require_footer(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(f"TOC page must have exactly two h2 sections: {html_path}")
     for heading in (

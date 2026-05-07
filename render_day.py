@@ -40,8 +40,8 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "c960d8fe97c5d702916d196895efe438236d073471b7e990ed0f1558e2ddf63a"
-DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
+LOCKED_TEMPLATE_STYLE_SHA256 = "e3aca0e7d420838918a37d9994e6b2eec7c1ae4bf00fb186f0d63eda8bf8cbca"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.1-black-footer"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
 FINAL_SUBMISSION_NAME = "Mockingbird"
@@ -1256,6 +1256,9 @@ def _daily_template_style() -> str:
         ".alloc-seg-kernel",
         ".supporting-section",
         ".bpb-table",
+        ".report-footer",
+        ".rf-eye",
+        ".rf-bars",
     ]
     missing = [needle for needle in required if needle not in style]
     if missing:
@@ -1324,6 +1327,34 @@ def make_report_header_html(fields: list[tuple[str, str]],
                 f'<span class="rh-val">{html.escape(v)}</span></div>'
             )
     return '<div class="report-header">' + "".join(rows) + "</div>"
+
+
+def make_report_footer_html(label: str, report_id: str) -> str:
+    """Shared visual footer for rendered report pages."""
+    label_html = html.escape(label.upper())
+    report_id_html = html.escape(report_id.upper())
+    dots = "".join("<i></i>" for _ in range(12))
+    return (
+        '<footer class="report-footer">'
+        '<div class="rf-grid">'
+        '<div class="rf-cell rf-brand">'
+        '<span class="rf-kicker">FROST RESEARCH ARCHIVE</span>'
+        f'<strong>{label_html}</strong>'
+        '<span class="rf-meta">LOCKED // COVER BLACK</span>'
+        '</div>'
+        '<div class="rf-cell rf-marks" aria-hidden="true">'
+        f'<span class="rf-dotgrid">{dots}</span>'
+        '<span class="rf-eye"></span>'
+        '<span class="rf-chevrons">&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span>'
+        '</div>'
+        '<div class="rf-cell rf-code">'
+        '<span class="rf-bars" aria-hidden="true"></span>'
+        f'<span class="rf-id">REPORT ID: {report_id_html}</span>'
+        '<span class="rf-id">ARCHIVE STATUS: CANONICAL / SELF-CONTAINED</span>'
+        '</div>'
+        '</div>'
+        '</footer>'
+    )
 
 
 TEMPLATE_HEADER_KEYS = [
@@ -2373,6 +2404,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         f"<title>{date} — Research Day</title>"
         f"<style>{style}</style></head><body>"
         + body_html
+        + make_report_footer_html("daily research report", date)
         + _embedded_log_script()
         + "</body></html>"
     )

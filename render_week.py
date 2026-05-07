@@ -46,6 +46,7 @@ from render_day import (
     _embedded_log_script,
     _frosted_flake_data_uri,
     make_alloc_bar_html,
+    make_report_footer_html,
     make_report_header_html,
     best_date,
 )
@@ -369,6 +370,7 @@ def render_week(week_dates: list[str],
             f"<title>Week {week_number:02d} - Research Weekly</title>"
             f"<style>{_daily_template_style()}</style></head><body>"
             + "\n".join(body_parts)
+            + make_report_footer_html("weekly research report", f"week-{week_number:02d}")
             + _embedded_log_script()
             + "</body></html>"
         )
@@ -446,6 +448,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
         "<title>Weekly Research Reports</title>"
         f"<style>{_daily_template_style()}</style></head><body>"
         + body
+        + make_report_footer_html("weekly report index", "weeks-index")
         + "</body></html>",
         encoding="utf-8",
     )

@@ -40,7 +40,7 @@ lab-protocol aesthetic.
 
 ## Template lock
 
-Daily pages are locked to the `daily-report-v2.0-wide-log-panel` standard:
+Daily pages are locked to the `daily-report-v2.1-black-footer` standard:
 
 - base visual lock: `templates/daily_report_locked.html`
 - executable spec: `TEMPLATE.md`

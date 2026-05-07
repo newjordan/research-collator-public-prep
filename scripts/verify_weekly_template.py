@@ -29,6 +29,26 @@ LEAK_RE = re.compile(
 )
 
 
+def _require_footer(text: str, html_path: Path) -> None:
+    if text.count('class="report-footer"') != 1:
+        raise AssertionError(f"missing canonical black report footer: {html_path}")
+    for marker in ("rf-dotgrid", "rf-eye", "rf-bars"):
+        if marker not in text:
+            raise AssertionError(f"footer micro-graphic {marker!r} missing: {html_path}")
+
+
+def _verify_index(html_path: Path) -> dict:
+    if not html_path.exists():
+        raise AssertionError(f"missing weekly index html: {html_path}")
+    text = html_path.read_text(encoding="utf-8", errors="replace")
+    _require_footer(text, html_path)
+    if "WEEKLY RESEARCH REPORTS" not in text:
+        raise AssertionError(f"missing weekly index h1 marker: {html_path}")
+    if LEAK_RE.search(text):
+        raise AssertionError(f"conversation/session material leaked into weekly index: {html_path}")
+    return {"html_path": str(html_path)}
+
+
 def verify_week(summary: dict) -> dict:
     html_path = Path(summary["html_path"])
     if not html_path.exists():
@@ -36,6 +56,7 @@ def verify_week(summary: dict) -> dict:
     text = html_path.read_text(encoding="utf-8", errors="replace")
     if "WEEKLY RESEARCH REPORT" not in text:
         raise AssertionError(f"missing weekly h1 marker: {html_path}")
+    _require_footer(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(f"weekly page must have exactly two h2 sections: {html_path}")
     for heading in ("SECTION 1.0 — WEEK TRAJECTORY", "SECTION 2.0 — DAILY REPORTS"):
@@ -99,12 +120,14 @@ def main() -> None:
         summaries = render_week.render_all_weeks(dates)
 
     checked = [verify_week(summary) for summary in summaries]
+    index_check = _verify_index(render_week.WEEK_HTML_DIR / "index.html")
     result = {
         "template_standard": render_week.WEEKLY_TEMPLATE_STANDARD,
         "daily_template_standard": render_day.DAILY_TEMPLATE_STANDARD,
         "template_style_sha256": render_day.LOCKED_TEMPLATE_STYLE_SHA256,
         "checked_weeks": len(checked),
         "index_path": str(render_week.WEEK_HTML_DIR / "index.html"),
+        "index": index_check,
         "sample": checked[:3],
     }
     print(json.dumps(result, indent=2, sort_keys=True))
