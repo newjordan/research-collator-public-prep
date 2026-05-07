@@ -7,13 +7,14 @@ roots:
   # need to chase scattered source locations.
   #
   # ml-lab is still on its original path because it is not currently present
-  # under /home/frosty40/llm_research.
+  # under /home/frosty40/llm_research. It is scraped for auditability but is
+  # treated as prelude/bootstrap, not parameter-golf research chronology.
   - path: /home/frosty40/ml-lab
     label: ml-lab
     git_remote: newjordan/ml-lab
     period_hint: "2026-02-24 .. 2026-03-23"
-  # Early local DGX / studio / agent work. These are not present in
-  # /home/frosty40/llm_research yet, but they are required for days 1-5.
+  # Early local DGX / studio / agent work. Retained for prelude/bootstrap
+  # auditability, but not counted in the research-day chronology.
   - path: /srv/agents
     label: srv_agents
     git_remote: null
@@ -231,6 +232,6 @@ sqlite_path: /home/frosty40/research_collator/index.sqlite
 extraction_version: "stripper_v2"
 
 # Legacy field retained for old scripts. The daily renderer follows TEMPLATE.md:
-# day_index is the 1-based index of the target date in the sorted set of dates
-# with artifacts. This keeps the recovered baseline at 2026-03-28 = DAY 022.
+# day_index starts at the first proven parameter-golf research date,
+# 2026-03-18, so 2026-03-18 = DAY 001.
 day_epoch: null

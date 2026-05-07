@@ -7,7 +7,7 @@ data attribution, not invent a new report shape.
 
 Usage:
     python3 render_day.py --date 2026-04-26
-    python3 render_day.py --day 22
+    python3 render_day.py --day 1
     python3 render_day.py --date 2026-04-26 --metric val_loss
 """
 
@@ -41,6 +41,7 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
 LOCKED_TEMPLATE_STYLE_SHA256 = "10bdc54d95a899ae2d60a669c18807f86538ea8105482bd226e51366f070dc4e"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
+RESEARCH_START_DATE = "2026-03-18"
 TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
@@ -87,6 +88,20 @@ CAMP_DISPLAY_LABEL = {
     "neural": "neural",
     "daily_grind": "daily grind",
 }
+RESEARCH_CHRONOLOGY_SOURCE_LABELS = {
+    "parameter-golf-lab", "git:parameter-golf-lab",
+    "open_parameter_golf_junkyard",
+    "parameter-golf-cross-repo",
+    "sota_crawler", "git:sota_crawler",
+    "sota_nueral", "git:sota_nueral",
+    "sota_nueral_archive",
+    "SOTA_FINAL", "git:SOTA_FINAL",
+    "sota_rascal", "git:sota_rascal",
+    "pg_whale", "git:pg_whale",
+    "rascal-private", "git:rascal-private",
+    "sota_rascal_pod_saves",
+    "conversation_architecture",
+}
 
 
 def is_bpb_metric(metric: str | None) -> bool:
@@ -107,6 +122,43 @@ def is_valid_metric_value(metric: str | None, value: float) -> bool:
     if not is_bpb_metric(metric):
         return True
     return INVALID_VAL_BPB_FLOOR <= value <= CRASH_VAL_BPB_THRESHOLD
+
+
+def metrics_dict(rec: dict) -> dict:
+    try:
+        md = json.loads(rec.get("metrics_json") or "{}")
+    except (json.JSONDecodeError, TypeError):
+        md = {}
+    return md if isinstance(md, dict) else {}
+
+
+def is_reference_baseline_record(rec: dict) -> bool:
+    return bool(metrics_dict(rec).get("is_reference_baseline"))
+
+
+def is_research_chronology_record(rec: dict) -> bool:
+    """True when a record should create/count a daily research date.
+
+    Public upstream competition records are still indexable reference corpus,
+    but they do not define the user's day numbering or journey.
+    """
+    if is_reference_baseline_record(rec):
+        return False
+    return (rec.get("source_label") or "") in RESEARCH_CHRONOLOGY_SOURCE_LABELS
+
+
+def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
+    """Keep daily reports aligned with the research chronology contract.
+
+    Dates before the research start remain inspectable as raw/prelude pages.
+    Research days use the same source/reference filter as day numbering so
+    public upstream records and unrelated bootstrap artifacts do not leak into
+    the report body.
+    """
+    if date < RESEARCH_START_DATE:
+        return records
+    filtered = [r for r in records if is_research_chronology_record(r)]
+    return filtered or records
 
 
 def ablation_title_sha(title: str) -> str:
@@ -217,11 +269,7 @@ def pick_headline_metric(records: list[dict]) -> str | None:
     for metric in HEADLINE_METRICS:
         n = 0
         for rec in records:
-            try:
-                md = json.loads(rec.get("metrics_json") or "{}")
-            except (json.JSONDecodeError, TypeError):
-                md = {}
-            if md.get("is_reference_baseline"):
+            if is_reference_baseline_record(rec):
                 continue
             if extract_metric_for_record(rec.get("metrics_json"), metric):
                 n += 1
@@ -248,11 +296,7 @@ def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | Non
         bd = best_date(rec)
         if not bd or bd >= date:
             continue
-        try:
-            md = json.loads(rec["metrics_json"])
-        except (json.JSONDecodeError, TypeError):
-            md = {}
-        if md.get("is_reference_baseline"):
+        if is_reference_baseline_record(rec):
             continue
         for v in extract_metric_for_record(rec["metrics_json"], metric):
             if not is_valid_metric_value(metric, v):
@@ -309,11 +353,7 @@ def tests_variety_pct(records: list[dict], metric: str) -> tuple[int, int, float
     so the count matches the Test Runs table."""
     titles_per_dp: list[str] = []
     for rec in records:
-        try:
-            md = json.loads(rec.get("metrics_json") or "{}")
-        except (json.JSONDecodeError, TypeError):
-            md = {}
-        if md.get("is_reference_baseline"):
+        if is_reference_baseline_record(rec):
             continue
         title = (rec.get("title") or "").strip()
         for _v in extract_metric_for_record(rec.get("metrics_json"), metric):
@@ -430,7 +470,9 @@ def _find_run_script(rec: dict) -> str | None:
 def _record_run_time_iso(rec: dict) -> str | None:
     """The TIME a test actually ran (not when its file was touched on disk).
     For training logs that were copied off a runpod later, mtime is the copy
-    time; the filename has the actual run timestamp. Prefer that.
+    time; the filename has the actual run timestamp. Prefer that. If only
+    mtime exists and the record date came from a dated run folder, preserve the
+    recovered research date and use mtime only for the clock time.
     """
     md_str = rec.get("metrics_json") or ""
     if md_str:
@@ -443,7 +485,17 @@ def _record_run_time_iso(rec: dict) -> str | None:
                 return f"{y}-{mo}-{d}T{h}:{mi}:{s}+00:00"
         except (json.JSONDecodeError, KeyError):
             pass
-    return rec.get("mtime_iso")
+    mtime_iso = rec.get("mtime_iso")
+    if not mtime_iso:
+        return None
+    bd = best_date(rec)
+    try:
+        mtime = dt.datetime.fromisoformat(mtime_iso.replace("Z", "+00:00"))
+    except ValueError:
+        return mtime_iso
+    if bd and mtime.date().isoformat() != bd:
+        return f"{bd}T{mtime.strftime('%H:%M:%S')}+00:00"
+    return mtime_iso
 
 
 def _hardware_from_record(rec: dict) -> str:
@@ -541,11 +593,7 @@ def extract_test_rows(records: list[dict], metric: str,
             continue
         # Reference baselines aren't user tests — exclude them from the
         # Test Runs view (they still appear in supporting files).
-        try:
-            md = json.loads(rec.get("metrics_json") or "{}")
-        except (json.JSONDecodeError, TypeError):
-            md = {}
-        if md.get("is_reference_baseline"):
+        if is_reference_baseline_record(rec):
             continue
         title = (rec.get("title") or "(untitled)").strip()
         wallclock = None
@@ -643,11 +691,7 @@ def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
     Reference baselines are excluded — they're not user trajectory."""
     out = []
     for rec in records:
-        try:
-            md = json.loads(rec.get("metrics_json") or "{}")
-        except (json.JSONDecodeError, TypeError):
-            md = {}
-        if md.get("is_reference_baseline"):
+        if is_reference_baseline_record(rec):
             continue
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         time_iso = _record_run_time_iso(rec)
@@ -681,6 +725,7 @@ def is_rendered_support_record(rec: dict) -> bool:
     """True for artifacts allowed to appear as report support evidence."""
     return (
         rec.get("camp") != "daily_grind"
+        and not is_reference_baseline_record(rec)
         and rec.get("file_kind") in SUPPORTING_FILE_KINDS
         and rec.get("file_kind") not in SUPPORTING_EXCLUDED_KINDS
     )
@@ -1006,19 +1051,24 @@ def _daily_template_style() -> str:
 
 
 def artifact_day_index(conn: sqlite3.Connection) -> dict[str, int]:
-    """1-based index in the sorted set of dates with artifacts.
+    """1-based index in the sorted set of research dates with artifacts.
 
-    This is the TEMPLATE.md contract and matches the recovered baseline:
-    2026-03-28 renders as DAY 022 with the current corpus.
+    Prelude/bootstrap artifacts before RESEARCH_START_DATE can still be rendered
+    by explicit date, but they are not counted as research days.
     """
     global _ARTIFACT_DAY_INDEX
     if _ARTIFACT_DAY_INDEX is None:
         rows = conn.execute(
-            "SELECT abs_path, rel_path, mtime_iso FROM artifacts"
+            "SELECT abs_path, rel_path, source_label, mtime_iso, metrics_json FROM artifacts"
         ).fetchall()
         dates = sorted({
-            bd for bd in (best_date(dict(r)) for r in rows) if bd is not None
+            bd
+            for r in rows
+            if is_research_chronology_record(dict(r))
+            for bd in [best_date(dict(r))]
+            if bd is not None
         })
+        dates = [d for d in dates if d >= RESEARCH_START_DATE]
         _ARTIFACT_DAY_INDEX = {d: i for i, d in enumerate(dates, start=1)}
     return _ARTIFACT_DAY_INDEX
 
@@ -1190,7 +1240,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
                             chart_baseline: float | None,
                             test_rows: list[dict],
                             arch_families: list[tuple[str, int]],
-                            by_camp: dict[str, int]) -> str:
+                            by_camp: dict[str, int],
+                            arch_event_count: int = 0) -> str:
     """Two-paragraph callout that sits between SECTION 1.0 and the chart.
     Generated deterministically from the day's numbers — no LLM."""
     metric = (headline_metric or "metric").upper()
@@ -1208,13 +1259,20 @@ def make_daily_summary_html(date: str, day_index: int | None,
     # but no explicit val_bpb/val_loss output. Common causes: infra/studio
     # days, kernel-benchmark days, and session-only days.
     if n_tests == 0:
+        if arch_event_count:
+            event_phrase = (
+                f" <strong>{arch_event_count}</strong> local conversation-mined "
+                "architecture events were indexed for this date and are shown "
+                "in Section 2.0."
+            )
+        else:
+            event_phrase = ""
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
               f'<div class="ds-body"><p>{day_ref} — '
               f'<strong>no explicit validation metric</strong> was captured '
-              f'on this date. Day-local support artifacts, logs, commits, '
-              f'configs, and media are still indexed below when present.</p></div>'
+              f'on this date.{event_phrase}</p></div>'
             '</aside>'
         )
 
@@ -1252,6 +1310,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
         f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
         f"{arch_phrase}."
     )
+    if arch_event_count:
+        para1 += f" {arch_event_count} conversation-mined architecture events were also indexed."
 
     # Para 2: best-of-day, PB comparison
     valid_rows = [
@@ -1427,6 +1487,102 @@ def make_grind_md(records: list[dict]) -> str:
         s = (r["summary"] or "").strip()
         chunks.append(f"- **[rollup]** {t}" + (f" — {s}" if s else ""))
     return "\n".join(chunks)
+
+
+def extract_conversation_arch_events(records: list[dict]) -> list[dict]:
+    """Conversation-mined architecture events for the day.
+
+    These are not raw chat transcripts. They are deterministic snippets emitted
+    by scripts/mine_conversation_architecture.py and indexed as structured
+    artifact rows so early research decisions can be reviewed beside logs.
+    """
+    events_by_line: dict[tuple[str, object, str], dict] = {}
+    for rec in records:
+        if rec.get("file_kind") != "conversation_arch_event":
+            continue
+        md = metrics_dict(rec)
+        tags = md.get("architecture_tags") if isinstance(md.get("architecture_tags"), list) else []
+        actions = md.get("action_tags") if isinstance(md.get("action_tags"), list) else []
+        time_iso = rec.get("mtime_iso") or ""
+        time_str = str(md.get("local_time") or "")
+        if not time_str and time_iso:
+            try:
+                time_str = dt.datetime.fromisoformat(time_iso.replace("Z", "+00:00")).strftime("%H:%M")
+            except ValueError:
+                time_str = ""
+        session_path = str(md.get("session_path") or "")
+        href_label, href = _file_href(session_path, "session")
+        event = {
+            "time": time_str[:5] if len(time_str) >= 5 else time_str,
+            "time_iso": time_iso,
+            "score": md.get("score"),
+            "tags": [str(t) for t in tags],
+            "actions": [str(a) for a in actions],
+            "summary": rec.get("summary") or "",
+            "source": str(md.get("source") or ""),
+            "line_no": md.get("line_no"),
+            "cwd": str(md.get("cwd") or ""),
+            "href": href,
+            "href_label": href_label,
+        }
+        # The miner intentionally keeps overlapping snippets in the full JSONL
+        # ledger. The daily page should show one readable row per transcript
+        # line, preferring the highest-scored / richest snippet.
+        line_key = (session_path, md.get("line_no"), str(md.get("local_time") or ""))
+        prior = events_by_line.get(line_key)
+        if prior is None:
+            events_by_line[line_key] = event
+            continue
+        prior_score = float(prior.get("score") or 0)
+        event_score = float(event.get("score") or 0)
+        if (event_score, len(event.get("summary") or "")) > (
+            prior_score, len(prior.get("summary") or "")
+        ):
+            events_by_line[line_key] = event
+    events = list(events_by_line.values())
+    return sorted(
+        events,
+        key=lambda e: (e.get("time_iso") or "", -float(e.get("score") or 0)),
+    )
+
+
+def make_arch_events_table_html(events: list[dict], cap: int = 12) -> str:
+    if not events:
+        return ""
+    shown = events[:cap]
+    rows = [
+        "<table class='arch-events-table'><thead><tr>"
+        "<th>TIME</th><th>SIGNAL</th><th>ACTION</th><th>EVIDENCE</th><th>OPEN</th>"
+        "</tr></thead><tbody>"
+    ]
+    for event in shown:
+        tags = ", ".join(event.get("tags") or []) or "architecture"
+        actions = ", ".join(event.get("actions") or []) or "metric/config"
+        evidence = re.sub(r"\s+", " ", event.get("summary") or "").strip()
+        if len(evidence) > 220:
+            evidence = evidence[:217] + "..."
+        open_link = "—"
+        if event.get("href"):
+            label = event.get("href_label") or "session"
+            line_no = event.get("line_no")
+            suffix = f":{line_no}" if line_no else ""
+            open_link = _anchor_html(f"{label}{suffix}", event["href"])
+        rows.append(
+            "<tr>"
+            + _td_html(html.escape(event.get("time") or "—"))
+            + _td_html(html.escape(tags))
+            + _td_html(html.escape(actions))
+            + _td_html(html.escape(evidence))
+            + _td_html(open_link)
+            + "</tr>"
+        )
+    rows.append("</tbody></table>")
+    if len(events) > cap:
+        rows.append(
+            f"<p class='muted'>Showing {cap} of {len(events)} conversation-mined "
+            "architecture events; full ledger is in output/conversation_architecture.</p>"
+        )
+    return "\n".join(rows)
 
 
 def _format_bytes(n: object) -> str:
@@ -1674,9 +1830,10 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
 def render_one_day(date: str, metric_override: str | None = None) -> dict:
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
-    records = fetch_day(conn, date)
+    records = report_records_for_date(date, fetch_day(conn, date))
     if not records:
         sys.exit(f"no artifacts found for {date}")
+    arch_events = extract_conversation_arch_events(records)
 
     # CLASSIFICATION % must reflect research output, not file-tree mass.
     # Count training-log records (excluding reference baselines) per camp;
@@ -1687,11 +1844,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     for r in records:
         if r.get("file_kind") != "training_log":
             continue
-        try:
-            md = json.loads(r.get("metrics_json") or "{}")
-        except (json.JSONDecodeError, TypeError):
-            md = {}
-        if md.get("is_reference_baseline"):
+        if is_reference_baseline_record(r):
             continue
         by_camp[r["camp"]] += 1
     # If the day had no training_logs at all (commit-only / session-only days),
@@ -1704,7 +1857,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     asset_dir = ASSETS_DIR / date
     asset_dir.mkdir(parents=True, exist_ok=True)
 
-    chart_path = None
+    chart_paths: list[str] = []
     chart_n = 0
     chart_baseline = None
     test_rows: list[dict] = []
@@ -1719,7 +1872,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
              "n": r["n"]}
             for r in test_rows
         ]
-        chart_path, chart_n = plot_mod.day_chart(
+        chart_paths, chart_n = plot_mod.day_charts(
             asset_dir / f"day_chart_{headline_metric}.png",
             date=date,
             records=chart_input,
@@ -1774,6 +1927,13 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     grind_md = make_grind_md(records)
     approved_ablation_labels = apply_approved_ablation_labels(test_rows, date)
     test_table_md = make_camp_test_tables_md(test_rows, headline_metric or "metric", chart_baseline)
+    arch_events_table = make_arch_events_table_html(arch_events)
+    if arch_events_table:
+        arch_header = f"### CONVERSATION-MINED ARCHITECTURE EVENTS — {len(arch_events)}"
+        if test_table_md:
+            test_table_md = "\n\n".join([test_table_md, arch_header, "", arch_events_table])
+        else:
+            test_table_md = "\n\n".join([arch_header, "", arch_events_table])
 
     # Compute day index across the corpus (Day 1, Day 12, etc.)
     day_index = compute_day_index(conn, date)
@@ -1792,11 +1952,14 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     # dropped per design feedback — the experimental/neural % is now inline
     # inside the LAST (CLASSIFICATION) row as a 30px allocation bar.
     arch_families = detect_arch_families(test_rows)
+    test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"
+    if arch_events:
+        test_count_text += f" · {len(arch_events)} arch events"
     header_fields = [
         ("DATE", date),
         ("DAY", format_day_index(day_index)),
         ("PRIMARY METRIC", (headline_metric or "—").upper()),
-        ("TESTS RUN", f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"),
+        ("TESTS RUN", test_count_text),
         ("ARCHITECTURE FAMILY", format_arch_families(arch_families)),
         ("CLASSIFICATION", "—"),  # replaced by alloc bar when measured tests exist
     ]
@@ -1822,6 +1985,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         chart_baseline=chart_baseline,
         test_rows=test_rows, arch_families=arch_families,
         by_camp=by_camp,
+        arch_event_count=len(arch_events),
     )
 
     # VAL_BPB SPREAD per family (small table after the chart)
@@ -1839,10 +2003,15 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         daily_summary,
         "",
     ]
-    if chart_path:
-        relp = os.path.relpath(chart_path, QMD_DIR)
-        qmd_lines.append(f"![{headline_metric} for {date}]({relp})")
-        qmd_lines.append("")
+    if chart_paths:
+        for idx, chart_path in enumerate(chart_paths, start=1):
+            relp = os.path.relpath(chart_path, QMD_DIR)
+            if len(chart_paths) == 1:
+                alt = f"{headline_metric} for {date}"
+            else:
+                alt = f"{headline_metric} for {date} panel {idx} of {len(chart_paths)}"
+            qmd_lines.append(f"![{alt}]({relp})")
+            qmd_lines.append("")
         if spread_table:
             qmd_lines.append(spread_table)
             qmd_lines.append("")
@@ -2000,9 +2169,11 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "n_visible_support_records": len(visible_support_records),
         "headline_metric": headline_metric,
         "chart_n_points": chart_n,
+        "chart_panels": len(chart_paths),
         "chart_baseline_to_beat": chart_baseline,
         "unique_tests": unique_tests,
         "n_training_log_rows": sum(1 for row in test_rows if row.get("training_logs")),
+        "n_conversation_arch_events": len(arch_events),
         "total_datapoints": total_dps,
         "variety_pct": variety_pct,
         "approved_ablation_labels": approved_ablation_labels,

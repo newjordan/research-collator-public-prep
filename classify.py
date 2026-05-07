@@ -98,6 +98,7 @@ SOURCE_DEFAULT = {
     "git:sota_rascal": "neural",
     "git:pg_whale": "neural",
     "git:rascal-private": "neural",
+    "conversation_architecture": "experimental",
     # codex_rollouts handled at top of classify(); never reaches default lookup.
 }
 
@@ -113,6 +114,8 @@ def classify(rec: dict) -> tuple[str, str]:
     #    Source-level priority overrides any keyword rule.
     if label == "codex_rollouts":
         return ("daily_grind", "source_codex_rollouts")
+    if label == "conversation_architecture":
+        return ("experimental", "source_conversation_architecture")
 
     # 2. Path strong signals
     if "/legs/" in path:

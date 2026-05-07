@@ -27,19 +27,24 @@ from pathlib import Path
 import plot as plot_mod
 from render_day import (
     DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
+    RESEARCH_START_DATE,
     best_date, fetch_day, pick_headline_metric,
     extract_metric_for_record, render_one_day,
+    is_reference_baseline_record, is_research_chronology_record,
 )
 
 
 def all_dates_with_artifacts(conn: sqlite3.Connection) -> list[str]:
     rows = conn.execute(
-        "SELECT abs_path, rel_path, mtime_iso FROM artifacts"
+        "SELECT abs_path, rel_path, source_label, mtime_iso, metrics_json FROM artifacts"
     ).fetchall()
     dates: set[str] = set()
     for r in rows:
-        d = best_date(dict(r))
-        if d:
+        rec = dict(r)
+        if not is_research_chronology_record(rec):
+            continue
+        d = best_date(rec)
+        if d and d >= RESEARCH_START_DATE:
             dates.add(d)
     return sorted(dates)
 
@@ -50,6 +55,8 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
     best_title = None
     best_camp = None
     for rec in records:
+        if is_reference_baseline_record(rec):
+            continue
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         for v in vals:
             if best_v is None or v < best_v:
@@ -97,7 +104,7 @@ def render_index(dates_with_results: list[dict],
         "</head><body>",
         "<h1>Research — Daily Reports</h1>",
         f"<p class='muted'>Generated {dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes')} UTC. "
-        f"Spans {len(days_summary)} days.</p>",
+        f"Spans {len(days_summary)} research days from {RESEARCH_START_DATE}.</p>",
     ]
 
     # Headline stats

@@ -33,6 +33,17 @@ EXTRACTION_VERSION = "enrich_v1"
 RE_BPB = re.compile(r"\b(\d+\.\d{2,5})\s*BPB\b", re.IGNORECASE)
 RE_VAL_LOSS = re.compile(r"val_loss[ =:]+\s*(\d+\.\d{2,5})", re.IGNORECASE)
 RE_VAL_BPB = re.compile(r"val_bpb[ =:]+\s*(\d+\.\d{2,5})", re.IGNORECASE)
+USER_GIT_AUTHORS = {
+    "frosty40",
+    "newjordan",
+    "octavian",
+}
+USER_GIT_EMAIL_FRAGMENTS = (
+    "newjordan@",
+    "frosty40@",
+    "octavian@",
+    "spark-2949.local",
+)
 
 # Context words that signal a number is a DELTA / regression / cost,
 # not an absolute val_bpb measurement.
@@ -68,6 +79,14 @@ def upsert(conn: sqlite3.Connection, row: dict):
     conn.execute(sql, [row[c] for c in cols])
 
 
+def is_user_git_author(author_name: str, author_email: str) -> bool:
+    name = (author_name or "").strip().lower()
+    email = (author_email or "").strip().lower()
+    if name in USER_GIT_AUTHORS:
+        return True
+    return any(fragment in email for fragment in USER_GIT_EMAIL_FRAGMENTS)
+
+
 # ---------- git commits ------------------------------------------------------
 
 def walk_git_repo(repo: dict) -> list[dict]:
@@ -78,7 +97,7 @@ def walk_git_repo(repo: dict) -> list[dict]:
     if not os.path.isdir(os.path.join(repo_path, ".git")):
         return []
 
-    fmt = "%H%x1f%aI%x1f%an%x1f%s%x1f%b%x1e"
+    fmt = "%H%x1f%aI%x1f%an%x1f%ae%x1f%s%x1f%b%x1e"
     cmd = ["git", "-C", repo_path, "log", "--no-merges"]
     if repo.get("since"):
         cmd.append(f"--since={repo['since']}")
@@ -101,10 +120,10 @@ def walk_git_repo(repo: dict) -> list[dict]:
         if not blob:
             continue
         parts = blob.split("\x1f")
-        if len(parts) < 4:
+        if len(parts) < 5:
             continue
-        sha, author_iso, author_name, subject = parts[:4]
-        body = parts[4] if len(parts) > 4 else ""
+        sha, author_iso, author_name, author_email, subject = parts[:5]
+        body = parts[5] if len(parts) > 5 else ""
 
         # Pull file count + lines changed quickly
         try:
@@ -160,6 +179,8 @@ def walk_git_repo(repo: dict) -> list[dict]:
         for m in RE_VAL_LOSS.finditer(text):
             metrics["val_loss"] = float(m.group(1))
             break
+        if not is_user_git_author(author_name, author_email):
+            metrics["is_reference_baseline"] = True
 
         # mtime from author date (ISO with tz). Convert to UTC ISO.
         try:

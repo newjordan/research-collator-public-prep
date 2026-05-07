@@ -117,6 +117,10 @@ re-ordered without a spec revision.
                             the escaped log text plus the original file link.
                             Non-log artifacts remain normal links.
                             INVALID rows: muted text, red val_bpb cell, red STATUS.
+                            Conversation-mined architecture events may render
+                            beneath the test tables as a structured table
+                            derived from deterministic local transcript
+                            mining. Raw transcripts never render directly.
 ```
 
 DAILY GRIND — explicitly **not** in the canonical layout. Codex/Claude
@@ -127,11 +131,16 @@ MUST NOT render as report body research support.
 
 ## 4. CHART (TRAJECTORY) — DETAILED CONTRACT
 
-The chart is the page's headline image. Renderer: `plot.py::day_chart`.
+The chart is the page's headline image. Renderer: `plot.py::day_charts`.
+Long trajectories render as multiple figure blocks.
 
 ### 4.1 Axes
 
-- X-axis: time of day, UTC. Locator picks 1h / 2h / 3h ticks based on span.
+- X-axis: time of day, UTC. No rendered panel may span more than 12 hours.
+  If a day's measured points cover more than 12 hours, the renderer splits
+  the trajectory into multiple chronological panels. Sparse recovered records
+  are split by occupied run-time clusters instead of inserting empty half-day
+  panels. Locator picks 1h / 2h / 3h ticks based on each panel span.
 - Y-axis: primary metric (`val_bpb` preferred, `val_loss` fallback).
 
 ### 4.2 Y-axis range
@@ -218,7 +227,7 @@ For every artifact attributable to the day:
 |--------------------------|----------|--------------------------------------------------------|
 | `abs_path`               | TEXT PK  | Stable identity (file path, or `git://repo/sha`).      |
 | `mtime_iso`              | TEXT     | ISO8601 UTC. Authoritative timestamp.                  |
-| `file_kind`              | TEXT     | `md`/`json`/`py`/`csv`/`ckpt`/`training_log`/`git_commit`/`claude_session`/`codex_session` |
+| `file_kind`              | TEXT     | `md`/`json`/`py`/`csv`/`ckpt`/`training_log`/`git_commit`/`claude_session`/`codex_session`/`conversation_arch_event` |
 | `source_label`           | TEXT     | Short label used in supporting-files row.              |
 | `title`                  | TEXT     | Display title — never empty (filename fallback OK).    |
 | `summary`                | TEXT     | One-line context. Never empty; renderer never parses metrics from it. |
@@ -229,8 +238,11 @@ For every artifact attributable to the day:
 
 The renderer derives these from the records and a target date:
 
-- **`day_index`** — 1-based index of this date in the sorted list of dates
-  that have any artifact (used for `DAY 022`).
+- **`day_index`** — 1-based index of this date in the sorted list of user
+  research dates with artifacts, starting at `2026-03-18`. Prelude/bootstrap
+  artifacts and public upstream competition records can be rendered by
+  explicit date, but are not counted in the research-day ordinal. This fixes
+  `2026-03-18 = DAY 001`.
 - **`headline_metric`** — first of `["val_bpb", "val_loss", …]` that
   appears in ≥2 records.
 - **`chart_baseline`** — best (lowest) `headline_metric` value across all
@@ -239,6 +251,11 @@ The renderer derives these from the records and a target date:
   sorted by run-time ascending. Each row: `n, time, hardware, title,
   value, n_runs, link_label, link_href, run_script, training_logs,
   time_iso, camp, delta_pct`.
+- **`conversation_arch_events`** — deterministic local transcript-mined
+  architecture-change signals, sorted by local time. Each row: `time,
+  architecture_tags, action_tags, summary, source link`. These rows are
+  allowed in Section 2 because they are structured event artifacts, not raw
+  chat/session bodies.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
 - **`valid_count` / `invalid_count`** — `value ≥/< INVALID_VAL_BPB_FLOOR`.
@@ -365,7 +382,7 @@ When a renderer change is proposed:
 2. If new data is required, update §6 (scraper contract).
 3. THEN implement in code. Code must match this doc; this doc is
    authoritative.
-4. Re-render Day 12 (`2026-03-28`) as the canonical regression check —
+4. Re-render the canonical regression date (`2026-03-28`) —
    if anything in §5 (invariants) breaks, the change is rejected.
 
 ---

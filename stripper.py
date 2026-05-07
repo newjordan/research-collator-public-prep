@@ -585,19 +585,73 @@ def _detect_gpu_type(text: str) -> str | None:
 
 
 # Reference-baseline path patterns — files matching these are published
-# reference results, not user experiments. Do not treat every
-# `records/track_*` run as a reference: those dated run folders are also the
-# primary evidence for the user's early daily work.
+# reference results, not user experiments. Public `records/track_*` folders are
+# also reference corpus unless their submission metadata identifies this user.
 _RE_REF_BASELINE_PATH = re.compile(
     r"(?:[/_-]NaiveBaseline\b|"
     r"/published_baselines/|"
     r"/_baselines/)",
     re.IGNORECASE,
 )
+USER_SUBMISSION_GITHUB_IDS = {"newjordan", "frosty40", "octavian"}
+USER_SUBMISSION_AUTHORS = {"newjordan", "frosty40", "octavian", "jordan"}
+
+
+def _record_dir_for_path(abs_path: str) -> Path | None:
+    """Return records/track_*/<record-name> for a competition record path."""
+    try:
+        p = Path(abs_path)
+        parts = p.parts
+        idx = parts.index("records")
+    except (ValueError, TypeError):
+        return None
+    if len(parts) <= idx + 2:
+        return None
+    track = parts[idx + 1]
+    if not track.startswith("track_"):
+        return None
+    return Path(*parts[:idx + 3])
+
+
+def _is_user_submission(record_dir: Path) -> bool:
+    submission = record_dir / "submission.json"
+    if not submission.exists():
+        return False
+    try:
+        obj = json.loads(submission.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    if not isinstance(obj, dict):
+        return False
+    github_id = str(obj.get("github_id") or obj.get("github") or "").strip().lower()
+    author = str(obj.get("author") or "").strip().lower()
+    return github_id in USER_SUBMISSION_GITHUB_IDS or author in USER_SUBMISSION_AUTHORS
 
 
 def _is_reference_baseline_path(abs_path: str) -> bool:
-    return bool(_RE_REF_BASELINE_PATH.search(abs_path or ""))
+    if _RE_REF_BASELINE_PATH.search(abs_path or ""):
+        return True
+    record_dir = _record_dir_for_path(abs_path or "")
+    if record_dir is None:
+        return False
+    # Public competition records are reference/leaderboard corpus unless the
+    # submission metadata identifies this local user. This keeps March 18/19
+    # launch and external PR records out of the user's daily test trajectory.
+    return not _is_user_submission(record_dir)
+
+
+def _mark_reference_baseline_record(rec: dict[str, Any], abs_path: str) -> None:
+    """Attach reference-baseline metadata to any file kind in a reference path."""
+    if not _is_reference_baseline_path(abs_path):
+        return
+    try:
+        metrics = json.loads(rec.get("metrics_json") or "{}")
+        if not isinstance(metrics, dict):
+            metrics = {}
+    except json.JSONDecodeError:
+        metrics = {}
+    metrics["is_reference_baseline"] = True
+    rec["metrics_json"] = json.dumps(metrics)
 
 
 def _detect_provider(text: str) -> str | None:
@@ -850,6 +904,7 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
                 rec["title"] = stem[:300] if stem else fn[:300]
             if not rec.get("summary"):
                 rec["summary"] = fallback_summary(rec, fn, st.st_size, handler_name)
+            _mark_reference_baseline_record(rec, abs_path)
             rec.update({
                 "source_root": root,
                 "source_label": label,

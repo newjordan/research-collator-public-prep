@@ -15,6 +15,7 @@ import html
 import json
 import os
 import re
+import sqlite3
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -27,6 +28,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = REPO_ROOT / "config.yaml"
 DEFAULT_OUT_DIR = REPO_ROOT / "output" / "conversation_architecture"
 LOCAL_TZ = ZoneInfo("America/Chicago")
+EXTRACTION_VERSION = "conversation_arch_v1"
 
 ARCH_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("flat_layers", re.compile(r"\b(?:NUM_FLAT_LAYERS|flat[- ]?layers?|n_layer|num_layers|model depth)\b", re.I)),
@@ -99,6 +101,8 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--min-score", type=int, default=6)
     ap.add_argument("--include-tool-results", action="store_true",
                     help="Also mine tool result/output text. Default mines user/assistant text only.")
+    ap.add_argument("--index", action="store_true",
+                    help="Upsert mined architecture events into index.sqlite as conversation_arch_event artifacts.")
     return ap.parse_args()
 
 
@@ -447,6 +451,97 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
             f.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
 
 
+def _upsert_artifact(conn: sqlite3.Connection, row: dict[str, Any]) -> None:
+    cols = list(row.keys())
+    placeholders = ",".join(["?"] * len(cols))
+    update_clause = ",".join(f"{c}=excluded.{c}" for c in cols if c != "abs_path")
+    conn.execute(
+        f"INSERT INTO artifacts ({','.join(cols)}) VALUES ({placeholders}) "
+        f"ON CONFLICT(abs_path) DO UPDATE SET {update_clause}",
+        [row[c] for c in cols],
+    )
+
+
+def _date_range(start: dt.date | None, end: dt.date | None) -> list[str] | None:
+    if start is None or end is None:
+        return None
+    out: list[str] = []
+    cur = start
+    while cur <= end:
+        out.append(cur.isoformat())
+        cur += dt.timedelta(days=1)
+    return out
+
+
+def index_events(events: list[dict[str, Any]], cfg: dict[str, Any],
+                 start: dt.date | None, end: dt.date | None) -> int:
+    db_path = Path(str(cfg.get("sqlite_path") or REPO_ROOT / "index.sqlite"))
+    conn = sqlite3.connect(str(db_path))
+    now = dt.datetime.now(tz=dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    with conn:
+        dates = _date_range(start, end)
+        if dates is None:
+            conn.execute("DELETE FROM artifacts WHERE source_label='conversation_architecture'")
+        else:
+            for date_key in dates:
+                conn.execute(
+                    "DELETE FROM artifacts WHERE source_label='conversation_architecture' "
+                    "AND abs_path LIKE ?",
+                    (f"conversation_arch://{date_key}/%",),
+                )
+        for event in events:
+            tags = ", ".join(event.get("architecture_tags") or [])
+            actions = ", ".join(event.get("action_tags") or [])
+            title_parts = [event["local_time"]]
+            if tags:
+                title_parts.append(tags)
+            if actions:
+                title_parts.append(actions)
+            title = " · ".join(title_parts)[:300]
+            snippet = re.sub(r"\s+", " ", str(event.get("snippet") or "")).strip()
+            rel_path = (
+                f"{event['local_date']}/{event['source']}/"
+                f"{event['session_id']}/{event['line_no']}-{event['snippet_sha1']}"
+            )
+            abs_path = "conversation_arch://" + rel_path
+            metrics = {
+                "score": event.get("score"),
+                "architecture_tags": event.get("architecture_tags") or [],
+                "action_tags": event.get("action_tags") or [],
+                "source": event.get("source"),
+                "role": event.get("role"),
+                "text_source": event.get("text_source"),
+                "session_id": event.get("session_id"),
+                "session_path": event.get("session_path"),
+                "line_no": event.get("line_no"),
+                "local_date": event.get("local_date"),
+                "local_time": event.get("local_time"),
+                "cwd": event.get("cwd"),
+                "snippet_sha1": event.get("snippet_sha1"),
+            }
+            row = {
+                "source_root": str(Path(event.get("session_path") or "").parent),
+                "source_label": "conversation_architecture",
+                "rel_path": rel_path,
+                "abs_path": abs_path,
+                "file_kind": "conversation_arch_event",
+                "file_size_bytes": len(snippet.encode("utf-8", errors="replace")),
+                "mtime_iso": event["timestamp_utc"],
+                "content_sha256": hashlib.sha256(
+                    snippet.encode("utf-8", errors="replace")
+                ).hexdigest(),
+                "title": title or "conversation architecture event",
+                "summary": snippet[:1000] or "Conversation architecture event.",
+                "metrics_json": json.dumps(metrics, ensure_ascii=False, sort_keys=True),
+                "too_large": 0,
+                "extraction_version": EXTRACTION_VERSION,
+                "extracted_at_iso": now,
+            }
+            _upsert_artifact(conn, row)
+    conn.close()
+    return len(events)
+
+
 def write_markdown(path: Path, events: list[dict[str, Any]], stats: dict[str, Any],
                    start: dt.date | None, end: dt.date | None, min_score: int,
                    include_tool_results: bool) -> None:
@@ -529,6 +624,8 @@ def main() -> None:
         "timeline_path": str(md_path),
         "stats": stats,
     }
+    if args.index:
+        summary["indexed_events"] = index_events(events, cfg, start, end)
     summary_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(summary, indent=2, sort_keys=True))
 

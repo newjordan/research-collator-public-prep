@@ -2,11 +2,11 @@
 
 TWO chart types, both ruthlessly simple, both consistent style:
 
-  CHART A — day_chart(date, records, baseline_to_beat) -> PNG
-    Per-day plot for daily reports. X = run time through the day. Y = metric
-    value. Dots colored by camp. Horizontal dashed line = baseline to beat
-    (best ever before this day). Numbered gutter badges match the Test Runs
-    table row numbers.
+  CHART A — day_charts(date, records, baseline_to_beat) -> [PNG, ...]
+    Per-day plot panels for daily reports. X = run time through the day,
+    capped at 12 hours per panel. Y = metric value. Dots colored by camp.
+    Horizontal dashed line = baseline to beat (best ever before this day).
+    Numbered gutter badges match the Test Runs table row numbers.
 
   CHART B — journey_chart(daily_bests, all_records) -> PNG
     Front-of-book plot. X = date across all days. Y = best metric achieved
@@ -37,6 +37,7 @@ except ImportError:
 # in the parameter-golf benchmark, not a real result. Plotted as a dotted red
 # line; tests below it are marked invalid and excluded from running-min.
 INVALID_VAL_BPB_FLOOR = 1.06
+MAX_DAY_CHART_WINDOW_HOURS = 12.0
 
 # Chart palette from the Claude Design reference chart: dark lab plot,
 # phosphor grid/running-best line, gold experimental points, slate neural
@@ -134,7 +135,9 @@ def day_chart(out_path: str | Path,
               records: list[dict],
               metric_name: str = "val_loss",
               baseline_to_beat: float | None = None,
-              baseline_label: str = "best before today") -> tuple[str, int]:
+              baseline_label: str = "best before today",
+              panel_label: str | None = None,
+              prior_best: float | None = None) -> tuple[str, int]:
     """Per-day TRAJECTORY chart — Karpathy-style autoresearch view.
 
     X = time of day (UTC). Y = metric value.
@@ -252,7 +255,9 @@ def day_chart(out_path: str | Path,
         valid_times = [p[0] for p in valid_pairs]
         valid_values = [p[1] for p in valid_pairs]
         running_min = []
-        cur = float("inf")
+        cur = prior_best if (
+            isinstance(prior_best, (int, float)) and math.isfinite(prior_best)
+        ) else float("inf")
         for v in valid_values:
             cur = min(cur, v)
             running_min.append(cur)
@@ -295,7 +300,24 @@ def day_chart(out_path: str | Path,
     sorted_pts_for_labels = sorted(pts, key=lambda p: p["time"])
     xs_num = [mdates.date2num(p["time"]) for p in sorted_pts_for_labels]
     if xs_num:
-        ax.set_xlim(min(xs_num) - 0.01, max(xs_num) + 0.01)
+        x_min = sorted_pts_for_labels[0]["time"]
+        x_max = sorted_pts_for_labels[-1]["time"]
+        max_window = dt.timedelta(hours=MAX_DAY_CHART_WINDOW_HOURS)
+        if x_max <= x_min:
+            x_start = x_min - dt.timedelta(minutes=30)
+            x_end = x_min + dt.timedelta(minutes=30)
+        else:
+            span = x_max - x_min
+            spare = max_window - span
+            if spare.total_seconds() > 0:
+                pad = min(dt.timedelta(minutes=15), spare / 2)
+            else:
+                pad = dt.timedelta(0)
+            x_start = x_min - pad
+            x_end = x_max + pad
+            if x_end - x_start > max_window:
+                x_end = x_start + max_window
+        ax.set_xlim(x_start, x_end)
         valid_labeled = [
             p for p in sorted_pts_for_labels
             if INVALID_VAL_BPB_FLOOR <= p["value"] <= CRASH_THRESHOLD
@@ -324,7 +346,10 @@ def day_chart(out_path: str | Path,
                    linewidth=0.9, alpha=0.50, zorder=1)
 
     # Time axis formatting
-    span = times[-1] - times[0] if len(times) > 1 else dt.timedelta(hours=1)
+    span = min(
+        times[-1] - times[0] if len(times) > 1 else dt.timedelta(hours=1),
+        dt.timedelta(hours=MAX_DAY_CHART_WINDOW_HOURS),
+    )
     span_h = span.total_seconds() / 3600.0
     if span_h <= 12:
         loc = mdates.HourLocator(interval=1)
@@ -341,6 +366,10 @@ def day_chart(out_path: str | Path,
     ax.set_ylabel(metric_name.upper(), labelpad=8, fontsize=9, color=DARK_TEXT)
     ax.set_title(f"{metric_name.upper()}  ·  {date}", loc="left", pad=10,
                  fontsize=10.5, fontweight="bold", color=DARK_TEXT_HI)
+    if panel_label:
+        ax.text(0.0, 1.035, panel_label.upper(), transform=ax.transAxes,
+                fontsize=7.2, color=DARK_TEXT_MUTE, ha="left", va="bottom",
+                fontweight="bold")
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
             and baseline_to_beat >= INVALID_VAL_BPB_FLOOR):
         ax.set_title(f"PRIOR DAY {metric_name.upper()}  ·  "
@@ -362,6 +391,95 @@ def day_chart(out_path: str | Path,
     fig.savefig(out_path)
     plt.close(fig)
     return str(out_path), len(pts)
+
+
+def day_charts(out_path: str | Path,
+               date: str,
+               records: list[dict],
+               metric_name: str = "val_loss",
+               baseline_to_beat: float | None = None,
+               baseline_label: str = "best before today",
+               max_window_hours: float = MAX_DAY_CHART_WINDOW_HOURS
+               ) -> tuple[list[str], int]:
+    """Render one or more daily trajectory panels.
+
+    No panel may cover more than max_window_hours on the x-axis. Points are
+    split greedily by run time, which avoids rendering empty half-days when old
+    archive mtimes create large gaps in early recovered records.
+    """
+    parsed: list[tuple[dt.datetime, dict]] = []
+    for r in records:
+        v = r.get("value")
+        t = r.get("time_iso")
+        if not isinstance(v, (int, float)) or not math.isfinite(v):
+            continue
+        if not t:
+            continue
+        try:
+            tdt = dt.datetime.fromisoformat(t.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        parsed.append((tdt, r))
+
+    out_path = Path(out_path)
+    if not parsed:
+        path, n = day_chart(out_path, date, records, metric_name,
+                            baseline_to_beat, baseline_label)
+        return [path], n
+
+    parsed.sort(key=lambda item: item[0])
+    window = dt.timedelta(hours=max_window_hours)
+    chunks: list[list[tuple[dt.datetime, dict]]] = []
+    current: list[tuple[dt.datetime, dict]] = []
+    current_start: dt.datetime | None = None
+    for item in parsed:
+        tdt, _ = item
+        if current_start is None:
+            current = [item]
+            current_start = tdt
+            continue
+        if tdt - current_start <= window:
+            current.append(item)
+        else:
+            chunks.append(current)
+            current = [item]
+            current_start = tdt
+    if current:
+        chunks.append(current)
+
+    if len(chunks) == 1:
+        path, n = day_chart(out_path, date, records, metric_name,
+                            baseline_to_beat, baseline_label)
+        return [path], n
+
+    paths: list[str] = []
+    total = 0
+    prior_best: float | None = None
+    for idx, chunk in enumerate(chunks, start=1):
+        chunk_records = [r for _, r in chunk]
+        start = chunk[0][0].strftime("%H:%M")
+        end = chunk[-1][0].strftime("%H:%M")
+        chunk_path = out_path.with_name(
+            f"{out_path.stem}_{idx:02d}{out_path.suffix}"
+        )
+        path, n = day_chart(
+            chunk_path,
+            date=date,
+            records=chunk_records,
+            metric_name=metric_name,
+            baseline_to_beat=baseline_to_beat,
+            baseline_label=baseline_label,
+            panel_label=f"panel {idx}/{len(chunks)} · {start}-{end} UTC",
+            prior_best=prior_best,
+        )
+        paths.append(path)
+        total += n
+        for _, rec in chunk:
+            v = rec.get("value")
+            if (isinstance(v, (int, float)) and math.isfinite(v)
+                    and INVALID_VAL_BPB_FLOOR <= v <= 3.0):
+                prior_best = v if prior_best is None else min(prior_best, v)
+    return paths, total
 
 
 # ---------- CHART B ----------------------------------------------------------

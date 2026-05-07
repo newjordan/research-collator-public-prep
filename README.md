@@ -21,7 +21,7 @@ lab-protocol aesthetic.
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
 | `ablation_label_local.py` | Separate, optional Nemo3 ablation-label suggestion lane. Calls only local vLLM, writes review artifacts, and only approved JSONL labels affect rendering. |
-| `scripts/mine_conversation_architecture.py` | Separate deterministic Claude/Codex transcript miner for time-ordered model-architecture change signals. No LLM, no daily-render evidence injection. |
+| `scripts/mine_conversation_architecture.py` | Deterministic Claude/Codex transcript miner for time-ordered model-architecture change signals. No LLM. With `--index`, it injects only structured architecture-event artifacts, not raw transcripts. |
 | `config.yaml` | Roots to walk, exclusion list, file-extension → handler map. |
 
 ## Template lock
@@ -32,6 +32,14 @@ Daily pages are locked to the `daily-report-v2.0-wide-log-panel` standard:
 - executable spec: `TEMPLATE.md`
 - renderer gate: `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`
 - verification gate: `python3 scripts/verify_daily_template.py --all`
+
+## Research chronology
+
+Daily numbering starts at the first proven personal parameter-golf research
+event: `2026-03-18 = DAY 001`. Earlier DGX/studio/agent/ml-lab bootstrap
+artifacts and public upstream competition launch records may still be indexed
+and rendered by explicit date, but they do not count toward the research-day
+ordinal.
 
 ## Validity floor
 
@@ -49,17 +57,21 @@ Two top-level test camps + a daily-grind narrative track:
   competitive sources (SOTA_FINAL, sota_rascal).
 - **daily_grind** — codex rollouts (narrative summaries of session work).
 
-Daily reports do not present Codex/Claude chat sessions as research evidence.
-There is no Section 3 in the canonical daily page. Cumulative chat-log
-reconstruction belongs in the separate local Qwen lane.
+Daily reports do not present raw Codex/Claude chat sessions as research
+evidence. There is no Section 3 in the canonical daily page. The only
+conversation-derived evidence allowed into daily pages is the deterministic
+`conversation_arch_event` artifact emitted by
+`scripts/mine_conversation_architecture.py --index`.
 
 ## How to run end-to-end
 
 ```bash
 python3 stripper.py            # walk research roots → index.sqlite
 python3 enrich.py              # +git commits, +claude/codex sessions
+python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-04 --index
 python3 classify.py            # tag every record with camp
 python3 scripts/verify_scraper_contract.py
+python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
 python3 render_day.py --date 2026-03-28   # one day
 python3 render_all.py          # all days + journey arc + index page
 python3 scripts/verify_daily_template.py --all
@@ -89,7 +101,8 @@ python3 scripts/mine_conversation_architecture.py --start 2026-03-02 --end 2026-
 Outputs land in `output/conversation_architecture/` as JSONL, Markdown, and a
 summary JSON. This miner reads raw Claude/Codex JSONLs at message granularity,
 filters infra/UI chatter out, and emits only strict model-architecture-change
-signals for manual review.
+signals. Add `--index` to upsert those signals into `index.sqlite` as
+`conversation_arch_event` rows for daily-page review.
 
 Optional local ablation-label suggestions, no paid API:
 

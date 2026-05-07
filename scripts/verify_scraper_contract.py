@@ -31,7 +31,7 @@ import render_day  # noqa: E402
 ALLOWED_CAMPS = {"experimental", "neural", "daily_grind"}
 ALLOWED_FILE_KINDS = {
     "md", "text", "asset", "json", "py", "csv", "ckpt", "training_log",
-    "git_commit", "claude_session", "codex_session",
+    "git_commit", "claude_session", "codex_session", "conversation_arch_event",
 }
 REQUIRED_ARTIFACT_COLUMNS = {
     "id", "source_root", "source_label", "rel_path", "abs_path",

@@ -28,16 +28,23 @@ on a previous attempt with LLM-per-file scraping.
 
 ## Correction Pass (2026-05-06)
 
-The 2026-05-05 handoff below contains two rules that were wrong and have been
+The 2026-05-05 handoff below contains rules that were wrong and have been
 superseded in code:
 
-- DAY numbering is back to the `TEMPLATE.md` contract: 1-based index in the
-  sorted set of dates with artifacts. This restores the recovered baseline
-  `2026-03-28 = DAY 022`; `day_epoch` is now legacy-only.
-- `records/track_*` is not a blanket reference-baseline namespace. Dated
-  `records/track_*` folders are primary evidence for early daily work. The
-  stripper now tags only explicit baseline paths/names such as `NaiveBaseline`,
-  `published_baselines`, and `_baselines`.
+- DAY numbering now starts at the first proven parameter-golf research date:
+  `2026-03-18 = DAY 001`. Prelude/bootstrap artifacts before that date remain
+  renderable by explicit date, but are not counted in the research-day ordinal.
+  `day_epoch` is legacy-only.
+- `records/track_*` is mostly public upstream competition/reference material,
+  not the user's chronology. The stripper now marks `records/track_*` record
+  folders as `is_reference_baseline=true` unless `submission.json` identifies
+  a user-owned GitHub id/author. This prevents OpenAI launch records and
+  external PR records from becoming fake user test runs.
+- The missing early personal work is recovered through deterministic local
+  conversation mining. `scripts/mine_conversation_architecture.py --index`
+  writes structured `conversation_arch_event` rows into SQLite. The daily page
+  can render those events in Section 2, while raw Claude/Codex transcripts
+  remain out of the report body.
 - The smart renderer now reads CSS from the recovered `Research Day.html`
   baseline so data rendering can change without creating a second visual
   style.
@@ -54,11 +61,13 @@ superseded in code:
 
 - Built the stripper / enrich / classify / render skeleton.
 - Locked the dark-charcoal US-Graphics-style aesthetic (5-token palette).
-- Settled on Day 12 (2026-03-28) as the foundation block.
+- Originally settled on Day 12 (2026-03-28) as the foundation block; keep the
+  date as a regression sample, but do not trust the old ordinal blindly after
+  the 2026-05-06 chronology correction.
 - Applied Claude Design handoff layout (header dot-leaders, 3 sections,
   Test Runs table, supporting files, base64-embedded chart).
-- Anchored DAY numbering to `day_epoch: 2026-03-17` in config.yaml so the
-  index is stable as the scraper finds new sources.
+- Originally anchored DAY numbering to `day_epoch: 2026-03-17`; superseded by
+  the 2026-05-06 correction pass above.
 - Hardware extraction from training-log content, nested resolved_config
   JSON, and path strings; binary local/rented inference rule
   (runpod = H100, local DGX Spark = GB10 Blackwell).
@@ -125,7 +134,7 @@ entire corpus, not just Day 1. Fixed in one pass:
    - Fix: `make_daily_summary_html` short-circuits when `n_tests == 0`
      to "no training runs launched on this date".
 
-### Audit trail
+### Historical audit trail (pre-2026-05-06 chronology correction)
 
 Cross-day verification spread (one playwright + SQL pass per fix):
 
@@ -150,27 +159,25 @@ Cross-day verification spread (one playwright + SQL pass per fix):
   step line, validity-floor red zone at 1.06 val_bpb.
 - **Architecture-family classification.** Title-or-path matching against
   35+ families covers most of the corpus.
-- **DAY numbering stable.** Anchored to 2026-03-17 epoch in config.yaml.
+- **DAY numbering stable.** Anchored to the first proven personal
+  parameter-golf research date: `2026-03-18 = DAY 001`. External/public
+  upstream records do not advance the research-day ordinal.
+- **Conversation-mined architecture events.** The local transcript miner can
+  inject structured `conversation_arch_event` rows into SQLite. These events
+  appear in Section 2 when a day has architecture-change evidence but sparse
+  training logs.
 
 ## Outstanding gaps (next-session priorities)
 
 ### S1 — high value, not done yet
 
-1. **Multi-day index page.** No way to browse Day 1 → Day 47 from a
-   single landing page. Need an `index.html` in `output/preview/` that
-   lists all rendered days with their headline stats.
-
-2. **Cross-day trajectory chart.** Per-day chart shows one day; the
-   user will want a corpus-wide val_bpb running-min chart with day
-   markers. Use `best_before()` history.
-
-3. **Val_bpb verification cross-check.** When a commit message claims
+1. **Val_bpb verification cross-check.** When a commit message claims
    `val_bpb=1.18` and the linked log shows `val_bpb=1.21`, the renderer
    prefers log-derived (correct). But we don't surface the disagreement.
    A "discrepancy" column on commit-message-only rows would let the user
    spot misclaims.
 
-4. **Kernel-benchmark days surface as "0 tests".** Day 35 (Apr 20) had
+2. **Kernel-benchmark days surface as "0 tests".** Day 35 (Apr 20) had
    175 whale-microbenchmark JSONs measuring `fwd_mean_ms` — real work
    but invisible because the system is val_bpb-centric. Need a
    per-day-mode classifier: training day vs kernel-bench day vs
@@ -178,30 +185,29 @@ Cross-day verification spread (one playwright + SQL pass per fix):
 
 ### S2 — quality-of-life
 
-5. **Architecture name → "type" mapping.** User's eventual ask: replace
+3. **Architecture name → "type" mapping.** User's eventual ask: replace
    architecture *names* (MEDUSA, CLOWNCAR, NIGHTCRAWLER) with their
    *type* (e.g. "speculative decoder", "MoE-routed", "self-distillation
    loop"). Deferred per user: "EVENTUALLY the architecture names will
    be replaced with the type, but that will be in the final pass of
    document cleanup."
 
-6. **Hardware GPU type is inferred, not observed.** Application logs
+4. **Hardware GPU type is inferred, not observed.** Application logs
    don't contain "NVIDIA H100" strings — that's in nvidia-smi prelude
    that's not captured. Inference rule (runpod → H100, local → GB10)
    is reasonable but can miss edge cases (e.g. one-off A100 rentals).
    A `hardware_overrides.yaml` keyed by run-prefix would cover the
    exceptions cleanly without false certainty in the per-row label.
 
-7. **Daily summary blurb gating.** Para 1 still describes "allocation
+5. **Daily summary blurb gating.** Para 1 still describes "allocation
    skew" deterministically based on supporting-file camp counts even
    on days with very few tests (e.g. 1-3). Could gate the allocation
    sentence on N≥5 tests.
 
 ### S3 — known limitations (probably fine)
 
-- **49-day rendering loop.** No `render_all_days.py` driver yet; days
-  are rendered one at a time via `python3 render_day.py --date YYYY-MM-DD`.
-  Cheap to script when needed.
+- **Render-all path exists.** `python3 render_all.py` rebuilds all date pages
+  plus `output/preview/index.html`.
 - **Chart label overflow on dense days.** Day 11 has 59 tests; the
   trajectory chart may visually crowd at the right edge. Acceptable
   for now since on-chart numbered labels were dropped in commit
@@ -216,14 +222,15 @@ cd /home/frosty40/research_collator
 rm -f index.sqlite
 python3 stripper.py     # ~30s scan, ~13.7K rows
 python3 enrich.py       # +972 git, +643 claude, +515 codex sessions
+python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-04 --index
 python3 classify.py     # camp tagging
 
-# Render one day:
-rm -rf output/assets/2026-03-28
+# Render one day or all days:
 python3 render_day.py --date 2026-03-28
+python3 render_all.py
 
 # Playwright audit of the spread:
-node _pw_audit_spread.mjs 2026-03-17 2026-03-19 2026-03-22 \
+node _pw_audit_spread.mjs 2026-03-18 2026-03-19 2026-03-22 \
                           2026-03-28 2026-04-10 2026-04-20 2026-05-02
 
 # Single-day playwright review (saves screenshot to /tmp):
@@ -236,9 +243,9 @@ node _pw_day_review.mjs http://dgx-spark:8765/research_collator/output/preview/2
 
 ## Live URL spread (current state)
 
-- Day 1   `2026-03-17`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-17.html
-- Day 3   `2026-03-19`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-19.html
-- Day 12  `2026-03-28`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-28.html
+- Day 1   `2026-03-18`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-18.html
+- Day 2   `2026-03-19`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-19.html
+- Canonical regression date `2026-03-28` — http://dgx-spark:8765/research_collator/output/preview/2026-03-28.html
 - Day 25  `2026-04-10`  — http://dgx-spark:8765/research_collator/output/preview/2026-04-10.html
 - Day 35  `2026-04-20`  — http://dgx-spark:8765/research_collator/output/preview/2026-04-20.html
 
@@ -253,7 +260,8 @@ node _pw_day_review.mjs http://dgx-spark:8765/research_collator/output/preview/2
   flagged this twice. Identify, patch, verify, push.
 - **Stripper stays pure-Python.** Do not introduce any LLM-call-per-file
   flow. Templates + deterministic extraction.
-- **One perfect unit before replication.** Verify Day 12 renders cleanly
+- **One perfect unit before replication.** Verify the canonical regression
+  date (`2026-03-28`) renders cleanly
   before scaling a new feature across all 47 days.
 - **Don't dress up marginal work as progress.** If a fix didn't move the
   needle, say so plainly.
