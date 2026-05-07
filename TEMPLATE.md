@@ -172,7 +172,7 @@ points may render there.
 
 | Element           | Style                                                       |
 |-------------------|-------------------------------------------------------------|
-| Camp scatter      | `s=140`, `linewidths=0.9`, edge = page bg.                  |
+| Camp scatter      | Compact circular dots (`s=42`, invalid `s=38`) with page-bg edge and a tiny center pin at the exact `(time, value)` coordinate. |
 | Journey line      | Green-rule grey, alpha 0.55, lw 0.7, connects in-scale valid segments only. |
 | Best-valid step   | Accent green, lw 1.2, where='post'. Excludes invalids/crashes.|
 | Validity floor    | Subtle solid rule, lw 0.65, alpha 0.55.                     |

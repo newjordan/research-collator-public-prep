@@ -118,7 +118,7 @@ CAMP_COLOR = {
 }
 CAMP_MARKER = {
     "neural":       "o",
-    "experimental": "s",
+    "experimental": "o",
     "daily_grind":  "x",
 }
 CAMP_LABEL = {
@@ -126,6 +126,27 @@ CAMP_LABEL = {
     "experimental": "experimental",
     "daily_grind":  "daily-grind",
 }
+
+POINT_SIZE = 42
+INVALID_POINT_SIZE = 38
+POINT_EDGE_WIDTH = 0.75
+POINT_PIN_SIZE = 3.8
+POINT_PIN_WIDTH = 0.62
+
+
+def _draw_precision_pins(ax, items: list[dict]) -> None:
+    """Draw a tiny center mark at the exact data coordinate of each point."""
+    if not items:
+        return
+    ax.plot([it["time"] for it in items],
+            [it["value"] for it in items],
+            linestyle="None",
+            marker="+",
+            markersize=POINT_PIN_SIZE,
+            markeredgewidth=POINT_PIN_WIDTH,
+            color=DARK_BG,
+            zorder=4,
+            label="_nolegend_")
 
 
 # ---------- CHART A ----------------------------------------------------------
@@ -232,20 +253,22 @@ def day_chart(out_path: str | Path,
                        [it["value"] for it in nominal_items],
                        color=color,
                        marker=CAMP_MARKER.get(camp, "o"),
-                       s=58, alpha=0.95,
-                       edgecolors=DARK_BG, linewidths=0.9,
+                       s=POINT_SIZE, alpha=0.95,
+                       edgecolors=DARK_BG, linewidths=POINT_EDGE_WIDTH,
                        label=label,
                        zorder=3)
+            _draw_precision_pins(ax, nominal_items)
         if invalid_items:
             ax.scatter([it["time"] for it in invalid_items],
                        [it["value"] for it in invalid_items],
                        color=_desaturate(color, 0.5),
                        marker=CAMP_MARKER.get(camp, "o"),
-                       s=50, alpha=0.78,
+                       s=INVALID_POINT_SIZE, alpha=0.78,
                        edgecolors=_desaturate(DARK_TEXT_MUTE, 0.5),
-                       linewidths=0.65,
+                       linewidths=0.55,
                        label="_nolegend_" if nominal_items else label,
                        zorder=3)
+            _draw_precision_pins(ax, invalid_items)
 
     # Running-min line — best valid value seen so far. Below-floor eval bugs
     # and crash-class values never move the personal-best step.
