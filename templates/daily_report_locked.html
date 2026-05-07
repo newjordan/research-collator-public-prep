@@ -16,8 +16,9 @@
       --accent:   #e3b341;   /* yellow stripe accent */
       --warn:     #e25a4a;   /* INVALID red */
       --link:     #7ab4ff;   /* link blue */
-      --data-exp: #3a6e3a;   /* dark green — experimental majority */
-      --data-neu: #6fbf6f;   /* lighter green — neural minority */
+      --data-exp: #3a6e3a;   /* dark green — experimental */
+      --data-neu: #6fbf6f;   /* lighter green — neural */
+      --data-kernel: var(--accent); /* yellow — kernel work */
     }
     * { box-sizing: border-box; }
     html, body { background: var(--bg); }
@@ -80,6 +81,7 @@
                 border-radius: 0; }
     .camp-seg-exp { background: var(--data-exp); }
     .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
     .camp-bar-labels { display: flex; justify-content: space-between;
                        font-size: 11px; margin-bottom: 22px; font-weight: 600;
                        letter-spacing: 0.04em; color: var(--ink-mute); }
@@ -94,6 +96,7 @@
                  border: 1px solid var(--rule-hi); background: var(--rule);
                  overflow: hidden; vertical-align: middle; }
     .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
     .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
                      background-image: repeating-linear-gradient(
                        45deg,
@@ -105,6 +108,7 @@
                   font-size: 12px; letter-spacing: 0.02em; }
     .alloc-text-exp { color: var(--data-exp); }
     .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
     .alloc-sep { color: var(--ink-mute); }
 
     /* Tables — flat bordered, no card fill */

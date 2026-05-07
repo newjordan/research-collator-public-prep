@@ -117,16 +117,19 @@ plt.rcParams.update({
 })
 
 CAMP_COLOR = {
+    "kernel":       "#e3b341",
     "neural":       "#6196c4",
     "experimental": "#d8a040",
     "daily_grind":  "#6a766a",
 }
 CAMP_MARKER = {
+    "kernel":       "o",
     "neural":       "o",
     "experimental": "o",
     "daily_grind":  "x",
 }
 CAMP_LABEL = {
+    "kernel":       "kernel",
     "neural":       "neural",
     "experimental": "experimental",
     "daily_grind":  "daily-grind",

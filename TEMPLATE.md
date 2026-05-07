@@ -49,8 +49,9 @@ renderer refuses to run if that file's `<style>` block does not match
 | `--link`      | `#7ab4ff`  | Quiet blue. Underline on hover only.             |
 | `--data-exp`  | `#3a6e3a`  | Dark green. Experimental camp (DATA color).      |
 | `--data-neu`  | `#6fbf6f`  | Lighter green + 45° diagonal stripes. Neural.    |
+| `--data-kernel` | `--accent` | Yellow. Rendered kernel classification.       |
 
-Total: 12 tokens. No greys outside this set, no off-palette accents, no
+Total: 13 tokens. No greys outside this set, no off-palette accents, no
 phosphor green outside the legacy CRT mode (which is deprecated).
 
 ### 2.2 Typography
@@ -104,10 +105,10 @@ re-ordered without a spec revision.
 3.3   METRIC SPREAD         Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
-4. SECTION 2.0  TEST RUNS   Camp-isolated 8-column tables:
+4. SECTION 2.0  TEST RUNS   Classification-isolated 8-column tables:
                               # | TIME | HW | ABLATION | <PRIMARY METRIC> | STATUS | Δ % | OPEN
-                            EXPERIMENTAL and NEURAL render as separate tables
-                            when present.
+                            KERNEL, EXPERIMENTAL, and NEURAL render as
+                            separate tables when present.
                             ABLATION defaults to deterministic raw title.
                             Optional local Nemo3 labels may replace it only
                             after promotion into approved ablation-label JSONL
@@ -264,7 +265,9 @@ The renderer derives these from the records and a target date:
 - **`test_rows`** — one row per unique title (collapsing seed replicas),
   sorted by run-time ascending. Each row: `n, time, hardware, title,
   value, n_runs, link_label, link_href, run_script, training_logs,
-  time_iso, camp, delta_pct`.
+  time_iso, camp, delta_pct`. Kernel headline metrics normalize rendered row
+  `camp` to `kernel` so the classification bar and Section 2 do not hide
+  custom-kernel work under experimental.
 - **Conversation-derived artifacts** — may be indexed for offline audit, but
   are not renderer inputs and must never appear in daily-page body content.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by

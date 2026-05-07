@@ -121,6 +121,7 @@ def render_index(dates_with_results: list[dict],
     a:hover { text-decoration: underline; }
     .badge { display: inline-block; font-size: 0.78em; padding: 1px 6px;
              border-radius: 9px; color: #fff; }
+    .badge-kernel { background: #b88724; }
     .badge-neural { background: #1f77b4; }
     .badge-experimental { background: #ff7f0e; }
     .badge-daily_grind { background: #888; }
@@ -141,6 +142,7 @@ def render_index(dates_with_results: list[dict],
 
     # Headline stats
     total_records = sum(d["n_records"] for d in days_summary)
+    total_kernel = sum(d["by_camp"].get("kernel", 0) for d in days_summary)
     total_neural = sum(d["by_camp"].get("neural", 0) for d in days_summary)
     total_exp = sum(d["by_camp"].get("experimental", 0) for d in days_summary)
     total_visible_support = sum(d.get("n_visible_support_records", 0) for d in days_summary)
@@ -150,6 +152,7 @@ def render_index(dates_with_results: list[dict],
     lines.append("<p>")
     lines.append(f"<span class='stat'><strong>{total_records}</strong> indexed artifacts</span>")
     lines.append(f"<span class='stat'><strong>{total_visible_support}</strong> visible support files/logs</span>")
+    lines.append(f"<span class='stat'><strong>{total_kernel}</strong> kernel</span>")
     lines.append(f"<span class='stat'><strong>{total_neural}</strong> neural</span>")
     lines.append(f"<span class='stat'><strong>{total_exp}</strong> experimental</span>")
     lines.append(f"<span class='stat'><strong>{days_with_metric}</strong> days with headline metrics</span>")
@@ -177,7 +180,7 @@ def render_index(dates_with_results: list[dict],
     for d in sorted(by_date.keys()):
         ds = by_date[d]
         camp_badges = []
-        for camp in ("neural", "experimental", "daily_grind"):
+        for camp in ("kernel", "neural", "experimental", "daily_grind"):
             n = ds["by_camp"].get(camp, 0)
             if n:
                 camp_badges.append(

@@ -40,7 +40,7 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "10bdc54d95a899ae2d60a669c18807f86538ea8105482bd226e51366f070dc4e"
+LOCKED_TEMPLATE_STYLE_SHA256 = "6c73639e82608e847e1eef0f708307bdabfad969d1e940f2610abadda94538fb"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.0-wide-log-panel"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
@@ -69,6 +69,7 @@ HARDWARE_PATTERNS = (
     (r"\b4[\s_-]*x\b",     "4 GPU"),
 )
 
+KERNEL_CAMP = "kernel"
 KERNEL_FB_RATIO_METRIC = "kernel_fb_ratio"
 KERNEL_FWD_RATIO_METRIC = "kernel_fwd_ratio"
 KERNEL_METRICS = (KERNEL_FB_RATIO_METRIC, KERNEL_FWD_RATIO_METRIC)
@@ -97,9 +98,21 @@ SUPPORTING_RELEVANCE_RE = re.compile(
     re.IGNORECASE,
 )
 CAMP_DISPLAY_LABEL = {
+    KERNEL_CAMP: "kernel",
     "experimental": "experimental",
     "neural": "neural",
     "daily_grind": "daily grind",
+}
+CLASSIFICATION_CAMP_ORDER = (KERNEL_CAMP, "experimental", "neural")
+CLASSIFICATION_SEG_CLASS = {
+    KERNEL_CAMP: "alloc-seg-kernel",
+    "experimental": "alloc-seg-exp",
+    "neural": "alloc-seg-neu",
+}
+CLASSIFICATION_TEXT_CLASS = {
+    KERNEL_CAMP: "alloc-text-kernel",
+    "experimental": "alloc-text-exp",
+    "neural": "alloc-text-neu",
 }
 METRIC_DISPLAY_LABEL = {
     KERNEL_FB_RATIO_METRIC: "CUSTOM/FA3 FB RATIO",
@@ -750,7 +763,7 @@ def extract_test_rows(records: list[dict], metric: str,
         run_script = _find_run_script(rec)
 
         best_val = min(vals)
-        row_camp = "experimental" if is_kernel_metric(metric) else rec["camp"]
+        row_camp = KERNEL_CAMP if is_kernel_metric(metric) else rec["camp"]
         cur = by_title.get(title)
         if cur is None:
             row = {
@@ -823,7 +836,7 @@ def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
         for v in vals:
             out.append({
                 "value": v,
-                "camp": rec.get("camp", "experimental"),
+                "camp": KERNEL_CAMP if is_kernel_metric(metric) else rec.get("camp", "experimental"),
                 "title": rec.get("title") or "(untitled)",
                 "time_iso": time_iso,
             })
@@ -1163,6 +1176,7 @@ def _daily_template_style() -> str:
     required = [
         ".alloc-bar { display: inline-flex; height: 30px; width: 240px;",
         ".rh-row-alloc { align-items: center; padding: 14px 0; }",
+        ".alloc-seg-kernel",
         ".supporting-section",
         ".bpb-table",
     ]
@@ -1340,25 +1354,76 @@ def make_alloc_bar_html(by_camp: dict[str, int]) -> str:
     Keep this markup aligned with the locked baseline: 240x30 bar first, text
     second, both on the same header row.
     """
-    exp = by_camp.get("experimental", 0)
-    neu = by_camp.get("neural", 0)
-    total = exp + neu
+    order = _classification_display_order(by_camp)
+    total = sum(by_camp.get(camp, 0) for camp in order)
     if total == 0:
         return ""
-    exp_pct = 100.0 * exp / total
-    neu_pct = 100.0 * neu / total
-    label = f"EXPERIMENTAL {exp_pct:.0f}% ({exp}) / NEURAL {neu_pct:.0f}% ({neu})"
+
+    segments: list[str] = []
+    labels: list[str] = []
+    text_parts: list[str] = []
+    for camp in order:
+        n = by_camp.get(camp, 0)
+        pct = 100.0 * n / total
+        label = CAMP_DISPLAY_LABEL.get(camp, camp).upper()
+        seg_class = CLASSIFICATION_SEG_CLASS.get(camp, "alloc-seg-exp")
+        text_class = CLASSIFICATION_TEXT_CLASS.get(camp, "alloc-text-exp")
+        labels.append(f"{label} {pct:.0f}% ({n})")
+        segments.append(
+            f'<span class="{seg_class}" style="width:{pct:.2f}%"></span>'
+        )
+        text_parts.append(
+            f'<span class="{text_class}">{label} {pct:.0f}% ({n})</span>'
+        )
+
     return (
-        f'<span class="alloc-bar" aria-label="{html.escape(label)}">'
-          f'<span class="alloc-seg-exp" style="width:{exp_pct:.2f}%"></span>'
-          f'<span class="alloc-seg-neu" style="width:{neu_pct:.2f}%"></span>'
+        f'<span class="alloc-bar" aria-label="{html.escape(" / ".join(labels))}">'
+          + "".join(segments) +
         '</span>'
         '<span class="alloc-text">'
-          f'<span class="alloc-text-exp">EXPERIMENTAL {exp_pct:.0f}% ({exp})</span>'
-          '<span class="alloc-sep">/</span>'
-          f'<span class="alloc-text-neu">NEURAL {neu_pct:.0f}% ({neu})</span>'
+          + '<span class="alloc-sep">/</span>'.join(text_parts) +
         '</span>'
     )
+
+
+def _classification_display_order(by_camp: dict[str, int]) -> tuple[str, ...]:
+    if by_camp.get(KERNEL_CAMP, 0):
+        return CLASSIFICATION_CAMP_ORDER
+    return ("experimental", "neural")
+
+
+def _classification_distribution_text(by_camp: dict[str, int]) -> str:
+    order = _classification_display_order(by_camp)
+    total = sum(by_camp.get(camp, 0) for camp in order)
+    if total <= 0:
+        return "unclassified"
+    parts = []
+    for camp in order:
+        n = by_camp.get(camp, 0)
+        pct = 100.0 * n / total
+        parts.append(f"{pct:.0f}% {CAMP_DISPLAY_LABEL.get(camp, camp)}")
+    return " / ".join(parts)
+
+
+def _classification_tone(by_camp: dict[str, int]) -> str:
+    order = _classification_display_order(by_camp)
+    total = sum(by_camp.get(camp, 0) for camp in order)
+    if total <= 0:
+        return "unclassified"
+    active = [
+        (camp, 100.0 * by_camp.get(camp, 0) / total)
+        for camp in order
+        if by_camp.get(camp, 0)
+    ]
+    if not active:
+        return "unclassified"
+    top_camp, top_pct = max(active, key=lambda item: item[1])
+    top_label = CAMP_DISPLAY_LABEL.get(top_camp, top_camp)
+    if top_pct >= 80:
+        return f"skewed hard {top_label}"
+    if len(active) >= 2 and max(pct for _camp, pct in active) - min(pct for _camp, pct in active) < 15:
+        return "balanced " + "/".join(CAMP_DISPLAY_LABEL.get(camp, camp) for camp, _pct in active)
+    return f"{top_label}-leaning"
 
 
 def make_daily_summary_html(date: str, day_index: int | None,
@@ -1372,11 +1437,6 @@ def make_daily_summary_html(date: str, day_index: int | None,
     Generated deterministically from the day's numbers — no LLM."""
     metric = metric_display_name(headline_metric)
     floor = INVALID_VAL_BPB_FLOOR
-    exp = by_camp.get("experimental", 0)
-    neu = by_camp.get("neural", 0)
-    total = max(exp + neu, 1)
-    exp_pct = 100.0 * exp / total
-    neu_pct = 100.0 * neu / total
     day_label = format_day_index(day_index)
     day_ref = f"Day {day_label}" if day_label != "—" else "Unindexed day"
 
@@ -1395,15 +1455,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
         )
 
     # Allocation tone — only when we actually have runs to talk about.
-    if exp_pct >= 80:
-        allocation_tone = "skewed hard experimental"
-    elif neu_pct >= 80:
-        allocation_tone = "skewed hard neural"
-    elif abs(exp_pct - neu_pct) < 15:
-        allocation_tone = "balanced experimental/neural"
-    else:
-        side = "experimental" if exp_pct > neu_pct else "neural"
-        allocation_tone = f"{side}-leaning"
+    allocation_tone = _classification_tone(by_camp)
+    allocation_distribution = _classification_distribution_text(by_camp)
 
     # Top architectures
     top_arch_names = [name for name, _ in arch_families[:2] if name != "Other"]
@@ -1430,14 +1483,14 @@ def make_daily_summary_html(date: str, day_index: int | None,
         para1 = (
             f"{day_ref} ran {n_tests} kernel benchmarks against "
             f"<strong>{html.escape(metric)}</strong>, {validity_phrase}. "
-            f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+            f"Allocation {allocation_tone} ({allocation_distribution}) — "
             f"{arch_phrase}."
         )
     else:
         para1 = (
             f"{day_ref} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
             f"{validity_phrase}. "
-            f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
+            f"Allocation {allocation_tone} ({allocation_distribution}) — "
             f"{arch_phrase}."
         )
 
@@ -1558,26 +1611,33 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
 
 
 def make_camp_bar_html(by_camp: dict[str, int]) -> str:
-    """Horizontal %-stacked bar showing experimental vs neural work for the day.
+    """Horizontal %-stacked bar showing rendered classifications for the day.
     Tiny inline HTML (no extra deps) that survives both Quarto rendering and
     the custom md_to_html passthrough."""
-    exp = by_camp.get("experimental", 0)
-    neu = by_camp.get("neural", 0)
-    total = exp + neu
+    order = _classification_display_order(by_camp)
+    total = sum(by_camp.get(camp, 0) for camp in order)
     if total == 0:
         return ""
-    exp_pct = 100.0 * exp / total
-    neu_pct = 100.0 * neu / total
+    segments = []
+    labels = []
+    for camp in order:
+        n = by_camp.get(camp, 0)
+        pct = 100.0 * n / total
+        label = CAMP_DISPLAY_LABEL.get(camp, camp)
+        seg_suffix = "kernel" if camp == KERNEL_CAMP else ("exp" if camp == "experimental" else "neu")
+        segments.append(
+            f'<div class="camp-seg camp-seg-{seg_suffix}" style="width: {pct:.2f}%" '
+            f'title="{html.escape(label)}: {n} ({pct:.0f}%)"></div>'
+        )
+        labels.append(f"{label} · {n} ({pct:.0f}%)")
     return (
         '<div class="camp-bar">'
-          f'<div class="camp-seg camp-seg-exp" style="width: {exp_pct:.2f}%" '
-          f'title="experimental: {exp} ({exp_pct:.0f}%)"></div>'
-          f'<div class="camp-seg camp-seg-neu" style="width: {neu_pct:.2f}%" '
-          f'title="neural: {neu} ({neu_pct:.0f}%)"></div>'
+          + "".join(segments) +
         '</div>'
         '<div class="camp-bar-labels">'
-          f'<span class="camp-label-exp">experimental · {exp} ({exp_pct:.0f}%)</span>'
-          f'<span class="camp-label-neu">{neu_pct:.0f}% ({neu}) · neural</span>'
+          + '<span class="camp-label-sep">/</span>'.join(
+              f'<span>{html.escape(label)}</span>' for label in labels
+          ) +
         '</div>'
     )
 
@@ -1848,7 +1908,7 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
         return make_test_table_md(rows, metric, reference_baseline)
 
     sections: list[str] = []
-    camp_order = ["experimental", "neural"]
+    camp_order = [KERNEL_CAMP, "experimental", "neural"]
     known_camps = {r.get("camp", "experimental") for r in rows}
     ordered_camps = [c for c in camp_order if c in known_camps]
     ordered_camps.extend(sorted(known_camps - set(camp_order)))

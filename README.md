@@ -13,7 +13,7 @@ lab-protocol aesthetic.
 | `stripper.py` | File walker → SQLite. Handlers for `.md`, `.json`, `.py`, `.csv`, `.tsv`, `.log`, `.out`, `.pt` (metadata only). Strict patterns; no LLM. |
 | `enrich.py` | Adds git commits + Claude session JSONLs + Codex session JSONLs to the index. Pulls val_bpb / val_loss out of commit messages with delta-vs-absolute classification + sanity floor. |
 | `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
-| `render_day.py` | Builds one daily HTML report. Header dot-leader fields, camp ratio bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios. Chat sessions are never rendered as supporting research files. |
+| `render_day.py` | Builds one daily HTML report. Header dot-leader fields, classification bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios and render as their own kernel classification. Chat sessions are never rendered as supporting research files. |
 | `render_all.py` | Batch-renders every date with activity + a journey-arc front page. |
 | `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory) and `journey_chart` (50-day arc). |
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
@@ -51,13 +51,20 @@ BPB-only; custom-kernel/FA3 ratio charts do not render the invalid BPB zone.
 
 ## Camp axis
 
-Two top-level test camps + a daily-grind narrative track:
+The scraper stores two top-level test camps plus a daily-grind narrative track:
 
 - **experimental** — crawler / megakernel / ouroboros / helix / clowncar /
   jepa / shroud / hypothesis / ablation / etc.
 - **neural** — strict baselines, leaderboard submissions, racing legs,
   competitive sources (SOTA_FINAL, sota_rascal).
 - **daily_grind** — codex rollouts (narrative summaries of session work).
+
+Daily rendering adds one presentation-only classification:
+
+- **kernel** — custom-kernel/FA3 timing work. When a day headlines
+  `CUSTOM/FA3 FB RATIO` or `CUSTOM/FA3 FWD RATIO`, its Test Runs and
+  classification bar render as kernel instead of burying that work under
+  experimental.
 
 Daily reports do not present Codex/Claude conversations as research evidence.
 There is no Section 3 in the canonical daily page. Conversation-derived
