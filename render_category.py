@@ -43,7 +43,6 @@ from render_day import (
     RESEARCH_START_DATE,
     _daily_template_style,
     _embedded_log_script,
-    _frosted_flake_data_uri,
     compute_day_index,
     extract_test_rows,
     fetch_day,
@@ -52,6 +51,7 @@ from render_day import (
     format_metric_value,
     is_valid_metric_value,
     make_alloc_bar_html,
+    make_report_h1_html,
     make_report_header_html,
     metric_display_name,
     report_records_for_date,
@@ -469,14 +469,10 @@ def render_category(conn: sqlite3.Connection,
         alloc_bar=make_alloc_bar_html(by_camp_for_alloc) if by_camp_for_alloc else None,
     )
 
-    h1_html = (
-        '<h1>'
-        '<span class="h1-title">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-        f'<span>{html.escape(CATEGORY_LABEL[category])} RESEARCH REPORT</span>'
-        '</span>'
-        '<span class="h1-date">CAMPAIGN</span>'
-        '</h1>'
+    h1_html = make_report_h1_html(
+        f"{CATEGORY_LABEL[category]} RESEARCH REPORT",
+        "CAMPAIGN",
+        home_href="../index.html",
     )
 
     # ----- HTML body -----
@@ -609,11 +605,10 @@ def render_category_index(summaries: list[dict[str, Any]],
         )
     rows.append("</tbody></table>")
 
-    h1_html = (
-        '<h1><span class="h1-title">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-        '<span>CATEGORY RESEARCH REPORTS</span></span>'
-        '<span class="h1-date">INDEX</span></h1>'
+    h1_html = make_report_h1_html(
+        "CATEGORY RESEARCH REPORTS",
+        "INDEX",
+        home_href="../index.html",
     )
     header_fields = [
         ("CATEGORIES", str(len(summaries))),

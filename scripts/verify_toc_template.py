@@ -28,6 +28,11 @@ def _require_clean_bottom(text: str, html_path: Path) -> None:
         raise AssertionError(f"removed footer or bottom treatment leaked back into page: {html_path}")
 
 
+def _require_home_link(text: str, html_path: Path) -> None:
+    if 'class="h1-home" href="index.html" aria-label="Open landing page"' not in text:
+        raise AssertionError(f"frostmark is not linked to landing page: {html_path}")
+
+
 def verify_toc(html_path: Path) -> dict:
     if not html_path.exists():
         raise AssertionError(f"missing TOC html: {html_path}")
@@ -35,6 +40,7 @@ def verify_toc(html_path: Path) -> dict:
     if "TABLE OF CONTENTS" not in text:
         raise AssertionError(f"missing TOC h1 marker: {html_path}")
     _require_clean_bottom(text, html_path)
+    _require_home_link(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(f"TOC page must have exactly two h2 sections: {html_path}")
     for heading in (

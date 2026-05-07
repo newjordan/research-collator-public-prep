@@ -19,7 +19,7 @@ from render_day import (
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
     _daily_template_style,
-    _frosted_flake_data_uri,
+    make_report_h1_html,
     make_report_header_html,
 )
 
@@ -220,15 +220,7 @@ def render_toc_report(dates: list[str],
         ("CATEGORY REPORTS", str(len(category_summaries))),
         ("FINAL", "MOCKINGBIRD"),
     ]
-    h1_html = (
-        '<h1>'
-        '<span class="h1-title">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-        '<span>TABLE OF CONTENTS</span>'
-        '</span>'
-        '<span class="h1-date">CAMPAIGN</span>'
-        '</h1>'
-    )
+    h1_html = make_report_h1_html("TABLE OF CONTENTS", "CAMPAIGN")
     report_header = make_report_header_html(header_fields)
     summary_html = make_summary_html(
         dates, week_summaries, category_summaries, campaign_summary

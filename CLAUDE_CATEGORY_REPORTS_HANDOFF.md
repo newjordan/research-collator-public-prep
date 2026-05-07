@@ -67,7 +67,7 @@ Do not undo those weekly changes.
 
 - No LLM calls inside scraper, classifier, renderer, or verifiers.
 - Raw Claude/Codex conversations must never render in report HTML.
-- Daily template remains locked to `daily-report-v2.3-clean-bottom`.
+- Daily template remains locked to `daily-report-v2.4-frostmark-home`.
 - Weekly template remains locked to `weekly-report-v1.0-daily-rollup`.
 - Category reports should reuse the locked daily visual language and CSS.
 - No chart panel should become a giant campaign-wide plot. Split category

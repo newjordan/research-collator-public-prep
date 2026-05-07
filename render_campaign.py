@@ -35,9 +35,9 @@ from render_day import (
     RESEARCH_START_DATE,
     _daily_template_style,
     _embedded_log_script,
-    _frosted_flake_data_uri,
     format_metric_value,
     make_alloc_bar_html,
+    make_report_h1_html,
     make_report_header_html,
     metric_display_name,
 )
@@ -309,15 +309,7 @@ def render_campaign_report(dates: list[str] | None = None,
         header_fields,
         alloc_bar=make_alloc_bar_html(by_camp_for_alloc) if by_camp_for_alloc else None,
     )
-    h1_html = (
-        '<h1>'
-        '<span class="h1-title">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-        '<span>CAMPAIGN CUMULATIVE REPORT</span>'
-        '</span>'
-        '<span class="h1-date">CAMPAIGN</span>'
-        '</h1>'
-    )
+    h1_html = make_report_h1_html("CAMPAIGN CUMULATIVE REPORT", "CAMPAIGN")
     summary_html = make_campaign_summary_html(
         dates, by_category, points, windows, chart_panels
     )

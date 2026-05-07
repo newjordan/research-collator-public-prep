@@ -30,6 +30,11 @@ def _require_clean_bottom(text: str, html_path: Path) -> None:
         raise AssertionError(f"removed footer or bottom treatment leaked back into page: {html_path}")
 
 
+def _require_home_link(text: str, html_path: Path) -> None:
+    if 'class="h1-home" href="index.html" aria-label="Open landing page"' not in text:
+        raise AssertionError(f"frostmark is not linked to landing page: {html_path}")
+
+
 def verify_campaign(summary: dict) -> dict:
     html_path = Path(summary["html_path"])
     if not html_path.exists():
@@ -39,6 +44,7 @@ def verify_campaign(summary: dict) -> dict:
     if "CAMPAIGN CUMULATIVE REPORT" not in text:
         raise AssertionError(f"missing campaign h1 marker: {html_path}")
     _require_clean_bottom(text, html_path)
+    _require_home_link(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"campaign page must have exactly two h2 sections: {html_path}"

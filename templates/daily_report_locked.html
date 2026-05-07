@@ -40,6 +40,9 @@
          color: var(--ink-hi);
          display: flex; align-items: center; justify-content: space-between; gap: 16px; }
     h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
     h1 .h1-mark { width: 32px; height: 32px; display: block;
                   opacity: 1;
                   filter: brightness(0) saturate(100%);
@@ -315,7 +318,7 @@
       figure { padding: 14px; }
       table { display: block; overflow-x: auto; }
     }
-    </style></head><body><h1><span class="h1-title"><img class="h1-mark" src="assets/frosted_flake.png" alt=""><span>DAILY RESEARCH REPORT</span></span><span class="h1-date">2026-03-28</span></h1>
+    </style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-date">2026-03-28</span></h1>
 
 <div class="terminal-bar"><span class="tb-led"></span><span class="tb-text">DAY 022  ·  35 TESTS LOGGED  ·  VAL_BPB   ·  PB BAR 0.3200</span><span class="tb-tail">[READY]</span></div>
 

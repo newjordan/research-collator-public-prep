@@ -40,8 +40,8 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "c960d8fe97c5d702916d196895efe438236d073471b7e990ed0f1558e2ddf63a"
-DAILY_TEMPLATE_STANDARD = "daily-report-v2.3-clean-bottom"
+LOCKED_TEMPLATE_STYLE_SHA256 = "e889e0172105702e28097869ae19f35d21464b31bed40ddfeb4082e6776f91a5"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.4-frostmark-home"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
 FINAL_SUBMISSION_NAME = "Mockingbird"
@@ -1120,6 +1120,21 @@ def _frosted_flake_data_uri() -> str:
     return _FROSTED_FLAKE_DATA_URI
 
 
+def make_report_h1_html(title: str, right_label: str, home_href: str = "index.html") -> str:
+    """Report title with the frostmark wired back to the publication landing page."""
+    return (
+        '<h1>'
+        '<span class="h1-title">'
+        f'<a class="h1-home" href="{html.escape(home_href, quote=True)}" aria-label="Open landing page">'
+        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
+        '</a>'
+        f'<span>{html.escape(title)}</span>'
+        '</span>'
+        f'<span class="h1-date">{html.escape(right_label)}</span>'
+        '</h1>'
+    )
+
+
 _BASELINE_STYLE: str | None = None
 _ARTIFACT_DAY_INDEX: dict[str, int] | None = None
 
@@ -1256,6 +1271,7 @@ def _daily_template_style() -> str:
         ".alloc-seg-kernel",
         ".supporting-section",
         ".bpb-table",
+        ".h1-home",
     ]
     missing = [needle for needle in required if needle not in style]
     if missing:
@@ -2190,16 +2206,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     alloc_bar_html = make_alloc_bar_html(by_camp) if test_rows else None
     report_header = make_report_header_html(header_fields, alloc_bar=alloc_bar_html)
 
-    # H1 with frosted-flake mark + date pinned right
-    h1_html = (
-        '<h1>'
-          '<span class="h1-title">'
-            '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-            '<span>DAILY RESEARCH REPORT</span>'
-          '</span>'
-          f'<span class="h1-date">{html.escape(date)}</span>'
-        '</h1>'
-    )
+    h1_html = make_report_h1_html("DAILY RESEARCH REPORT", date)
 
     # Daily summary callout (between SECTION 1.0 and the chart)
     daily_summary = make_daily_summary_html(

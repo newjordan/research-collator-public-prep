@@ -34,11 +34,17 @@ def _require_clean_bottom(text: str, html_path: Path) -> None:
         raise AssertionError(f"removed footer or bottom treatment leaked back into page: {html_path}")
 
 
+def _require_home_link(text: str, html_path: Path) -> None:
+    if 'class="h1-home" href="../index.html" aria-label="Open landing page"' not in text:
+        raise AssertionError(f"frostmark is not linked to landing page: {html_path}")
+
+
 def _verify_index(html_path: Path) -> dict:
     if not html_path.exists():
         raise AssertionError(f"missing weekly index html: {html_path}")
     text = html_path.read_text(encoding="utf-8", errors="replace")
     _require_clean_bottom(text, html_path)
+    _require_home_link(text, html_path)
     if "WEEKLY RESEARCH REPORTS" not in text:
         raise AssertionError(f"missing weekly index h1 marker: {html_path}")
     if LEAK_RE.search(text):
@@ -54,6 +60,7 @@ def verify_week(summary: dict) -> dict:
     if "WEEKLY RESEARCH REPORT" not in text:
         raise AssertionError(f"missing weekly h1 marker: {html_path}")
     _require_clean_bottom(text, html_path)
+    _require_home_link(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(f"weekly page must have exactly two h2 sections: {html_path}")
     for heading in ("SECTION 1.0 — WEEK TRAJECTORY", "SECTION 2.0 — DAILY REPORTS"):

@@ -47,6 +47,8 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
             f"{date}: raw chat-session kind leaked into body")
     require("report-footer" not in raw and "rf-dotgrid" not in raw and "body::after" not in raw,
             f"{date}: removed footer or bottom treatment leaked back into page")
+    require('class="h1-home" href="index.html" aria-label="Open landing page"' in body,
+            f"{date}: frostmark is not linked to landing page")
     if expect_tests:
         require("class='test-runs-table'" in body, f"{date}: missing canonical test table")
         require("details class='log-toggle'" in body, f"{date}: missing Section 2 dropdown toggle")

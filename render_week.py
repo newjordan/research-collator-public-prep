@@ -44,8 +44,8 @@ from render_day import (
     render_one_day,
     _daily_template_style,
     _embedded_log_script,
-    _frosted_flake_data_uri,
     make_alloc_bar_html,
+    make_report_h1_html,
     make_report_header_html,
     best_date,
 )
@@ -298,14 +298,10 @@ def render_week(week_dates: list[str],
             header_fields,
             alloc_bar=make_alloc_bar_html(by_camp) if by_camp else None,
         )
-        h1_html = (
-            '<h1>'
-              '<span class="h1-title">'
-                '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-                '<span>WEEKLY RESEARCH REPORT</span>'
-              '</span>'
-              f'<span class="h1-date">WEEK {week_number:02d}</span>'
-            '</h1>'
+        h1_html = make_report_h1_html(
+            "WEEKLY RESEARCH REPORT",
+            f"WEEK {week_number:02d}",
+            home_href="../index.html",
         )
         summary = make_week_summary_html(
             week_number, week_dates, days, primary_metric, by_camp
@@ -399,11 +395,10 @@ def render_week(week_dates: list[str],
 
 def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
     WEEK_HTML_DIR.mkdir(parents=True, exist_ok=True)
-    h1_html = (
-        '<h1><span class="h1-title">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
-        '<span>WEEKLY RESEARCH REPORTS</span></span>'
-        '<span class="h1-date">INDEX</span></h1>'
+    h1_html = make_report_h1_html(
+        "WEEKLY RESEARCH REPORTS",
+        "INDEX",
+        home_href="../index.html",
     )
     rows = [
         "<table class='test-runs-table'><thead><tr>"

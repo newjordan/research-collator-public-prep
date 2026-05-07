@@ -31,7 +31,7 @@ fonts, or surface treatments without first updating this section.
 The locked base CSS source is `templates/daily_report_locked.html`. The
 renderer refuses to run if that file's `<style>` block does not match
 `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
-`daily-report-v2.3-clean-bottom`.
+`daily-report-v2.4-frostmark-home`.
 
 ### 2.1 Palette (single source of truth)
 
@@ -82,7 +82,8 @@ and the 45° diagonal stripes on the neural data segment.
 
 H1: 22px, top of page, no border, mark + title left, date right.
 The H1 frostmark is rendered through CSS as dark black; do not edit the
-source PNG to recolor it.
+source PNG to recolor it. The frostmark is a link back to the publication
+landing page (`index.html`, or `../index.html` from nested report folders).
 H2: 12px ALL-CAPS with `border-bottom: 1px solid --rule-hi`. Margins
 36px above / 14px below.
 
@@ -95,7 +96,8 @@ re-ordered without a spec revision.
 
 ```text
 1. H1                       DAILY RESEARCH REPORT  ⨂  YYYY-MM-DD
-                            ↑ frosted_flake mark (32×32)         ↑ right-pinned
+                            ↑ clickable frosted_flake mark (32×32) to landing page
+                                                                 ↑ right-pinned
 
 2. REPORT HEADER            Inverted black evidence block, 6 rows:
                               DATE
