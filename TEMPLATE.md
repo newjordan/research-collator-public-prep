@@ -117,10 +117,9 @@ re-ordered without a spec revision.
                             the escaped log text plus the original file link.
                             Non-log artifacts remain normal links.
                             INVALID rows: muted text, red val_bpb cell, red STATUS.
-                            Conversation-mined architecture events may render
-                            beneath the test tables as a structured table
-                            derived from deterministic local transcript
-                            mining. Raw transcripts never render directly.
+                            Conversation-derived events never render in the
+                            canonical daily page. Conversation mining may exist
+                            as an offline audit lane only.
 ```
 
 DAILY GRIND — explicitly **not** in the canonical layout. Codex/Claude
@@ -210,6 +209,9 @@ of these break, the page is wrong.
 8. **Template hash locked.** `render_day.py` must refuse to render if
    `templates/daily_report_locked.html` CSS drifts without an intentional hash
    update.
+9. **No conversations in research pages.** Claude/Codex sessions and
+   conversation-derived artifacts may exist in offline indexes, but they must
+   never render in the daily HTML body.
 
 ---
 
@@ -253,11 +255,8 @@ The renderer derives these from the records and a target date:
   sorted by run-time ascending. Each row: `n, time, hardware, title,
   value, n_runs, link_label, link_href, run_script, training_logs,
   time_iso, camp, delta_pct`.
-- **`conversation_arch_events`** — deterministic local transcript-mined
-  architecture-change signals, sorted by local time. Each row: `time,
-  architecture_tags, action_tags, summary, source link`. These rows are
-  allowed in Section 2 because they are structured event artifacts, not raw
-  chat/session bodies.
+- **Conversation-derived artifacts** — may be indexed for offline audit, but
+  are not renderer inputs and must never appear in daily-page body content.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
 - **`valid_count` / `invalid_count`** — `value ≥/< INVALID_VAL_BPB_FLOOR`.

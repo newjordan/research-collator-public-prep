@@ -40,6 +40,11 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
     require("SECTION 2.0 — TEST RUNS" in body, f"{date}: missing Section 2.0")
     require("SECTION 3.0" not in upper, f"{date}: Section 3.0 leaked into body")
     require("SUPPORTING FILES" not in upper, f"{date}: supporting files leaked into body")
+    require("CONVERSATION-MINED" not in upper, f"{date}: conversation-mined section leaked into body")
+    require("ARCH-EVENTS-TABLE" not in body, f"{date}: conversation event table leaked into body")
+    require("CONVERSATION_ARCHITECTURE" not in upper, f"{date}: conversation ledger path leaked into body")
+    require("CLAUDE_SESSION" not in upper and "CODEX_SESSION" not in upper,
+            f"{date}: raw chat-session kind leaked into body")
     if expect_tests:
         require("class='test-runs-table'" in body, f"{date}: missing canonical test table")
     require(body.count("<h2>SECTION ") == 2, f"{date}: expected exactly two top sections")

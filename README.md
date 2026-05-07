@@ -21,7 +21,7 @@ lab-protocol aesthetic.
 | `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
 | `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
 | `ablation_label_local.py` | Separate, optional Nemo3 ablation-label suggestion lane. Calls only local vLLM, writes review artifacts, and only approved JSONL labels affect rendering. |
-| `scripts/mine_conversation_architecture.py` | Deterministic Claude/Codex transcript miner for time-ordered model-architecture change signals. No LLM. With `--index`, it injects only structured architecture-event artifacts, not raw transcripts. |
+| `scripts/mine_conversation_architecture.py` | Deterministic Claude/Codex transcript miner for offline audit only. No LLM. Its artifacts are never rendered into daily report pages. |
 | `config.yaml` | Roots to walk, exclusion list, file-extension → handler map. |
 
 ## Template lock
@@ -58,11 +58,10 @@ Two top-level test camps + a daily-grind narrative track:
   competitive sources (SOTA_FINAL, sota_rascal).
 - **daily_grind** — codex rollouts (narrative summaries of session work).
 
-Daily reports do not present raw Codex/Claude chat sessions as research
-evidence. There is no Section 3 in the canonical daily page. The only
-conversation-derived evidence allowed into daily pages is the deterministic
-`conversation_arch_event` artifact emitted by
-`scripts/mine_conversation_architecture.py --index`.
+Daily reports do not present Codex/Claude conversations as research evidence.
+There is no Section 3 in the canonical daily page. Conversation-derived
+artifacts may be indexed for offline audit, but they must never render in the
+daily HTML body.
 
 ## How to run end-to-end
 
@@ -102,8 +101,8 @@ python3 scripts/mine_conversation_architecture.py --start 2026-03-02 --end 2026-
 Outputs land in `output/conversation_architecture/` as JSONL, Markdown, and a
 summary JSON. This miner reads raw Claude/Codex JSONLs at message granularity,
 filters infra/UI chatter out, and emits only strict model-architecture-change
-signals. Add `--index` to upsert those signals into `index.sqlite` as
-`conversation_arch_event` rows for daily-page review.
+signals. Add `--index` only when you want those signals in SQLite for offline
+audit. They are not rendered into daily pages.
 
 Optional local ablation-label suggestions, no paid API:
 

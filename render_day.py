@@ -73,6 +73,7 @@ BPB_METRICS = {"val_bpb", "val_bits_per_byte", "bpb"}
 INVALID_VAL_BPB_FLOOR = 1.06
 CRASH_VAL_BPB_THRESHOLD = 3.0
 CHAT_SESSION_KINDS = {"codex_session", "claude_session"}
+PRESENTATION_EXCLUDED_KINDS = CHAT_SESSION_KINDS | {"conversation_arch_event"}
 SUPPORTING_FILE_KINDS = {
     "training_log", "md", "text", "asset", "py", "json", "csv", "ckpt",
 }
@@ -156,14 +157,18 @@ def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
     """Keep daily reports aligned with the research chronology contract.
 
     Dates before the research start remain inspectable as raw/prelude pages.
-    Research days use the same source/reference filter as day numbering so
-    public upstream records and unrelated bootstrap artifacts do not leak into
-    the report body.
+    Research days use the same source/reference filter as day numbering, then
+    drop chat/session-derived artifacts so conversations never surface in the
+    report body.
     """
     if date < RESEARCH_START_DATE:
-        return records
-    filtered = [r for r in records if is_research_chronology_record(r)]
-    return filtered or records
+        scoped = records
+    else:
+        scoped = [r for r in records if is_research_chronology_record(r)]
+    scoped = [r for r in scoped if r.get("file_kind") not in PRESENTATION_EXCLUDED_KINDS]
+    if date < RESEARCH_START_DATE:
+        return scoped
+    return scoped
 
 
 def ablation_title_sha(title: str) -> str:
@@ -1255,8 +1260,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
                             chart_baseline: float | None,
                             test_rows: list[dict],
                             arch_families: list[tuple[str, int]],
-                            by_camp: dict[str, int],
-                            arch_event_count: int = 0) -> str:
+                            by_camp: dict[str, int]) -> str:
     """Two-paragraph callout that sits between SECTION 1.0 and the chart.
     Generated deterministically from the day's numbers — no LLM."""
     metric = (headline_metric or "metric").upper()
@@ -1274,20 +1278,12 @@ def make_daily_summary_html(date: str, day_index: int | None,
     # but no explicit val_bpb/val_loss output. Common causes: infra/studio
     # days, kernel-benchmark days, and session-only days.
     if n_tests == 0:
-        if arch_event_count:
-            event_phrase = (
-                f" <strong>{arch_event_count}</strong> local conversation-mined "
-                "architecture events were indexed for this date and are shown "
-                "in Section 2.0."
-            )
-        else:
-            event_phrase = ""
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
               f'<div class="ds-body"><p>{day_ref} — '
               f'<strong>no explicit validation metric</strong> was captured '
-              f'on this date.{event_phrase}</p></div>'
+              'on this date.</p></div>'
             '</aside>'
         )
 
@@ -1325,8 +1321,6 @@ def make_daily_summary_html(date: str, day_index: int | None,
         f"Allocation {allocation_tone} ({exp_pct:.0f}% / {neu_pct:.0f}% neural) — "
         f"{arch_phrase}."
     )
-    if arch_event_count:
-        para1 += f" {arch_event_count} conversation-mined architecture events were also indexed."
 
     # Para 2: best-of-day, PB comparison
     valid_rows = [
@@ -1502,102 +1496,6 @@ def make_grind_md(records: list[dict]) -> str:
         s = (r["summary"] or "").strip()
         chunks.append(f"- **[rollup]** {t}" + (f" — {s}" if s else ""))
     return "\n".join(chunks)
-
-
-def extract_conversation_arch_events(records: list[dict]) -> list[dict]:
-    """Conversation-mined architecture events for the day.
-
-    These are not raw chat transcripts. They are deterministic snippets emitted
-    by scripts/mine_conversation_architecture.py and indexed as structured
-    artifact rows so early research decisions can be reviewed beside logs.
-    """
-    events_by_line: dict[tuple[str, object, str], dict] = {}
-    for rec in records:
-        if rec.get("file_kind") != "conversation_arch_event":
-            continue
-        md = metrics_dict(rec)
-        tags = md.get("architecture_tags") if isinstance(md.get("architecture_tags"), list) else []
-        actions = md.get("action_tags") if isinstance(md.get("action_tags"), list) else []
-        time_iso = rec.get("mtime_iso") or ""
-        time_str = str(md.get("local_time") or "")
-        if not time_str and time_iso:
-            try:
-                time_str = dt.datetime.fromisoformat(time_iso.replace("Z", "+00:00")).strftime("%H:%M")
-            except ValueError:
-                time_str = ""
-        session_path = str(md.get("session_path") or "")
-        href_label, href = _file_href(session_path, "session")
-        event = {
-            "time": time_str[:5] if len(time_str) >= 5 else time_str,
-            "time_iso": time_iso,
-            "score": md.get("score"),
-            "tags": [str(t) for t in tags],
-            "actions": [str(a) for a in actions],
-            "summary": rec.get("summary") or "",
-            "source": str(md.get("source") or ""),
-            "line_no": md.get("line_no"),
-            "cwd": str(md.get("cwd") or ""),
-            "href": href,
-            "href_label": href_label,
-        }
-        # The miner intentionally keeps overlapping snippets in the full JSONL
-        # ledger. The daily page should show one readable row per transcript
-        # line, preferring the highest-scored / richest snippet.
-        line_key = (session_path, md.get("line_no"), str(md.get("local_time") or ""))
-        prior = events_by_line.get(line_key)
-        if prior is None:
-            events_by_line[line_key] = event
-            continue
-        prior_score = float(prior.get("score") or 0)
-        event_score = float(event.get("score") or 0)
-        if (event_score, len(event.get("summary") or "")) > (
-            prior_score, len(prior.get("summary") or "")
-        ):
-            events_by_line[line_key] = event
-    events = list(events_by_line.values())
-    return sorted(
-        events,
-        key=lambda e: (e.get("time_iso") or "", -float(e.get("score") or 0)),
-    )
-
-
-def make_arch_events_table_html(events: list[dict], cap: int = 12) -> str:
-    if not events:
-        return ""
-    shown = events[:cap]
-    rows = [
-        "<table class='arch-events-table'><thead><tr>"
-        "<th>TIME</th><th>SIGNAL</th><th>ACTION</th><th>EVIDENCE</th><th>OPEN</th>"
-        "</tr></thead><tbody>"
-    ]
-    for event in shown:
-        tags = ", ".join(event.get("tags") or []) or "architecture"
-        actions = ", ".join(event.get("actions") or []) or "metric/config"
-        evidence = re.sub(r"\s+", " ", event.get("summary") or "").strip()
-        if len(evidence) > 220:
-            evidence = evidence[:217] + "..."
-        open_link = "—"
-        if event.get("href"):
-            label = event.get("href_label") or "session"
-            line_no = event.get("line_no")
-            suffix = f":{line_no}" if line_no else ""
-            open_link = _anchor_html(f"{label}{suffix}", event["href"])
-        rows.append(
-            "<tr>"
-            + _td_html(html.escape(event.get("time") or "—"))
-            + _td_html(html.escape(tags))
-            + _td_html(html.escape(actions))
-            + _td_html(html.escape(evidence))
-            + _td_html(open_link)
-            + "</tr>"
-        )
-    rows.append("</tbody></table>")
-    if len(events) > cap:
-        rows.append(
-            f"<p class='muted'>Showing {cap} of {len(events)} conversation-mined "
-            "architecture events; full ledger is in output/conversation_architecture.</p>"
-        )
-    return "\n".join(rows)
 
 
 def _format_bytes(n: object) -> str:
@@ -1848,7 +1746,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     records = report_records_for_date(date, fetch_day(conn, date))
     if not records:
         sys.exit(f"no artifacts found for {date}")
-    arch_events = extract_conversation_arch_events(records)
 
     # CLASSIFICATION % must reflect research output, not file-tree mass.
     # Count training-log records (excluding reference baselines) per camp;
@@ -1942,13 +1839,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     grind_md = make_grind_md(records)
     approved_ablation_labels = apply_approved_ablation_labels(test_rows, date)
     test_table_md = make_camp_test_tables_md(test_rows, headline_metric or "metric", chart_baseline)
-    arch_events_table = make_arch_events_table_html(arch_events)
-    if arch_events_table:
-        arch_header = f"### CONVERSATION-MINED ARCHITECTURE EVENTS — {len(arch_events)}"
-        if test_table_md:
-            test_table_md = "\n\n".join([test_table_md, arch_header, "", arch_events_table])
-        else:
-            test_table_md = "\n\n".join([arch_header, "", arch_events_table])
 
     # Compute day index across the corpus (Day 1, Day 12, etc.)
     day_index = compute_day_index(conn, date)
@@ -1968,8 +1858,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     # inside the LAST (CLASSIFICATION) row as a 30px allocation bar.
     arch_families = detect_arch_families(test_rows)
     test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"
-    if arch_events:
-        test_count_text += f" · {len(arch_events)} arch events"
     header_fields = [
         ("DATE", date),
         ("DAY", format_day_index(day_index)),
@@ -2000,7 +1888,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         chart_baseline=chart_baseline,
         test_rows=test_rows, arch_families=arch_families,
         by_camp=by_camp,
-        arch_event_count=len(arch_events),
     )
 
     # VAL_BPB SPREAD per family (small table after the chart)
@@ -2188,7 +2075,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "chart_baseline_to_beat": chart_baseline,
         "unique_tests": unique_tests,
         "n_training_log_rows": sum(1 for row in test_rows if row.get("training_logs")),
-        "n_conversation_arch_events": len(arch_events),
         "total_datapoints": total_dps,
         "variety_pct": variety_pct,
         "approved_ablation_labels": approved_ablation_labels,
