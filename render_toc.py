@@ -92,6 +92,7 @@ def toc_extra_style() -> str:
       max-width: 58vh;
       height: auto;
       opacity: 0.85;
+      mix-blend-mode: darken;
       pointer-events: none;
       user-select: none;
       filter: var(--tone-filter);
