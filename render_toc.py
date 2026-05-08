@@ -430,11 +430,17 @@ def make_connected_reader_html(dates: list[str],
         kind = html.escape(item["kind"], quote=True)
         label = html.escape(item["label"])
         href = html.escape(item["href"], quote=True)
-        starts_collapsed = item["kind"] == "category" and item["href"] in {
-            "categories/experimental.html",
-            "categories/neural.html",
-            "categories/kernel.html",
-        }
+        starts_collapsed = (
+            item["kind"] == "day"
+            or (
+                item["kind"] == "category"
+                and item["href"] in {
+                    "categories/experimental.html",
+                    "categories/neural.html",
+                    "categories/kernel.html",
+                }
+            )
+        )
         collapsed_class = " is-collapsed" if starts_collapsed else ""
         expanded_attr = "false" if starts_collapsed else "true"
         toggle_label = "expand" if starts_collapsed else "collapse"
