@@ -42,13 +42,25 @@ def toc_extra_style() -> str:
     if bg:
         bg_css = f"""
     body.toc-page {{
+      position: relative;
+      isolation: isolate;
       max-width: 1280px;
+      background: #050605;
+    }}
+    body.toc-page::before {{
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
       background-image:
         linear-gradient(rgba(137,56,14,0.74), rgba(137,56,14,0.82)),
         url('{bg}');
       background-size: cover;
       background-position: center top;
       background-attachment: fixed;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
     }}
     """
     return f"""
@@ -61,6 +73,9 @@ def toc_extra_style() -> str:
       --chrome-bg-soft: #0c0907;
     }}
     body.toc-page {{
+      transform-origin: top center;
+    }}
+    body.toc-page .toc-filtered {{
       filter: var(--tone-filter);
       transition: filter 220ms ease;
       transform-origin: top center;
@@ -152,8 +167,8 @@ def toc_extra_style() -> str:
       right: 0;
       width: 16px;
       height: 100vh;
-      background: #050605;
-      border-left: 1px solid rgba(139,55,2,0.72);
+      background: var(--chrome-bg);
+      border-left: 1px solid var(--chrome-rule);
       z-index: 9999;
       pointer-events: auto;
       cursor: pointer;
@@ -166,8 +181,8 @@ def toc_extra_style() -> str:
       top: 0;
       width: 12px;
       height: 48px;
-      background: #8b3702;
-      border: 1px solid #050605;
+      background: var(--chrome-fg);
+      border: 1px solid var(--chrome-bg);
       border-radius: 0 !important;
       clip-path: inset(0 0 0 0);
       appearance: none;
@@ -976,10 +991,10 @@ def render_toc_report(dates: list[str],
     body_parts = [
         palette_easter_egg_controls(),
         page_scrollbar_html(),
+        '<div class="toc-filtered">',
         webloader_cover,
         webloader_intro,
         webloader_page2,
-        '<div class="wipe-overlay" aria-hidden="true"></div>',
         h1_html,
         "<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>",
         report_header,
@@ -995,6 +1010,8 @@ def render_toc_report(dates: list[str],
         daily_table,
         "<h3>CONNECTED SCROLL</h3>",
         connected_reader,
+        "</div>",
+        '<div class="wipe-overlay" aria-hidden="true"></div>',
     ])
 
     full_html = (
