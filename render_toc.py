@@ -490,6 +490,9 @@ def connected_reader_script() -> str:
     return """
 <script>
 (function(){
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
   function decodeHashValue(value) {
     try { return decodeURIComponent(value); } catch (e) { return value; }
   }
@@ -532,12 +535,20 @@ def connected_reader_script() -> str:
   }
   function restoreReaderHash() {
     var match = String(window.location.hash || '').match(/^#reader=(.+)$/);
-    if (!match) return;
+    if (!match) return false;
     var href = decodeHashValue(match[1]);
-    if (!href) return;
+    if (!href) return false;
     requestAnimationFrame(function(){ scrollToReaderHref(href, false); });
     setTimeout(function(){ scrollToReaderHref(href, false); }, 350);
     setTimeout(function(){ scrollToReaderHref(href, false); }, 1200);
+    return true;
+  }
+  function resetReaderScrollIfNoHash() {
+    if (String(window.location.hash || '').match(/^#reader=(.+)$/)) return;
+    window.scrollTo(0, 0);
+    requestAnimationFrame(function(){ window.scrollTo(0, 0); });
+    setTimeout(function(){ window.scrollTo(0, 0); }, 250);
+    setTimeout(function(){ window.scrollTo(0, 0); }, 900);
   }
   function resizeFrame(frame) {
     try {
@@ -593,8 +604,10 @@ def connected_reader_script() -> str:
     });
   });
   window.addEventListener('hashchange', restoreReaderHash);
-  window.addEventListener('load', restoreReaderHash);
-  restoreReaderHash();
+  window.addEventListener('load', function(){
+    if (!restoreReaderHash()) resetReaderScrollIfNoHash();
+  });
+  if (!restoreReaderHash()) resetReaderScrollIfNoHash();
 })();
 </script>
 """
