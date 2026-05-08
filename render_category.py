@@ -387,6 +387,99 @@ def build_category_datapoints(conn: sqlite3.Connection,
     return points
 
 
+def family_of_row(row: dict[str, Any]) -> str:
+    title = row.get("title") or ""
+    path = row.get("abs_path") or ""
+    for fam_name, pat in render_day.ARCH_FAMILIES:
+        if render_day._arch_family_matches(pat, title, path):
+            return fam_name
+    return "Other"
+
+
+def category_family_rows(conn: sqlite3.Connection,
+                         dates: list[str],
+                         category: str) -> tuple[list[dict[str, Any]], str | None]:
+    """All valid measured rows for a category on each date's chosen metric.
+
+    This keeps the category report's scale contract: families are compared on
+    the same metric that the category datapoint would use for that date.
+    """
+    out: list[dict[str, Any]] = []
+    metric_counts: Counter[str] = Counter()
+    for date in dates:
+        chosen: tuple[str, list[dict[str, Any]]] | None = None
+        for metric in CATEGORY_METRIC_PRIORITY[category]:
+            rows = _category_rows_for_day(conn, date, category, metric)
+            if rows:
+                chosen = (metric, rows)
+                break
+        if not chosen:
+            continue
+        metric, rows = chosen
+        metric_counts[metric] += len(rows)
+        for row in rows:
+            item = dict(row)
+            item["date"] = date
+            item["metric"] = metric
+            item["family"] = family_of_row(item)
+            out.append(item)
+    primary_metric = metric_counts.most_common(1)[0][0] if metric_counts else None
+    return out, primary_metric
+
+
+def make_category_family_table_html(rows: list[dict[str, Any]],
+                                    primary_metric: str | None) -> str:
+    if not rows or not primary_metric:
+        return (
+            "<p class='muted'>NO ARCHITECTURE FAMILY ROWS WERE AVAILABLE "
+            "FOR THIS CATEGORY.</p>"
+        )
+    by_family: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        by_family.setdefault(str(row.get("family") or "Other"), []).append(row)
+
+    def family_sort(item: tuple[str, list[dict[str, Any]]]) -> tuple[int, str]:
+        name, fam_rows = item
+        return (-len(fam_rows), render_day.public_arch_label(name))
+
+    table = [
+        "<table class='bpb-table'><thead><tr>"
+        "<th>architecture / test surface</th><th>rows</th><th>days</th>"
+        f"<th>best {html.escape(metric_display_name(primary_metric))}</th>"
+        "<th>median</th><th>range</th><th>first</th><th>last</th>"
+        "</tr></thead><tbody>"
+    ]
+    for family, fam_rows in sorted(by_family.items(), key=family_sort):
+        metric_rows = [
+            r for r in fam_rows
+            if r.get("metric") == primary_metric
+            and is_valid_metric_value(primary_metric, r.get("value"))
+        ]
+        if not metric_rows:
+            continue
+        vals = sorted(float(r["value"]) for r in metric_rows)
+        n = len(vals)
+        med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2.0
+        dates = sorted({str(r.get("date") or "") for r in fam_rows if r.get("date")})
+        date_href = f"../{html.escape(dates[0])}.html" if dates else "#"
+        last_href = f"../{html.escape(dates[-1])}.html" if dates else "#"
+        table.append(
+            "<tr>"
+            f"<td>{html.escape(render_day.public_arch_label(family).upper())}</td>"
+            f"<td>{len(fam_rows)}</td>"
+            f"<td>{len(dates)}</td>"
+            f"<td>{format_metric_value(primary_metric, vals[0])}</td>"
+            f"<td>{format_metric_value(primary_metric, med)}</td>"
+            f"<td>{format_metric_value(primary_metric, vals[0])} - "
+            f"{format_metric_value(primary_metric, vals[-1])}</td>"
+            f"<td><a class='category-action' href='{date_href}'>{html.escape(dates[0]) if dates else '—'}</a></td>"
+            f"<td><a class='category-action' href='{last_href}'>{html.escape(dates[-1]) if dates else '—'}</a></td>"
+            "</tr>"
+        )
+    table.append("</tbody></table>")
+    return "\n".join(table)
+
+
 # ---------- rendering helpers -------------------------------------------------
 
 def category_action_style() -> str:
@@ -776,6 +869,12 @@ def render_category(conn: sqlite3.Connection,
 
     points = build_category_datapoints(conn, dates, category, windows)
     points.sort(key=lambda p: p["date"])
+    family_rows, family_metric = category_family_rows(conn, dates, category)
+    family_counts = Counter(str(r.get("family") or "Other") for r in family_rows)
+    arch_families = sorted(family_counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    architecture_recipe_html, rendered_architecture_recipes = (
+        render_day.make_architecture_recipe_html(arch_families)
+    )
 
     summary_html = make_category_summary_html(category, points, windows)
 
@@ -821,6 +920,13 @@ def render_category(conn: sqlite3.Connection,
     body_parts = [h1_html, report_header,
                   "<h2>SECTION 1.0 — BI-WEEKLY TRAJECTORY</h2>",
                   summary_html]
+    if family_rows:
+        body_parts.extend([
+            "<h2>SECTION 1.5 — ARCHITECTURE / TEST SURFACES</h2>",
+            make_category_family_table_html(family_rows, family_metric),
+        ])
+        if architecture_recipe_html:
+            body_parts.append(architecture_recipe_html)
     if not window_sections:
         body_parts.append(
             f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
@@ -870,6 +976,15 @@ def render_category(conn: sqlite3.Connection,
         summary_html,
         "",
     ]
+    if family_rows:
+        qmd_lines += [
+            "## SECTION 1.5 — ARCHITECTURE / TEST SURFACES",
+            "",
+            make_category_family_table_html(family_rows, family_metric),
+            "",
+        ]
+        if architecture_recipe_html:
+            qmd_lines += [architecture_recipe_html, ""]
     if not window_sections:
         qmd_lines.append(
             f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
@@ -912,6 +1027,11 @@ def render_category(conn: sqlite3.Connection,
         "windows_active": len(window_sections),
         "chart_panels": total_chart_panels,
         "metrics_used": list(metric_counter.keys()),
+        "architecture_recipes_rendered": rendered_architecture_recipes,
+        "architecture_families": [
+            {"name": name, "label": render_day.public_arch_label(name), "count": count}
+            for name, count in arch_families
+        ],
         "template_standard": CATEGORY_TEMPLATE_STANDARD,
         "daily_template_standard": DAILY_TEMPLATE_STANDARD,
         "template_style_sha256": LOCKED_TEMPLATE_STYLE_SHA256,
