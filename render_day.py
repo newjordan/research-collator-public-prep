@@ -22,6 +22,7 @@ import json
 import math
 import os
 import re
+import shutil
 import sqlite3
 import sys
 
@@ -1263,20 +1264,20 @@ def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
 
 
 _FROSTED_FLAKE_PATH = "/home/frosty40/research_collator/assets/frosted_flake.png"
-_FROSTED_FLAKE_DATA_URI: str | None = None
 
 
-def _frosted_flake_data_uri() -> str:
-    """Inline the H1 mark image as base64 so the HTML stays self-contained."""
-    global _FROSTED_FLAKE_DATA_URI
-    if _FROSTED_FLAKE_DATA_URI is None:
-        try:
-            with open(_FROSTED_FLAKE_PATH, "rb") as f:
-                b64 = base64.b64encode(f.read()).decode("ascii")
-            _FROSTED_FLAKE_DATA_URI = f"data:image/png;base64,{b64}"
-        except OSError:
-            _FROSTED_FLAKE_DATA_URI = ""
-    return _FROSTED_FLAKE_DATA_URI
+def _frosted_flake_src(home_href: str) -> str:
+    """Use one shared static mark instead of base64-inlining it per page."""
+    src = Path(_FROSTED_FLAKE_PATH)
+    dst = HTML_DIR / "assets" / "frosted_flake.png"
+    try:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if not dst.exists() or src.stat().st_mtime_ns != dst.stat().st_mtime_ns:
+            shutil.copy2(src, dst)
+    except OSError:
+        return ""
+    prefix = "../" if home_href.startswith("../") else ""
+    return f"{prefix}assets/frosted_flake.png"
 
 
 def make_report_h1_html(
@@ -1301,7 +1302,7 @@ def make_report_h1_html(
         '<h1>'
         '<span class="h1-title">'
         f'<a class="h1-home" href="{html.escape(home_href, quote=True)}" aria-label="Open landing page">'
-        '<img class="h1-mark" src="' + _frosted_flake_data_uri() + '" alt="">'
+        '<img class="h1-mark" src="' + html.escape(_frosted_flake_src(home_href), quote=True) + '" alt="">'
         '</a>'
         f'<span>{html.escape(title)}</span>'
         '</span>'
