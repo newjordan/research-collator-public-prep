@@ -95,7 +95,15 @@ def palette_easter_egg_style() -> str:
       --wipe-r: 0px;
       --wipe-cx: 50%;
       --wipe-cy: 50%;
-      --wipe-feather: 8px;
+      --wipe-feather: 2px;
+      --wipe-band: 104px;
+      --wipe-band-inner: 44px;
+      --wipe-band-outer: 180px;
+      --wipe-pulse: 0px;
+      --wipe-cell: 16px;
+      --wipe-cell-half: 8px;
+      --wipe-cell-mark: 12px;
+      --wipe-angle: 0deg;
     }
     .intro-toned {
       position: absolute;
@@ -151,6 +159,56 @@ def palette_easter_egg_style() -> str:
     }
     .wipe-overlay.is-running {
       opacity: 1;
+    }
+    .wipe-dither-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 61;
+      pointer-events: none;
+      background-color: var(--wipe-tint);
+      background-image:
+        repeating-conic-gradient(
+          from var(--wipe-angle) at var(--wipe-cx) var(--wipe-cy),
+          rgba(255,255,255,0.00) 0deg,
+          rgba(255,255,255,0.00) 10deg,
+          rgba(255,255,255,0.78) 10deg,
+          rgba(255,255,255,0.78) 20deg
+        ),
+        repeating-linear-gradient(
+          45deg,
+          rgba(0,0,0,0.00) 0,
+          rgba(0,0,0,0.00) var(--wipe-cell-half),
+          rgba(0,0,0,0.62) var(--wipe-cell-half),
+          rgba(0,0,0,0.62) var(--wipe-cell)
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          rgba(255,255,255,0.00) 0,
+          rgba(255,255,255,0.00) var(--wipe-cell-mark),
+          rgba(255,255,255,0.48) var(--wipe-cell-mark),
+          rgba(255,255,255,0.48) var(--wipe-cell)
+        );
+      background-blend-mode: hard-light, multiply, screen;
+      mix-blend-mode: color;
+      opacity: 0;
+      transition: opacity 120ms ease;
+      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-band) - var(--wipe-pulse)),
+        #000 calc(var(--wipe-r) - var(--wipe-band-inner) - var(--wipe-pulse)),
+        #000 calc(var(--wipe-r) + var(--wipe-band) + var(--wipe-pulse)),
+        transparent calc(var(--wipe-r) + var(--wipe-band-outer) + var(--wipe-pulse)),
+        transparent 100%);
+      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-band) - var(--wipe-pulse)),
+        #000 calc(var(--wipe-r) - var(--wipe-band-inner) - var(--wipe-pulse)),
+        #000 calc(var(--wipe-r) + var(--wipe-band) + var(--wipe-pulse)),
+        transparent calc(var(--wipe-r) + var(--wipe-band-outer) + var(--wipe-pulse)),
+        transparent 100%);
+    }
+    .wipe-dither-overlay.is-running {
+      opacity: 0.92;
     }
     .palette-label {
       position: fixed;
@@ -247,9 +305,12 @@ def palette_easter_egg_script(include_stamp: bool = True, include_wipe: bool | N
         include_wipe = include_stamp
     stamp_block = """
   var wipeEl = document.querySelector('.wipe-overlay');
+  var ditherEl = document.querySelector('.wipe-dither-overlay');
   var wipeRunning = false;
-  var WIPE_DURATION_MS = 750;
-  var WIPE_OVERSHOOT_PX = 60;
+  var WIPE_DURATION_MS = 1040;
+  var WIPE_OVERSHOOT_PX = 150;
+  var WIPE_BAND_PX = 112;
+  var WIPE_PULSE_PX = 46;
 
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
@@ -278,19 +339,38 @@ def palette_easter_egg_script(include_stamp: bool = True, include_wipe: bool | N
     root.style.setProperty('--wipe-cx', cx + 'px');
     root.style.setProperty('--wipe-cy', cy + 'px');
     root.style.setProperty('--wipe-r', '0px');
+    root.style.setProperty('--wipe-band', WIPE_BAND_PX + 'px');
+    root.style.setProperty('--wipe-band-inner', Math.round(WIPE_BAND_PX * 0.42) + 'px');
+    root.style.setProperty('--wipe-band-outer', Math.round(WIPE_BAND_PX * 1.72) + 'px');
+    root.style.setProperty('--wipe-pulse', '0px');
+    root.style.setProperty('--wipe-cell', '20px');
+    root.style.setProperty('--wipe-cell-half', '10px');
+    root.style.setProperty('--wipe-cell-mark', '14px');
+    root.style.setProperty('--wipe-angle', '0deg');
     wipeEl.classList.add('is-running');
+    if (ditherEl) ditherEl.classList.add('is-running');
     applyPreset(newPaletteName, true);
 
     var start = performance.now();
     function step(now) {
       var t = Math.min(1, (now - start) / WIPE_DURATION_MS);
-      root.style.setProperty('--wipe-r', (easeOutCubic(t) * targetR) + 'px');
+      var eased = easeOutCubic(t);
+      var pulse = Math.sin(t * Math.PI * 5) * WIPE_PULSE_PX * (1 - (t * 0.58));
+      var cell = Math.max(4, 20 - (t * 15));
+      root.style.setProperty('--wipe-r', (eased * targetR + pulse) + 'px');
+      root.style.setProperty('--wipe-pulse', Math.abs(pulse) + 'px');
+      root.style.setProperty('--wipe-cell', cell + 'px');
+      root.style.setProperty('--wipe-cell-half', (cell * 0.5) + 'px');
+      root.style.setProperty('--wipe-cell-mark', (cell * 0.72) + 'px');
+      root.style.setProperty('--wipe-angle', (t * 2520) + 'deg');
       if (t < 1) {
         requestAnimationFrame(step);
       } else {
         wipeEl.classList.remove('is-running');
+        if (ditherEl) ditherEl.classList.remove('is-running');
         setTimeout(function() {
           root.style.setProperty('--wipe-r', '0px');
+          root.style.setProperty('--wipe-pulse', '0px');
           wipeRunning = false;
         }, 200);
       }
@@ -703,6 +783,7 @@ def render_intro_page() -> dict:
     </div>
     <button class="stamp-btn" type="button" aria-label="Cycle palette via smooth brain stamp"></button>
     <div class="wipe-overlay" aria-hidden="true"></div>
+    <div class="wipe-dither-overlay" aria-hidden="true"></div>
   </main>
   <script>
     (function() {{
