@@ -12,6 +12,7 @@ from typing import Any
 import render_week
 from render_day import (
     DAILY_TEMPLATE_STANDARD,
+    FRAGMENTS_DIR,
     HTML_DIR,
     INVALID_VAL_BPB_FLOOR,
     LOCKED_TEMPLATE_STYLE_SHA256,
@@ -19,6 +20,7 @@ from render_day import (
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
     _daily_template_style,
+    _embedded_log_script,
     make_report_h1_html,
     make_report_header_html,
     preview_asset_src,
@@ -346,6 +348,26 @@ def make_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) -> st
         )
     rows.append("</tbody></table>")
     return "\n".join(rows)
+
+
+def make_lazy_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) -> str:
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_path = FRAGMENTS_DIR / "toc_daily_reports.html"
+    fragment_path.write_text(make_daily_table(dates, days_summary), encoding="utf-8")
+    return (
+        "<div class='lazy-test-card'>"
+        f"<p><strong>DAILY REPORTS</strong></p>"
+        f"<div class='lazy-test-meta'><span>{len(dates)} daily pages</span>"
+        "<span>loaded on demand for scan speed</span></div>"
+        "<button class='lazy-test-load' type='button' "
+        "data-lazy-fragment='fragments/toc_daily_reports.html' "
+        "data-target='toc-daily-reports-table' "
+        "data-load-label='load daily reports' data-hide-label='hide daily reports' "
+        "data-loading-label='loading daily reports' data-error-label='daily reports load failed'>"
+        "load daily reports</button>"
+        "<div id='toc-daily-reports-table' class='lazy-test-target' hidden></div>"
+        "</div>"
+    )
 
 
 def connected_reader_items(dates: list[str],
@@ -677,7 +699,7 @@ def render_toc_report(dates: list[str],
     layer_table = make_layer_table(dates, week_summaries, category_summaries, campaign_summary)
     category_table = make_category_table(category_summaries)
     week_table = make_week_table(week_summaries)
-    daily_table = make_daily_table(dates, days_summary)
+    daily_table = make_lazy_daily_table(dates, days_summary)
     connected_reader = make_connected_reader_html(
         dates, week_summaries, category_summaries
     )
@@ -715,6 +737,7 @@ def render_toc_report(dates: list[str],
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
         + "\n".join(body_parts)
         + connected_reader_script()
+        + _embedded_log_script()
         + page_scrollbar_script()
         + "</body></html>"
     )
