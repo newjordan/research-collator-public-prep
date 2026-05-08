@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import html
 import json
 from pathlib import Path
@@ -22,6 +21,7 @@ from render_day import (
     _daily_template_style,
     make_report_h1_html,
     make_report_header_html,
+    preview_asset_src,
 )
 
 
@@ -33,15 +33,8 @@ TOC_WEBLOADER_COVER_PATH = Path("assets/cover_sheet_final.jpeg")
 TOC_WEBLOADER_PAGE2_PATH = Path("assets/page_2_above_toc.jpeg")
 
 
-def image_data_uri(path: str | Path) -> str:
-    suffix = Path(path).suffix.lower()
-    mime = "image/jpeg" if suffix in {".jpg", ".jpeg"} else "image/png"
-    with open(path, "rb") as f:
-        return f"data:{mime};base64," + base64.b64encode(f.read()).decode("ascii")
-
-
 def toc_extra_style() -> str:
-    bg = image_data_uri(TOC_BACKGROUND_PATH) if TOC_BACKGROUND_PATH.exists() else ""
+    bg = preview_asset_src(TOC_BACKGROUND_PATH) if TOC_BACKGROUND_PATH.exists() else ""
     bg_css = ""
     if bg:
         bg_css = f"""
@@ -420,7 +413,7 @@ def make_connected_reader_html(dates: list[str],
 def make_webloader_page2_html() -> str:
     if not TOC_WEBLOADER_PAGE2_PATH.exists():
         return ""
-    image_uri = image_data_uri(TOC_WEBLOADER_PAGE2_PATH)
+    image_uri = preview_asset_src(TOC_WEBLOADER_PAGE2_PATH)
     return (
         '<section class="toc-webloader-page2" aria-label="Publication page 2">'
         f'<img src="{image_uri}" alt="Research corpus page above the table of contents">'
@@ -431,7 +424,7 @@ def make_webloader_page2_html() -> str:
 def make_webloader_cover_html() -> str:
     if not TOC_WEBLOADER_COVER_PATH.exists():
         return ""
-    image_uri = image_data_uri(TOC_WEBLOADER_COVER_PATH)
+    image_uri = preview_asset_src(TOC_WEBLOADER_COVER_PATH)
     return (
         '<section class="toc-webloader-cover" aria-label="Publication landing page">'
         f'<img src="{image_uri}" alt="Research corpus landing page">'

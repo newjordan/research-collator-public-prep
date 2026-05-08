@@ -1266,18 +1266,27 @@ def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
 _FROSTED_FLAKE_PATH = "/home/frosty40/research_collator/assets/frosted_flake.png"
 
 
-def _frosted_flake_src(home_href: str) -> str:
-    """Use one shared static mark instead of base64-inlining it per page."""
-    src = Path(_FROSTED_FLAKE_PATH)
-    dst = HTML_DIR / "assets" / "frosted_flake.png"
+def preview_asset_src(path: str | Path, home_href: str = "", asset_name: str | None = None) -> str:
+    """Copy a source asset into preview/assets and return the page-relative URL."""
+    src = Path(path)
+    dst = HTML_DIR / "assets" / (asset_name or src.name)
     try:
         dst.parent.mkdir(parents=True, exist_ok=True)
-        if not dst.exists() or src.stat().st_mtime_ns != dst.stat().st_mtime_ns:
+        if (
+            not dst.exists()
+            or src.stat().st_mtime_ns != dst.stat().st_mtime_ns
+            or src.stat().st_size != dst.stat().st_size
+        ):
             shutil.copy2(src, dst)
     except OSError:
         return ""
     prefix = "../" if home_href.startswith("../") else ""
-    return f"{prefix}assets/frosted_flake.png"
+    return f"{prefix}assets/{dst.name}"
+
+
+def _frosted_flake_src(home_href: str) -> str:
+    """Use one shared static mark instead of base64-inlining it per page."""
+    return preview_asset_src(_FROSTED_FLAKE_PATH, home_href)
 
 
 def make_report_h1_html(

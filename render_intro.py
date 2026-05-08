@@ -4,12 +4,11 @@
 from __future__ import annotations
 
 import argparse
-import base64
 import html
 import json
 from pathlib import Path
 
-from render_day import HTML_DIR, OUT_ROOT
+from render_day import HTML_DIR, OUT_ROOT, preview_asset_src
 
 
 INTRO_TEMPLATE_STANDARD = "intro-v1.0-scroll-panel"
@@ -45,13 +44,6 @@ This work is a signal for people building toward deeper systems: world models, n
 A twenty-year background in 2D/3D game development also informs the work: systems thinking, optimization, geometry, sculpting, visual reasoning, tooling, debugging, and building complex interactive systems under constraints. As AI systems become more capable and more multimodal, that background becomes increasingly relevant.
 
 The goal is simple: to find like-minded humans to collaborate, dream, and build together."""
-
-
-def image_data_uri(path: str | Path) -> str:
-    suffix = Path(path).suffix.lower()
-    mime = "image/jpeg" if suffix in {".jpg", ".jpeg"} else "image/png"
-    with open(path, "rb") as f:
-        return f"data:{mime};base64," + base64.b64encode(f.read()).decode("ascii")
 
 
 def intro_copy_html(text: str) -> str:
@@ -99,8 +91,8 @@ def render_intro_page() -> dict:
 
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     INTRO_QMD_DIR.mkdir(parents=True, exist_ok=True)
-    art_uri = image_data_uri(INTRO_ART_PATH)
-    br_overlay_uri = image_data_uri(INTRO_BR_OVERLAY_PATH)
+    art_uri = preview_asset_src(INTRO_ART_PATH)
+    br_overlay_uri = preview_asset_src(INTRO_BR_OVERLAY_PATH)
     copy_html = intro_copy_html(INTRO_COPY)
 
     page = f"""<!doctype html>
