@@ -34,6 +34,7 @@ TOC_HTML_PATH = HTML_DIR / "toc.html"
 TOC_BACKGROUND_PATH = Path("assets/toc_background_generated.png")
 TOC_WEBLOADER_COVER_PATH = Path("assets/cover_sheet_final.jpeg")
 TOC_WEBLOADER_PAGE2_PATH = Path("assets/page_2_above_toc.jpeg")
+TOC_FOOTER_BACKGROUND_PATH = Path("assets/toc_footer_background.png")
 
 
 def toc_extra_style() -> str:
@@ -76,9 +77,25 @@ def toc_extra_style() -> str:
       transform-origin: top center;
     }}
     body.toc-page .toc-filtered {{
+      position: relative;
+      z-index: 1;
       filter: var(--tone-filter);
       transition: filter 220ms ease;
       transform-origin: top center;
+    }}
+    body.toc-page .toc-footer-background {{
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      width: min(42vw, 456px);
+      max-width: 58vh;
+      height: auto;
+      opacity: 0.85;
+      pointer-events: none;
+      user-select: none;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
     }}
     body.toc-page .palette-label {{
       position: fixed;
@@ -530,9 +547,7 @@ def make_lazy_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) 
     fragment_path.write_text(make_daily_table(dates, days_summary), encoding="utf-8")
     return (
         "<div class='lazy-test-card'>"
-        f"<p><strong>DAILY REPORTS</strong></p>"
-        f"<div class='lazy-test-meta'><span>{len(dates)} daily pages</span>"
-        "<span>loaded on demand for scan speed</span></div>"
+        "<p><strong>DAILY REPORTS</strong></p>"
         "<button class='lazy-test-load' type='button' "
         "data-lazy-fragment='fragments/toc_daily_reports.html' "
         "data-target='toc-daily-reports-table' "
@@ -842,6 +857,16 @@ def page_scrollbar_html() -> str:
     )
 
 
+def footer_background_html() -> str:
+    if not TOC_FOOTER_BACKGROUND_PATH.exists():
+        return ""
+    image_uri = preview_asset_src(TOC_FOOTER_BACKGROUND_PATH)
+    return (
+        '<img class="toc-footer-background" '
+        f'src="{html.escape(image_uri, quote=True)}" alt="" aria-hidden="true">'
+    )
+
+
 def page_scrollbar_script() -> str:
     return """
 <script>
@@ -991,6 +1016,7 @@ def render_toc_report(dates: list[str],
     body_parts = [
         palette_easter_egg_controls(),
         page_scrollbar_html(),
+        footer_background_html(),
         '<div class="toc-filtered">',
         webloader_cover,
         webloader_intro,
