@@ -98,6 +98,35 @@ def toc_extra_style() -> str:
       filter: var(--tone-filter);
       transition: filter 220ms ease;
     }}
+    body.toc-page .toc-back-top {{
+      position: fixed;
+      left: 14px;
+      bottom: 14px;
+      z-index: 10000;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--chrome-rule);
+      border-radius: 0;
+      background: var(--chrome-bg);
+      color: var(--chrome-fg);
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 950;
+      line-height: 1;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+    }}
+    body.toc-page .toc-back-top:hover,
+    body.toc-page .toc-back-top:focus-visible {{
+      background: var(--chrome-fg);
+      color: var(--chrome-bg);
+      outline: 1px solid var(--chrome-rule);
+      outline-offset: 2px;
+    }}
     body.toc-page .palette-label {{
       position: fixed;
       top: 8px;
@@ -868,6 +897,10 @@ def footer_background_html() -> str:
     )
 
 
+def back_to_top_html() -> str:
+    return '<button class="toc-back-top" type="button" aria-label="Back to top">↑</button>'
+
+
 def page_scrollbar_script() -> str:
     return """
 <script>
@@ -959,6 +992,21 @@ def page_scrollbar_script() -> str:
 """
 
 
+def back_to_top_script() -> str:
+    return """
+<script>
+(function(){
+  var button = document.querySelector('.toc-back-top');
+  if (!button) return;
+  button.addEventListener('click', function(event) {
+    event.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+"""
+
+
 def make_summary_html(dates: list[str],
                       week_summaries: list[dict[str, Any]],
                       category_summaries: list[dict[str, Any]],
@@ -1018,6 +1066,7 @@ def render_toc_report(dates: list[str],
         palette_easter_egg_controls(),
         page_scrollbar_html(),
         footer_background_html(),
+        back_to_top_html(),
         '<div class="toc-filtered">',
         webloader_cover,
         webloader_intro,
@@ -1049,6 +1098,7 @@ def render_toc_report(dates: list[str],
         + connected_reader_script()
         + _embedded_log_script()
         + page_scrollbar_script()
+        + back_to_top_script()
         + palette_easter_egg_script(include_stamp=False, include_wipe=True)
         + "</body></html>"
     )
