@@ -373,13 +373,13 @@ def toc_extra_style() -> str:
       --wipe-cx: 50%;
       --wipe-cy: 50%;
       --wipe-feather: 2px;
-      --wipe-band: 196px;
-      --wipe-band-inner: 82px;
-      --wipe-band-outer: 337px;
+      --wipe-band: 104px;
+      --wipe-band-inner: 44px;
+      --wipe-band-outer: 180px;
       --wipe-pulse: 0px;
-      --wipe-cell: 26px;
-      --wipe-cell-half: 13px;
-      --wipe-cell-mark: 19px;
+      --wipe-cell: 16px;
+      --wipe-cell-half: 8px;
+      --wipe-cell-mark: 12px;
       --wipe-angle: 0deg;
       -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
         transparent 0,
@@ -402,39 +402,31 @@ def toc_extra_style() -> str:
       pointer-events: none;
       background-color: var(--wipe-tint, transparent);
       background-image:
-        repeating-radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
-          rgba(255,255,255,0.95) 0,
-          rgba(255,255,255,0.95) 2px,
-          rgba(0,0,0,0.92) 2px,
-          rgba(0,0,0,0.92) 4px,
-          transparent 4px,
-          transparent 10px
-        ),
         repeating-conic-gradient(
           from var(--wipe-angle) at var(--wipe-cx) var(--wipe-cy),
           rgba(255,255,255,0.00) 0deg,
-          rgba(255,255,255,0.00) 8deg,
-          rgba(255,255,255,0.96) 8deg,
-          rgba(255,255,255,0.96) 18deg
+          rgba(255,255,255,0.00) 10deg,
+          rgba(255,255,255,0.78) 10deg,
+          rgba(255,255,255,0.78) 20deg
         ),
         repeating-linear-gradient(
           45deg,
           rgba(0,0,0,0.00) 0,
           rgba(0,0,0,0.00) var(--wipe-cell-half),
-          rgba(0,0,0,0.92) var(--wipe-cell-half),
-          rgba(0,0,0,0.92) var(--wipe-cell)
+          rgba(0,0,0,0.62) var(--wipe-cell-half),
+          rgba(0,0,0,0.62) var(--wipe-cell)
         ),
         repeating-linear-gradient(
           -45deg,
           rgba(255,255,255,0.00) 0,
           rgba(255,255,255,0.00) var(--wipe-cell-mark),
-          rgba(255,255,255,0.82) var(--wipe-cell-mark),
-          rgba(255,255,255,0.82) var(--wipe-cell)
+          rgba(255,255,255,0.48) var(--wipe-cell-mark),
+          rgba(255,255,255,0.48) var(--wipe-cell)
         );
-      background-blend-mode: screen, hard-light, multiply, screen;
-      mix-blend-mode: normal;
+      background-blend-mode: hard-light, multiply, screen;
+      mix-blend-mode: color;
       opacity: 0;
-      transition: opacity 80ms linear;
+      transition: opacity 120ms ease;
       -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
         transparent 0,
         transparent calc(var(--wipe-r) - var(--wipe-band) - var(--wipe-pulse)),
@@ -451,7 +443,7 @@ def toc_extra_style() -> str:
         transparent 100%);
     }}
     body.toc-page .wipe-dither-overlay.is-running {{
-      opacity: 0.96;
+      opacity: 0.92;
     }}
     @media (max-width: 760px) {{
       body.toc-page .toc-reader-topline {{
