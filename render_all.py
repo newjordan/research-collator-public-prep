@@ -117,6 +117,17 @@ def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
     return removed
 
 
+def sync_architecture_run_files() -> None:
+    """Make repo-published run-file downloads available in the static output."""
+    src = Path(__file__).parent / "public" / "architecture-run-files"
+    if not src.exists():
+        return
+    dst = HTML_DIR / "architecture-run-files"
+    if dst.exists():
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
+
+
 def render_index(dates_with_results: list[dict],
                  days_summary: list[dict],
                  journey_chart_path: str,
@@ -326,6 +337,7 @@ def main():
     stale_removed = remove_stale_campaign_outputs(dates)
     if stale_removed:
         print(f"      removed {stale_removed} stale date outputs outside campaign")
+    sync_architecture_run_files()
 
     print("[2/9] rendering each day...")
     days_summary: list[dict] = []

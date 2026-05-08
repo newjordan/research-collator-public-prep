@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+import zipfile
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MASTER_SHEET = ROOT / "ARCHITECTURE_FAMILY_MASTER_SHEET.md"
 OUT_ROOT = ROOT / "public" / "architecture-run-files"
 FILES_ROOT = OUT_ROOT / "files"
+ARCHIVES_ROOT = OUT_ROOT / "archives"
 MANIFEST_JSON = OUT_ROOT / "manifest.json"
 MANIFEST_MD = ROOT / "ARCHITECTURE_RUN_FILE_DOWNLOADS.md"
 RAW_BASE = (
@@ -124,6 +126,26 @@ def copy_anchor(src: Path, dst_dir: Path) -> list[dict[str, Any]]:
     return copied
 
 
+def write_archive(slug: str, files: list[dict[str, Any]]) -> dict[str, Any]:
+    archive_path = ARCHIVES_ROOT / f"{slug}.zip"
+    archive_path.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for file_info in files:
+            repo_path = ROOT / file_info["repo_path"]
+            if not repo_path.is_file():
+                continue
+            arcname = Path(file_info["repo_path"]).relative_to(OUT_ROOT.relative_to(ROOT)).as_posix()
+            zf.write(repo_path, arcname)
+    repo_rel = archive_path.relative_to(ROOT).as_posix()
+    return {
+        "repo_path": repo_rel,
+        "size_bytes": archive_path.stat().st_size,
+        "sha256": file_sha256(archive_path),
+        "download_url": f"{RAW_BASE}/{repo_rel}",
+        "view_url": f"{BLOB_BASE}/{repo_rel}",
+    }
+
+
 def write_markdown(entries: list[dict[str, Any]]) -> None:
     lines = [
         "# Architecture Run File Downloads",
@@ -136,11 +158,11 @@ def write_markdown(entries: list[dict[str, Any]]) -> None:
     ]
     for entry in entries:
         files = entry.get("files") or []
-        if files:
-            if len(files) == 1:
-                download = f"[download]({files[0]['download_url']})"
-            else:
-                download = f"[folder]({entry['view_url']})"
+        archive = entry.get("archive") or {}
+        if archive:
+            download = f"[download]({archive['download_url']})"
+        elif files:
+            download = f"[download]({files[0]['download_url']})"
         else:
             download = "missing"
         lines.append(
@@ -172,6 +194,7 @@ def build(clean: bool = True) -> list[dict[str, Any]]:
         if src:
             files = copy_anchor(src, dst_dir)
             status = "copied" if files else "empty"
+        archive = write_archive(slug, files) if files else {}
         repo_folder = dst_dir.relative_to(ROOT).as_posix()
         entries.append({
             "number": number,
@@ -184,6 +207,7 @@ def build(clean: bool = True) -> list[dict[str, Any]]:
             "source_anchor_name": Path(row["evidence_anchor"]).name,
             "repo_folder": repo_folder,
             "view_url": f"{BLOB_BASE}/{repo_folder}",
+            "archive": archive,
             "files": files,
         })
 

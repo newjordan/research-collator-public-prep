@@ -41,6 +41,9 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
 ARCHITECTURE_RECIPES_PATH = Path(__file__).parent / "data" / "architecture_recipes.json"
+ARCHITECTURE_RUN_FILE_MANIFEST_PATH = (
+    Path(__file__).parent / "public" / "architecture-run-files" / "manifest.json"
+)
 LOCKED_TEMPLATE_STYLE_SHA256 = "9b3664f58ccfc369e10c135199e27d306feb0b79ded51beb7123fdb2f2dd09ec"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.6-architecture-recipes"
 RESEARCH_START_DATE = "2026-03-18"
@@ -50,6 +53,7 @@ FINAL_SUBMISSION_DIR_TOKEN = "2026-05-01_Mockingbird_8xH100"
 FINAL_SUBMISSION_PUBLIC_LABEL = "10k-vocabulary CaseOps loop-body submission"
 TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
 ARCHITECTURE_RECIPE_CACHE: dict[str, dict] | None = None
+ARCHITECTURE_RUN_FILE_CACHE: dict[str, dict] | None = None
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
 HARDWARE_PATTERNS = (
@@ -1074,10 +1078,70 @@ PUBLIC_ARCH_FAMILY_LABELS = {
     "X-Wing": "cubric n-gram mixer",
 }
 
+ARCH_RUN_FILE_FAMILY_ALIASES = {
+    "Binary U-Net": "Binary / Ternary U-Net",
+    "Ternary U-Net": "Binary / Ternary U-Net",
+    "DeltaNet": "DeltaNet Crawler",
+    "Megahelix": "VortexHelix / Megahelix",
+    "Exp-D TTT8 Stride32": "SOTA v2 TTT",
+}
+
 
 def public_arch_label(name: str) -> str:
     """Reviewer-facing architecture label; internal nicknames stay in paths only."""
     return PUBLIC_ARCH_FAMILY_LABELS.get(name, name)
+
+
+def load_architecture_run_file_manifest() -> dict[str, dict]:
+    global ARCHITECTURE_RUN_FILE_CACHE
+    if ARCHITECTURE_RUN_FILE_CACHE is not None:
+        return ARCHITECTURE_RUN_FILE_CACHE
+    try:
+        raw = json.loads(ARCHITECTURE_RUN_FILE_MANIFEST_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        ARCHITECTURE_RUN_FILE_CACHE = {}
+        return ARCHITECTURE_RUN_FILE_CACHE
+    entries = raw.get("entries") or []
+    out: dict[str, dict] = {}
+    if isinstance(entries, list):
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            family = str(entry.get("family") or "").strip()
+            if family:
+                out[family] = entry
+    ARCHITECTURE_RUN_FILE_CACHE = out
+    return out
+
+
+def architecture_run_file_href(family: str) -> str:
+    manifest = load_architecture_run_file_manifest()
+    key = ARCH_RUN_FILE_FAMILY_ALIASES.get(family, family)
+    entry = manifest.get(key)
+    if not entry:
+        return ""
+    archive = entry.get("archive") or {}
+    repo_path = archive.get("repo_path") or ""
+    if not repo_path:
+        files = entry.get("files") or []
+        if files and isinstance(files[0], dict):
+            repo_path = files[0].get("repo_path") or ""
+    if not repo_path:
+        return ""
+    if repo_path.startswith("public/"):
+        repo_path = repo_path[len("public/"):]
+    return repo_path
+
+
+def architecture_download_button_html(family: str) -> str:
+    href = architecture_run_file_href(family)
+    if not href:
+        return "<span class='bpb-download-missing'>—</span>"
+    label = "download"
+    return (
+        f"<a class='bpb-download-action' href='{html.escape(href, quote=True)}' download>"
+        f"{html.escape(label)}</a>"
+    )
 
 
 PUBLIC_TEXT_REPLACEMENTS = [
@@ -1372,6 +1436,46 @@ def _embedded_log_style() -> str:
         margin-top: 6px;
         color: var(--ink-mute);
         font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
     }
     """
 
@@ -2110,7 +2214,7 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
     metric = metric_display_name(headline_metric)
     rows = [f'<table class="bpb-table"><thead><tr>'
             f'<th>{metric} SPREAD</th><th>n</th><th>min</th>'
-            f'<th>median</th><th>max</th></tr></thead><tbody>']
+            f'<th>median</th><th>max</th><th>download</th></tr></thead><tbody>']
     for fam in ordered_fams:
         vals = sorted(by_fam[fam])
         n = len(vals)
@@ -2126,7 +2230,8 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
             f'<tr><td>{html.escape(public_arch_label(fam).upper())}</td>'
             f'<td>{n}</td><td>{format_metric_value(headline_metric, mn)}</td>'
             f'<td>{format_metric_value(headline_metric, med)}</td>'
-            f'<td>{format_metric_value(headline_metric, mx)}</td></tr>'
+            f'<td>{format_metric_value(headline_metric, mx)}</td>'
+            f'<td>{architecture_download_button_html(fam)}</td></tr>'
         )
     # All-valid row
     all_vals = sorted(v for vs in by_fam.values() for v in vs)
@@ -2137,7 +2242,8 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
             f'<tr><td>ALL VALID</td>'
             f'<td>{n}</td><td>{format_metric_value(headline_metric, all_vals[0])}</td>'
             f'<td>{format_metric_value(headline_metric, med)}</td>'
-            f'<td>{format_metric_value(headline_metric, all_vals[-1])}</td></tr>'
+            f'<td>{format_metric_value(headline_metric, all_vals[-1])}</td>'
+            "<td><span class='bpb-download-missing'>—</span></td></tr>"
         )
     rows.append('</tbody></table>')
     return "\n".join(rows)
