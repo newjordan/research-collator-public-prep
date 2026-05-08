@@ -164,6 +164,61 @@ def image_data_uri(path: str | Path) -> str:
         return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 
+def weekly_action_style() -> str:
+    return """
+    .weekly-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 4px 9px;
+      border: 1px solid #8b3702;
+      border-radius: 0;
+      background: #050505;
+      color: #8b3702 !important;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: uppercase;
+      text-decoration: none !important;
+      box-shadow: none;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .weekly-action::before {
+      content: "+";
+      display: inline-block;
+      margin-right: 6px;
+      color: #8b3702;
+      font-weight: 900;
+    }
+    .weekly-action:hover,
+    .weekly-action:focus-visible {
+      background: #8b3702;
+      color: #050505 !important;
+      outline: 1px solid #050505;
+      outline-offset: 1px;
+    }
+    .weekly-action:hover::before,
+    .weekly-action:focus-visible::before {
+      color: #050505;
+    }
+    .test-runs-table td a.weekly-action,
+    .log-panel a.weekly-action {
+      color: #8b3702 !important;
+      border-bottom: 1px solid #8b3702;
+    }
+    .test-runs-table td a.weekly-action:hover,
+    .test-runs-table td a.weekly-action:focus-visible,
+    .log-panel a.weekly-action:hover,
+    .log-panel a.weekly-action:focus-visible {
+      color: #050505 !important;
+      border-bottom-color: #050505;
+    }
+    """
+
+
 def weekly_arch_families(days: list[dict[str, Any]]) -> list[tuple[str, int]]:
     counts: Counter[str] = Counter()
     first_seen: dict[str, str] = {}
@@ -266,7 +321,7 @@ def make_week_daily_table_html(conn: sqlite3.Connection,
             "<div class='log-meta'><strong>daily report evidence</strong></div>"
             f"<div class='log-meta'><strong>week</strong>: {week_number:02d}</div>"
             f"<div class='log-meta'><strong>date</strong>: {html.escape(date)} "
-            f"<a href='../{html.escape(date)}.html'>open daily report</a></div>"
+            f"<a class='weekly-action' href='../{html.escape(date)}.html'>open daily report</a></div>"
             f"<div class='log-meta'><strong>day source row</strong>: "
             f"{html.escape(sanitize_public_text(day.get('best_headline_title') or '—'))}</div>"
             f"<div class='log-meta'><strong>architecture family</strong>: "
@@ -411,7 +466,7 @@ def render_week(week_dates: list[str],
         full_html = (
             "<!doctype html><html><head><meta charset='utf-8'>"
             f"<title>Week {week_number:02d} - Research Weekly</title>"
-            f"<style>{_daily_template_style()}</style></head><body>"
+            f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
             + "\n".join(body_parts)
             + _embedded_log_script()
             + "</body></html>"
@@ -465,7 +520,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
             f"<td>{html.escape(w.get('primary_metric_display') or '—')}</td>"
             f"<td>{int(w.get('daily_datapoints') or 0)}</td>"
             f"<td>{html.escape(format_camp_counts(w.get('by_camp')))}</td>"
-            f"<td><a href='{html.escape(Path(w['html_path']).name)}'>open week</a></td>"
+            f"<td><a class='weekly-action' href='{html.escape(Path(w['html_path']).name)}'>open week</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -488,7 +543,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
         "<title>Weekly Research Reports</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
         + body
         + "</body></html>",
         encoding="utf-8",
