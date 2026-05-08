@@ -81,14 +81,6 @@ CATEGORY_QMD_DIR = OUT_ROOT / "categories"
 CATEGORY_HTML_DIR = HTML_DIR / "categories"
 CATEGORY_ASSETS_DIR = ASSETS_DIR / "categories"
 BIWEEKLY_WINDOW_WEEKS = 2
-ARCHITECTURE_MASTER_SHEET_URL = (
-    "https://github.com/newjordan/research-collator/blob/"
-    "art/palette-switcher/ARCHITECTURE_FAMILY_MASTER_SHEET.md"
-)
-ARCHITECTURE_RUN_FILE_INDEX_URL = (
-    "https://github.com/newjordan/research-collator/blob/"
-    "art/palette-switcher/ARCHITECTURE_RUN_FILE_DOWNLOADS.md"
-)
 LOCAL_TO_GIT_SOURCE = {
     "parameter-golf-lab": "git:parameter-golf-lab",
     "open_parameter_golf_junkyard": "git:parameter-golf-lab",
@@ -463,21 +455,14 @@ def category_action_style() -> str:
 
 def public_source_buttons_html(point: dict[str, Any]) -> str:
     source = point.get("public_source") or {}
-    buttons: list[str] = [
-        f"<a class='category-action' href='{html.escape(ARCHITECTURE_MASTER_SHEET_URL, quote=True)}'>"
-        "architecture sheet</a>",
-        f"<a class='category-action' href='{html.escape(ARCHITECTURE_RUN_FILE_INDEX_URL, quote=True)}'>"
-        "run file index</a>",
-    ]
+    buttons: list[str] = []
     if source.get("blob_url"):
-        buttons.insert(
-            0,
+        buttons.append(
             f"<a class='category-action' href='{html.escape(source['blob_url'], quote=True)}'>"
             "view source</a>",
         )
     if source.get("raw_url"):
-        buttons.insert(
-            1,
+        buttons.append(
             f"<a class='category-action' href='{html.escape(source['raw_url'], quote=True)}' download>"
             "download file</a>",
         )
@@ -486,8 +471,10 @@ def public_source_buttons_html(point: dict[str, Any]) -> str:
             f"<a class='category-action' href='{html.escape(source['url'], quote=True)}'>"
             "commit</a>"
         )
+    if not buttons:
+        return ""
     return (
-        "<div class='log-meta'><strong>public files</strong>: "
+        "<div class='log-meta'><strong>public evidence</strong>: "
         + " ".join(buttons)
         + "</div>"
     )

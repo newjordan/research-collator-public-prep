@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Build the public architecture run-file download bundle.
 
-The source of truth is ARCHITECTURE_FAMILY_MASTER_SHEET.md. This script copies
-the evidence anchor for each architecture/test-family row into a repo-local
-public bundle and writes machine-readable plus reviewer-readable indexes.
+The source inventory is local/private and can be supplied with
+ARCHITECTURE_RUN_FILE_SOURCE. This script copies the evidence anchor for each
+architecture/test-family row into a repo-local public bundle and writes a
+machine-readable manifest for download surfaces.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
-import html
 import json
 import os
 import re
@@ -21,12 +21,16 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MASTER_SHEET = ROOT / "ARCHITECTURE_FAMILY_MASTER_SHEET.md"
+MASTER_SHEET = Path(
+    os.environ.get(
+        "ARCHITECTURE_RUN_FILE_SOURCE",
+        str(ROOT / ".private" / "architecture_run_file_inventory.md"),
+    )
+)
 OUT_ROOT = ROOT / "public" / "architecture-run-files"
 FILES_ROOT = OUT_ROOT / "files"
 ARCHIVES_ROOT = OUT_ROOT / "archives"
 MANIFEST_JSON = OUT_ROOT / "manifest.json"
-MANIFEST_MD = ROOT / "ARCHITECTURE_RUN_FILE_DOWNLOADS.md"
 RAW_BASE = (
     "https://raw.githubusercontent.com/newjordan/research-collator/"
     "art/palette-switcher"
@@ -146,38 +150,6 @@ def write_archive(slug: str, files: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def write_markdown(entries: list[dict[str, Any]]) -> None:
-    lines = [
-        "# Architecture Run File Downloads",
-        "",
-        "This index is generated from `ARCHITECTURE_FAMILY_MASTER_SHEET.md`.",
-        "Each row copies the master-sheet evidence anchor into this repository so public report readers can download the referenced run/build evidence directly.",
-        "",
-        "| # | Family / lane | Type | Files | Download |",
-        "|---:|---|---|---:|---|",
-    ]
-    for entry in entries:
-        files = entry.get("files") or []
-        archive = entry.get("archive") or {}
-        if archive:
-            download = f"[download]({archive['download_url']})"
-        elif files:
-            download = f"[download]({files[0]['download_url']})"
-        else:
-            download = "missing"
-        lines.append(
-            "| {number} | {family} | {type} | {n_files} | {download} |".format(
-                number=entry["number"],
-                family=html.escape(entry["family"]),
-                type=html.escape(entry["type"]),
-                n_files=len(files),
-                download=download,
-            )
-        )
-    lines.append("")
-    MANIFEST_MD.write_text("\n".join(lines), encoding="utf-8")
-
-
 def build(clean: bool = True) -> list[dict[str, Any]]:
     if clean and OUT_ROOT.exists():
         shutil.rmtree(OUT_ROOT)
@@ -214,7 +186,6 @@ def build(clean: bool = True) -> list[dict[str, Any]]:
     OUT_ROOT.mkdir(parents=True, exist_ok=True)
     MANIFEST_JSON.write_text(
         json.dumps({
-            "source_sheet": "ARCHITECTURE_FAMILY_MASTER_SHEET.md",
             "entry_count": len(entries),
             "copied_entry_count": sum(1 for e in entries if e["status"] == "copied"),
             "file_count": sum(len(e["files"]) for e in entries),
@@ -222,7 +193,6 @@ def build(clean: bool = True) -> list[dict[str, Any]]:
         }, indent=2),
         encoding="utf-8",
     )
-    write_markdown(entries)
     return entries
 
 
