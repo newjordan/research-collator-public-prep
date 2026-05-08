@@ -1564,27 +1564,31 @@ def _embedded_log_script() -> str:
         "var target=document.getElementById(btn.getAttribute('data-target'));"
         "var url=btn.getAttribute('data-lazy-fragment');"
         "if(!target||!url)return;"
+        "var loadLabel=btn.getAttribute('data-load-label')||'load';"
+        "var hideLabel=btn.getAttribute('data-hide-label')||'hide';"
+        "var loadingLabel=btn.getAttribute('data-loading-label')||'loading';"
+        "var errorLabel=btn.getAttribute('data-error-label')||'load failed';"
         "if(btn.dataset.loaded==='1'){"
         "target.hidden=!target.hidden;"
-        "btn.textContent=target.hidden?'load kernel tests':'hide kernel tests';"
+        "btn.textContent=target.hidden?loadLabel:hideLabel;"
         "return;"
         "}"
         "btn.disabled=true;"
-        "btn.textContent='loading kernel tests';"
+        "btn.textContent=loadingLabel;"
         "fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();})"
         ".then(function(html){"
         "target.innerHTML=html;"
         "target.hidden=false;"
         "btn.dataset.loaded='1';"
         "btn.disabled=false;"
-        "btn.textContent='hide kernel tests';"
+        "btn.textContent=hideLabel;"
         "bind(target);"
         "})"
         ".catch(function(err){"
         "btn.disabled=false;"
-        "btn.textContent='load failed';"
+        "btn.textContent=errorLabel;"
         "target.hidden=false;"
-        "target.innerHTML='<p class=\"muted\">Unable to load kernel test list: '+err.message+'</p>';"
+        "target.innerHTML='<p class=\"muted\">Unable to load fragment: '+err.message+'</p>';"
         "});"
         "});"
         "});"
@@ -2434,19 +2438,54 @@ def _training_log_toggle_html(idx: int, total: int) -> str:
     return _detail_toggle_html(_training_log_summary_label(idx, total))
 
 
-def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
+def _training_log_fragment_path(date: str, row_n: int, idx: int, abs_path: str) -> Path:
+    key = hashlib.sha256(abs_path.encode("utf-8", errors="replace")).hexdigest()[:12]
+    safe_date = re.sub(r"[^0-9-]+", "-", date or "unknown").strip("-") or "unknown"
+    return FRAGMENTS_DIR / f"{safe_date}_row{row_n:04d}_log{idx}_{key}.html"
+
+
+def clear_day_fragments(date: str) -> None:
+    if not FRAGMENTS_DIR.exists():
+        return
+    safe_date = re.sub(r"[^0-9-]+", "-", date or "unknown").strip("-") or "unknown"
+    for path in FRAGMENTS_DIR.glob(f"{safe_date}_*.html"):
+        try:
+            path.unlink()
+        except OSError:
+            pass
+
+
+def _write_training_log_fragment(date: str, row_n: int, ref: dict, idx: int) -> str:
+    abs_path = ref.get("abs_path") or ""
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_path = _training_log_fragment_path(date, row_n, idx, abs_path)
+    text = _read_training_log_text(abs_path)
+    fragment_path.write_text(
+        f"<pre class='log-text'>{_pre_text_one_line(text)}</pre>",
+        encoding="utf-8",
+    )
+    return f"fragments/{fragment_path.name}"
+
+
+def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: int) -> str:
     abs_path = ref.get("abs_path") or ""
     basename = sanitize_public_text(ref.get("basename") or "training_log")
-    text = _read_training_log_text(abs_path)
     size = _format_bytes(ref.get("size"))
     meta_parts = [html.escape(_training_log_summary_label(idx, total)), html.escape(basename)]
     if size:
         meta_parts.append(html.escape(size))
     meta = " · ".join(meta_parts)
+    fragment_href = _write_training_log_fragment(date, row_n, ref, idx)
+    target_id = f"log-text-{date}-{row_n}-{idx}".replace("_", "-")
     return (
         "<div class='log-panel'>"
         f"<div class='log-meta'>{meta}</div>"
-        f"<pre class='log-text'>{_pre_text_one_line(text)}</pre>"
+        f"<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='load log' data-hide-label='hide log' "
+        "data-loading-label='loading log' data-error-label='log load failed'>load log</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
         "</div>"
     )
 
@@ -2494,10 +2533,11 @@ def make_open_cell_html(row: dict) -> str:
     return "".join(parts) if parts else "—"
 
 
-def make_log_detail_row_html(row: dict) -> str:
+def make_log_detail_row_html(row: dict, date: str) -> str:
     logs = row.get("training_logs") or []
+    row_n = int(row.get("n") or 0)
     panels = "".join(
-        _training_log_panel_html(ref, idx, len(logs))
+        _training_log_panel_html(ref, idx, len(logs), date, row_n)
         for idx, ref in enumerate(logs, start=1)
     )
     panels += _row_evidence_panel_html(row)
@@ -2510,6 +2550,7 @@ def _td_html(value: str, class_name: str | None = None) -> str:
 
 
 def make_test_table_md(rows: list[dict], metric: str,
+                       date: str,
                        reference_baseline: float | None) -> str:
     if not rows:
         return (
@@ -2555,7 +2596,7 @@ def make_test_table_md(rows: list[dict], metric: str,
             + _td_html(make_open_cell_html(r), "open-cell")
             + "</tr>"
         )
-        out.append(make_log_detail_row_html(r))
+        out.append(make_log_detail_row_html(r, date))
     out.append("</tbody></table>")
     return "\n".join(out)
 
@@ -2596,7 +2637,7 @@ def make_lazy_kernel_test_table_md(date: str, rows: list[dict], metric: str,
     fragment_name = f"{date}_{metric}_kernel_tests.html"
     fragment_path = FRAGMENTS_DIR / fragment_name
     fragment_path.write_text(
-        make_test_table_md(rows, metric, reference_baseline),
+        make_test_table_md(rows, metric, date, reference_baseline),
         encoding="utf-8",
     )
     target_id = f"kernel-tests-{date}-{metric}".replace("_", "-")
@@ -2608,7 +2649,9 @@ def make_lazy_kernel_test_table_md(date: str, rows: list[dict], metric: str,
         "Load them only when inspecting the kernel test list.</p>"
         f"<button class='lazy-test-load' type='button' "
         f"data-lazy-fragment='fragments/{html.escape(fragment_name, quote=True)}' "
-        f"data-target='{html.escape(target_id, quote=True)}'>load kernel tests</button>"
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='load kernel tests' data-hide-label='hide kernel tests' "
+        "data-loading-label='loading kernel tests' data-error-label='load failed'>load kernel tests</button>"
         f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
         "</div>"
     )
@@ -2676,7 +2719,7 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
                              date: str,
                              reference_baseline: float | None) -> str:
     if not rows:
-        return make_test_table_md(rows, metric, reference_baseline)
+        return make_test_table_md(rows, metric, date, reference_baseline)
 
     sections: list[str] = []
     camp_order = [KERNEL_CAMP, "experimental", "neural"]
@@ -2696,7 +2739,7 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
                 make_lazy_kernel_test_table_md(date, camp_rows, metric, reference_baseline)
             )
         else:
-            sections.append(make_test_table_md(camp_rows, metric, reference_baseline))
+            sections.append(make_test_table_md(camp_rows, metric, date, reference_baseline))
         sections.append("")
     return "\n".join(sections).strip()
 
@@ -2706,6 +2749,7 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
 def render_one_day(date: str, metric_override: str | None = None) -> dict:
     conn = sqlite3.connect(DB)
     conn.row_factory = sqlite3.Row
+    clear_day_fragments(date)
     records = report_records_for_date(date, fetch_day(conn, date))
     if not records:
         sys.exit(f"no artifacts found for {date}")
