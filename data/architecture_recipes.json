@@ -1,5 +1,39 @@
 {
   "recipes": {
+    "Cambrian Bio Seam": {
+      "display": "BIOLOGY-INSPIRED DELTANET SEAM SWEEP",
+      "summary": "DeltaNet chunk-seam experiments testing biology-inspired state controllers before the crawler line was carried forward.",
+      "sections": [
+        {
+          "label": "BASE BODY",
+          "items": [
+            "GatedDeltaNet recurrent body",
+            "chunked state passed across sequence seams",
+            "XSA attention stack above recurrent memory",
+            "Muon optimizer",
+            "entropy-adaptive n-gram eval path"
+          ]
+        },
+        {
+          "label": "SEAM CONTROLLERS",
+          "items": [
+            "myelin Fibonacci chunk bridges",
+            "circadian phi-gated state flow",
+            "astrocyte state-norm erase-gate modulation",
+            "clonal top-k state amplification",
+            "all-controller sweep arm"
+          ]
+        },
+        {
+          "label": "LOCAL / POD TESTS",
+          "items": [
+            "GB10 local probes for myelin, circadian, astrocyte, and clonal-selection arms",
+            "8-GPU biology-inspired sweep covering baseline, individual seam-controller arms, and all-controller arm",
+            "crawler line retained as the stronger follow-on direction"
+          ]
+        }
+      ]
+    },
     "Mockingbird": {
       "display": "10K-VOCAB CASEOPS LOOP BODY",
       "summary": "SP10240 CaseOps neural body: copy as an 11-layer, dim-512, looped GQA transformer with phased LoRA TTT packaging.",
