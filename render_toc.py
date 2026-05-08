@@ -114,6 +114,9 @@ def toc_extra_style() -> str:
       border-top: 1px solid var(--rule-hi);
       padding-top: 14px;
     }}
+    body.toc-page .toc-reader-entry.is-collapsed .toc-reader-frame {{
+      display: none;
+    }}
     body.toc-page .toc-reader-topline {{
       display: flex;
       align-items: center;
@@ -132,6 +135,7 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .toc-action,
     body.toc-page .test-runs-table td a,
+    body.toc-page .toc-reader-toggle,
     body.toc-page .toc-reader-open {{
       display: inline-flex;
       align-items: center;
@@ -155,6 +159,7 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .toc-action::before,
     body.toc-page .test-runs-table td a::before,
+    body.toc-page .toc-reader-toggle::before,
     body.toc-page .toc-reader-open::before {{
       content: "";
       width: 8px;
@@ -166,6 +171,8 @@ def toc_extra_style() -> str:
     body.toc-page .toc-action:focus-visible,
     body.toc-page .test-runs-table td a:hover,
     body.toc-page .test-runs-table td a:focus-visible,
+    body.toc-page .toc-reader-toggle:hover,
+    body.toc-page .toc-reader-toggle:focus-visible,
     body.toc-page .toc-reader-open:hover,
     body.toc-page .toc-reader-open:focus-visible {{
       background: var(--rule-hi);
@@ -173,6 +180,12 @@ def toc_extra_style() -> str:
       border-bottom-color: var(--rule-hi);
       outline: 1px solid var(--rule-hi);
       outline-offset: 2px;
+    }}
+    body.toc-page .toc-reader-actions {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
     }}
     body.toc-page .toc-reader-frame {{
       display: block;
@@ -417,11 +430,21 @@ def make_connected_reader_html(dates: list[str],
         kind = html.escape(item["kind"], quote=True)
         label = html.escape(item["label"])
         href = html.escape(item["href"], quote=True)
+        starts_collapsed = item["kind"] == "category" and item["href"] in {
+            "categories/experimental.html",
+            "categories/neural.html",
+        }
+        collapsed_class = " is-collapsed" if starts_collapsed else ""
+        expanded_attr = "false" if starts_collapsed else "true"
+        toggle_label = "expand" if starts_collapsed else "collapse"
         parts.append(
-            f'<section class="toc-reader-entry" data-reader-kind="{kind}">'
+            f'<section class="toc-reader-entry{collapsed_class}" data-reader-kind="{kind}">'
             f'<div class="toc-reader-topline">'
             f'<strong>{idx:02d} / {label}</strong>'
+            f'<span class="toc-reader-actions">'
+            f'<button class="toc-reader-toggle" type="button" aria-expanded="{expanded_attr}">{toggle_label}</button>'
             f'<a class="toc-reader-open toc-action" href="{href}">open standalone</a>'
+            f'</span>'
             f'</div>'
             f'<iframe class="toc-reader-frame" src="{href}" title="{label}" '
             f'loading="lazy" scrolling="no" data-reader-href="{href}" '
@@ -483,9 +506,23 @@ def connected_reader_script() -> str:
     }
     return null;
   }
+  function setEntryCollapsed(entry, collapsed) {
+    if (!entry) return;
+    entry.classList.toggle('is-collapsed', collapsed);
+    var button = entry.querySelector('.toc-reader-toggle');
+    if (button) {
+      button.textContent = collapsed ? 'expand' : 'collapse';
+      button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    if (!collapsed) {
+      var frame = entry.querySelector('.toc-reader-frame');
+      if (frame) setTimeout(function(){ resizeFrame(frame); }, 50);
+    }
+  }
   function scrollToReaderHref(href, updateHash) {
     var entry = readerEntryForHref(href);
     if (!entry) return false;
+    setEntryCollapsed(entry, false);
     entry.scrollIntoView({ block: 'start' });
     if (updateHash && window.history && window.history.replaceState) {
       window.history.replaceState(null, '', '#reader=' + encodeURIComponent(normalizeHref(href)));
@@ -547,6 +584,12 @@ def connected_reader_script() -> str:
     if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
       resizeFrame(frame);
     }
+  });
+  document.querySelectorAll('.toc-reader-toggle').forEach(function(button){
+    button.addEventListener('click', function(){
+      var entry = button.closest('.toc-reader-entry');
+      setEntryCollapsed(entry, !(entry && entry.classList.contains('is-collapsed')));
+    });
   });
   window.addEventListener('hashchange', restoreReaderHash);
   window.addEventListener('load', restoreReaderHash);
