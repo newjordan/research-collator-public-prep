@@ -242,9 +242,10 @@ def palette_easter_egg_controls() -> str:
     """
 
 
-def palette_easter_egg_script(include_stamp: bool = True) -> str:
+def palette_easter_egg_script(include_stamp: bool = True, include_wipe: bool | None = None) -> str:
+    if include_wipe is None:
+        include_wipe = include_stamp
     stamp_block = """
-  var stampBtn = document.querySelector('.stamp-btn');
   var wipeEl = document.querySelector('.wipe-overlay');
   var wipeRunning = false;
   var WIPE_DURATION_MS = 750;
@@ -297,9 +298,34 @@ def palette_easter_egg_script(include_stamp: bool = True) -> str:
     requestAnimationFrame(step);
   }
 
+  function cycleFromEvent(event) {
+    runWipe(event.clientX, event.clientY, currentPalette, nextPalette(currentPalette));
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-palette-cycle]')).forEach(function(trigger) {
+    trigger.addEventListener('click', function(event) {
+      event.preventDefault();
+      cycleFromEvent(event);
+    });
+  });
+
+    """ if include_wipe else """
+  function cycleFromEvent(event) {
+    event.preventDefault();
+    applyPreset(nextPalette(currentPalette), true);
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-palette-cycle]')).forEach(function(trigger) {
+    trigger.addEventListener('click', cycleFromEvent);
+  });
+
+    """
+    stamp_block += """
+  var stampBtn = document.querySelector('.stamp-btn');
   if (stampBtn) {
     stampBtn.addEventListener('click', function(event) {
-      runWipe(event.clientX, event.clientY, currentPalette, nextPalette(currentPalette));
+      event.preventDefault();
+      cycleFromEvent(event);
     });
   }
     """ if include_stamp else ""

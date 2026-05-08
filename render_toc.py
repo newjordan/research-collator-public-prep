@@ -317,6 +317,14 @@ def toc_extra_style() -> str:
       overflow: visible;
       background: #050605;
     }}
+    body.toc-page .toc-image-stage {{
+      position: relative;
+      width: 85vw;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+    }}
     body.toc-page .toc-webloader-cover {{
       margin-top: -32px;
       border-bottom: 0;
@@ -324,12 +332,60 @@ def toc_extra_style() -> str:
     body.toc-page .toc-webloader-cover img,
     body.toc-page .toc-webloader-page2 img {{
       display: block;
-      width: 85vw;
+      width: 100%;
       max-width: none;
       height: auto;
       border: 1px solid var(--rule-hi);
       background: var(--rule-hi);
       box-shadow: 0 24px 80px rgba(5,6,5,0.35);
+    }}
+    body.toc-page .toc-palette-hotspot {{
+      position: absolute;
+      z-index: 5;
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      outline: 0;
+      line-height: 0;
+    }}
+    body.toc-page .toc-palette-hotspot:focus-visible {{
+      outline: 1px dashed var(--chrome-fg);
+      outline-offset: 2px;
+    }}
+    body.toc-page.debug .toc-palette-hotspot {{
+      background: rgba(255, 0, 255, 0.12);
+      outline: 1px dashed magenta;
+    }}
+    body.toc-page .wipe-overlay {{
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      pointer-events: none;
+      background-color: var(--wipe-tint, transparent);
+      mix-blend-mode: color;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      --wipe-r: 0px;
+      --wipe-cx: 50%;
+      --wipe-cy: 50%;
+      --wipe-feather: 8px;
+      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+    }}
+    body.toc-page .wipe-overlay.is-running {{
+      opacity: 1;
     }}
     @media (max-width: 760px) {{
       body.toc-page .toc-reader-topline {{
@@ -594,7 +650,15 @@ def make_webloader_page2_html() -> str:
     image_uri = preview_asset_src(TOC_WEBLOADER_PAGE2_PATH)
     return (
         '<section class="toc-webloader-page2" aria-label="Publication page 2">'
+        '<div class="toc-image-stage">'
         f'<img src="{image_uri}" alt="Research corpus page above the table of contents">'
+        '<button class="toc-palette-hotspot" type="button" data-palette-cycle="true" '
+        'aria-label="Cycle palette from page 2 smooth brain stamp" '
+        'style="left:81.5%;top:2.4%;width:15.0%;height:14.5%"></button>'
+        '<button class="toc-palette-hotspot" type="button" data-palette-cycle="true" '
+        'aria-label="Cycle palette from page 2 flake stamp" '
+        'style="left:2.0%;top:1.5%;width:9.0%;height:7.6%"></button>'
+        '</div>'
         "</section>"
     )
 
@@ -605,7 +669,15 @@ def make_webloader_cover_html() -> str:
     image_uri = preview_asset_src(TOC_WEBLOADER_COVER_PATH)
     return (
         '<section class="toc-webloader-cover" aria-label="Publication landing page">'
+        '<div class="toc-image-stage">'
         f'<img src="{image_uri}" alt="Research corpus landing page">'
+        '<button class="toc-palette-hotspot" type="button" data-palette-cycle="true" '
+        'aria-label="Cycle palette from cover smooth brain stamp" '
+        'style="left:80.4%;top:3.1%;width:15.4%;height:13.3%"></button>'
+        '<button class="toc-palette-hotspot" type="button" data-palette-cycle="true" '
+        'aria-label="Cycle palette from cover flake stamp" '
+        'style="left:1.8%;top:1.2%;width:9.2%;height:7.0%"></button>'
+        '</div>'
         "</section>"
     )
 
@@ -882,7 +954,11 @@ def render_toc_report(dates: list[str],
         ("WEEKLY REPORTS", str(len(week_summaries))),
         ("DAILY REPORTS", str(len(dates))),
     ]
-    h1_html = make_report_h1_html("TABLE OF CONTENTS", "CAMPAIGN")
+    h1_html = make_report_h1_html("TABLE OF CONTENTS", "CAMPAIGN").replace(
+        'class="h1-home"',
+        'class="h1-home" data-palette-cycle="true"',
+        1,
+    )
     report_header = make_report_header_html(header_fields)
     summary_html = make_summary_html(
         dates, week_summaries, category_summaries, campaign_summary
@@ -903,6 +979,7 @@ def render_toc_report(dates: list[str],
         webloader_cover,
         webloader_intro,
         webloader_page2,
+        '<div class="wipe-overlay" aria-hidden="true"></div>',
         h1_html,
         "<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>",
         report_header,
@@ -928,7 +1005,7 @@ def render_toc_report(dates: list[str],
         + connected_reader_script()
         + _embedded_log_script()
         + page_scrollbar_script()
-        + palette_easter_egg_script(include_stamp=False)
+        + palette_easter_egg_script(include_stamp=False, include_wipe=True)
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")
