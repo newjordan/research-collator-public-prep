@@ -31,7 +31,7 @@ fonts, or surface treatments without first updating this section.
 The locked base CSS source is `templates/daily_report_locked.html`. The
 renderer refuses to run if that file's `<style>` block does not match
 `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. The current standard id is
-`daily-report-v2.5-master-back`.
+`daily-report-v2.6-architecture-recipes`.
 
 ### 2.1 Palette (single source of truth)
 
@@ -68,14 +68,16 @@ tabular-nums`) on every value column.
 
 Cover-orange field with a subtle dark-black grunge texture. Primary reading
 zones are intentionally inverted: report header, section anchors, daily
-summary, chart frame, table headers, and training-log expansion panels use
-`--rule-hi` as a black field with `--bg` text/detailing.
+architecture recipe, summary, chart frame, table headers, and training-log
+expansion panels use `--rule-hi` as a black field with `--bg` text/detailing.
 Tables and lists keep orange body rows for scan density. Key frames stay flat:
 no corner double-line micrographics on charts, report headers, daily summaries,
 or log panels. There is no footer and no decorative bottom edge treatment.
 No grey-black fills, no shadows, and no off-palette gradients. The only
 allowed gradients are the low-opacity black grunge texture on the page field
-and the 45° diagonal stripes on the neural data segment.
+and the 45° diagonal stripes on the neural data segment. Native browser chrome
+inside reports, including scrollbars and provenance disclosures, must be flat
+dark-black block controls using only the locked palette.
 
 ### 2.4 Section anchors (vertical rhythm)
 
@@ -109,16 +111,29 @@ re-ordered without a spec revision.
                               ARCHITECTURE FAMILY  "FAM (×N)  ·  FAM (×N)  ·  ..."
                               CLASSIFICATION       ← inline allocation bar (240×30)
 
-3. SECTION 1.0  TRAJECTORY
-3.1   DAILY SUMMARY         Inverted 2-col callout (160px label | 1fr body),
-                            black field, orange text, two short paragraphs:
-                              ¶1 — runs · valid/invalid · allocation tone · top archs
-                              ¶2 — best valid + PB comparison + crash flag
-3.2   CHART                 PNG, framed in an inverted black figure block.
-3.3   METRIC SPREAD         Compact tabular-num table, n / min / median / max
+3. ARCHITECTURE RECIPE      Inverted black copy-recipe block, rendered only
+                            when the active architecture family has a recipe
+                            in data/architecture_recipes.json. This is a pure
+                            architecture breakdown: body dimensions, modules,
+                            tokenizer/position, quantization, eval/package
+                            settings. It must not display provenance, lineage,
+                            source paths, parent bodies, hashes, or narrative
+                            history.
+
+4. SECTION 1.0  TRAJECTORY
+4.1   DAILY SUMMARY         Inverted 2-col callout (160px label | 1fr body),
+                            black field, orange text, architecture first:
+                              ¶1 — copy/reference architecture family specs
+                              ¶2 — measured rows, metric, validity, techniques
+                                   without restating the BPB floor threshold
+                              ¶3 — best valid + PB comparison + crash flag
+                            The exact BPB floor threshold belongs on the TOC,
+                            neural category summary, and final neural day.
+4.2   CHART                 PNG, framed in an inverted black figure block.
+4.3   METRIC SPREAD         Compact tabular-num table, n / min / median / max
                             per architecture family + ALL VALID row.
 
-4. SECTION 2.0  TEST RUNS   Classification-isolated 8-column tables:
+5. SECTION 2.0  TEST RUNS   Classification-isolated 8-column tables:
                               # | TIME | HW | ABLATION | <PRIMARY METRIC> | STATUS | Δ % | OPEN
                             KERNEL, EXPERIMENTAL, and NEURAL render as
                             separate tables when present. The header
@@ -222,9 +237,9 @@ Renderers MUST maintain these. Tests live in `render_day.py` itself; if any
 of these break, the page is wrong.
 
 1. **Palette locked.** No page element introduces a color outside §2.1.
-2. **Inversion is intentional and limited.** Only report header, section
-   anchors, daily summary, chart frame, table headers, and log expansion panels
-   use black fields. Body rows/lists remain orange.
+2. **Inversion is intentional and limited.** Only report header, architecture
+   recipe, section anchors, daily summary, chart frame, table headers, and log
+   expansion panels use black fields. Body rows/lists remain orange.
 3. **Micro-graphics are limited.** No corner double-line micrographics are
    allowed on charts, report headers, daily summaries, or log panels. Keep only
    necessary section/header rules and data/classification stripes.
@@ -243,6 +258,13 @@ of these break, the page is wrong.
 9. **No conversations in research pages.** Claude/Codex sessions and
    conversation-derived artifacts may exist in offline indexes, but they must
    never render in the daily HTML body.
+10. **Architecture recipes are copy recipes.** They answer what the family is
+    and how to reproduce the body. Visible recipe text must not include
+    provenance, lineage, source paths, parent-body narration, commit hashes, or
+    archive history.
+11. **Native controls are styled.** Scrollbars and disclosure toggles must not
+    fall back to browser-default grey/blue controls; they use flat black blocks
+    and the locked orange field.
 
 ---
 
@@ -261,7 +283,7 @@ For every artifact attributable to the day:
 | `abs_path`               | TEXT PK  | Stable identity (file path, or `git://repo/sha`).      |
 | `mtime_iso`              | TEXT     | ISO8601 UTC. Authoritative timestamp.                  |
 | `file_kind`              | TEXT     | `md`/`json`/`py`/`csv`/`ckpt`/`training_log`/`git_commit`/`claude_session`/`codex_session`/`conversation_arch_event` |
-| `source_label`           | TEXT     | Short label used in supporting-files row.              |
+| `source_label`           | TEXT     | Short source label for audit metadata and links.       |
 | `title`                  | TEXT     | Display title — never empty (filename fallback OK).    |
 | `summary`                | TEXT     | One-line context. Never empty; renderer never parses metrics from it. |
 | `metrics_json`           | TEXT     | JSON dict of extracted metrics (see §6.3).             |
@@ -294,6 +316,9 @@ The renderer derives these from the records and a target date:
   are not renderer inputs and must never appear in daily-page body content.
 - **`arch_families`** — list of `(family_name, count)` tuples, ordered by
   count descending; first match wins per `ARCH_FAMILIES` regex table.
+- **`architecture_recipes`** — optional rendered recipe cards for active
+  families that have entries in `data/architecture_recipes.json`. Recipes are
+  deterministic JSON data, not LLM output.
 - **`valid_count` / `invalid_count`** — BPB uses the
   `INVALID_VAL_BPB_FLOOR`; non-BPB metrics count every finite value as valid.
 
@@ -364,6 +389,12 @@ The `ARCH_FAMILIES` list in `render_day.py` is the source of truth for
 canonical family names and their detection regex. New family codenames
 go there. Order matters: more-specific patterns first.
 
+`data/architecture_recipes.json` is the source of truth for visible
+architecture-family recipe cards. It must stay pure architecture: dimensions,
+modules, tokenizer/position settings, quantization, eval/package settings, and
+copyable flags only. Do not put provenance, lineage, archive/source location,
+commit hashes, or parent-body history in that file.
+
 ### 6.6 Camp classifier
 
 The `classify.py` rule order:
@@ -389,9 +420,9 @@ category-local daily datapoints. The campaign page (`render_campaign.py`) is
 the cumulative overlay for the whole campaign. The cover page
 (`render_cover.py`) is the static site's first page and is the only renderer
 allowed to display the cover sheet. The table-of-contents page
-(`render_toc.py`) follows the cover as the navigation entry point.
-`render_all.py` calls these renderers and treats their return values as
-opaque.
+(`render_toc.py`) is the long-scroll loader: it renders the page 2 image above
+the TOC, then the navigation and connected report reader. `render_all.py` calls
+these renderers and treats their return values as opaque.
 
 `render_one_day(date: str, metric_override: str | None) -> dict` must
 produce:
@@ -425,6 +456,9 @@ weeks never plot unlike metrics on a shared y-axis; they render separate
 weekly trajectory panels. Weekly pages must keep each plotted value local to
 its source day/week: no weekly median/best/worst spread table, no carried
 prior-best baseline line, and no "best day" headline.
+The weekly black summary box is an architecture-reference rollup: it starts
+with aggregated family specs from rendered daily reports, then lists the
+metrics and reusable techniques seen in that week.
 
 `render_category.py` must produce:
 
@@ -475,22 +509,24 @@ must not embed or reference `assets/cover_sheet_final.*`.
 
 - `output/toc/toc.qmd` — Quarto-compatible TOC source.
 - `output/preview/toc.html` — table-of-contents HTML using the locked daily
-  CSS, with a lazy connected-scroll reader for the report pages.
+  CSS, with the page 2 image above the TOC and a lazy connected-scroll reader
+  for the report pages.
 
 The TOC page keeps the same two-section shape:
 
 - `SECTION 1.0 — PUBLICATION MAP`
 - `SECTION 2.0 — REPORT INDEX`
 
-The TOC is the second page after the publication cover. It links back to the
-cover, then the campaign cumulative report, category reports, weekly reports,
-every daily report, and the Mockingbird final day. Section 2 also renders a
-lazy same-origin connected-scroll reader for the campaign, category, weekly,
-and daily report pages. It must not recursively embed `toc.html`, and it must
-not embed `cover.html`; the cover remains the first-page landing artifact. If
-`assets/toc_background_generated.png` is present, the TOC may use it as a
-generated navigation background. It must never embed or reference the cover
-sheet image asset.
+The TOC long loader follows the publication cover. The first page inside this
+loader is `assets/page_2_above_toc.jpeg`, rendered above the TOC header. The
+TOC links back to the cover, then the campaign cumulative report, category
+reports, weekly reports, every daily report, and the Mockingbird final day.
+Section 2 also renders a lazy same-origin connected-scroll reader for the
+campaign, category, weekly, and daily report pages. It must not recursively
+embed `toc.html`, and it must not embed `cover.html`; the cover remains the
+first-page landing artifact. If `assets/toc_background_generated.png` is
+present, the TOC may use it as a generated navigation background. It must never
+embed or reference the cover sheet image asset.
 
 ---
 
@@ -498,8 +534,8 @@ sheet image asset.
 
 To avoid feature creep, these are **rejected proposals**:
 
-- A "Daily Grind" section that summarizes session activity. Sessions
-  appear in Supporting Files; their stripe color encodes camp.
+- A "Daily Grind" section that summarizes session activity. Sessions and
+  conversation-derived artifacts stay out of daily report body content.
 - Additional accent colors. The five-token palette is the lock.
 - Card-fill backgrounds, drop shadows, off-palette gradients. The only
   gradients allowed are the subtle cover-field grunge texture and the neural

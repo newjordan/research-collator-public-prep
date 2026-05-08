@@ -42,8 +42,11 @@ from render_day import (
     is_research_chronology_record,
     metric_display_name,
     render_one_day,
+    sanitize_public_text,
     _daily_template_style,
     _embedded_log_script,
+    architecture_reference_fragments,
+    architecture_technique_terms,
     make_alloc_bar_html,
     make_report_h1_html,
     make_report_header_html,
@@ -161,6 +164,28 @@ def image_data_uri(path: str | Path) -> str:
         return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 
+def weekly_arch_families(days: list[dict[str, Any]]) -> list[tuple[str, int]]:
+    counts: Counter[str] = Counter()
+    first_seen: dict[str, str] = {}
+    for day in days:
+        date = str(day.get("date") or "")
+        for item in day.get("arch_families") or []:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            if not name:
+                continue
+            count = int(item.get("count") or 0)
+            if count <= 0:
+                continue
+            counts[name] += count
+            first_seen.setdefault(name, date)
+    return sorted(
+        counts.items(),
+        key=lambda kv: (-kv[1], first_seen.get(kv[0], ""), kv[0]),
+    )
+
+
 def make_week_summary_html(week_number: int,
                            week_dates: list[str],
                            days: list[dict[str, Any]],
@@ -168,18 +193,40 @@ def make_week_summary_html(week_number: int,
                            by_camp: dict[str, int]) -> str:
     measured_days = [d for d in days if d.get("headline_metric")]
     metric_text = metric_counts_display(days)
-    allocation = format_camp_counts(by_camp).lower()
+    arch_families = weekly_arch_families(days)
+    architecture_refs = architecture_reference_fragments(
+        arch_families,
+        max_families=4,
+        max_specs=5,
+    )
+    technique_terms = architecture_technique_terms(arch_families, max_terms=10)
+    if architecture_refs:
+        architecture_text = " ".join(
+            f"<span>{html.escape(fragment)}</span>"
+            for fragment in architecture_refs
+        )
+    else:
+        architecture_text = (
+            "No named architecture recipe was detected across the rendered daily rows."
+        )
+    technique_text = ""
+    if technique_terms:
+        technique_text = (
+            "<p>Techniques to copy/reference this week: "
+            f"<strong>{html.escape('; '.join(technique_terms))}</strong>.</p>"
+        )
     return (
         '<aside class="day-summary">'
         '<div class="ds-key">WEEK SUMMARY</div>'
         '<div class="ds-body">'
-        f"<p>Week {week_number:02d} rolls up <strong>{len(days)} daily reports</strong> "
+        f"<p><strong>Architectures tested:</strong> {architecture_text}</p>"
+        f"<p>Week {week_number:02d} covers "
+        f"<strong>{len(days)} daily reports</strong> "
         f"from <strong>{html.escape(week_dates[0])}</strong> through "
         f"<strong>{html.escape(week_dates[-1])}</strong>. "
-        f"It carries <strong>{len(measured_days)} measured daily datapoints</strong> "
+        f"Measured surfaces: <strong>{len(measured_days)} daily datapoints</strong> "
         f"across {html.escape(metric_text)}.</p>"
-        f"<p>Classification across the week: "
-        f"<strong>{html.escape(allocation)}</strong>.</p>"
+        f"{technique_text}"
         "</div></aside>"
     )
 
@@ -219,9 +266,9 @@ def make_week_daily_table_html(conn: sqlite3.Connection,
             "<div class='log-meta'><strong>daily report evidence</strong></div>"
             f"<div class='log-meta'><strong>week</strong>: {week_number:02d}</div>"
             f"<div class='log-meta'><strong>date</strong>: {html.escape(date)} "
-            f"(<a href='../{html.escape(date)}.html'>open daily report</a>)</div>"
+            f"<a href='../{html.escape(date)}.html'>open daily report</a></div>"
             f"<div class='log-meta'><strong>day source row</strong>: "
-            f"{html.escape(day.get('best_headline_title') or '—')}</div>"
+            f"{html.escape(sanitize_public_text(day.get('best_headline_title') or '—'))}</div>"
             f"<div class='log-meta'><strong>architecture family</strong>: "
             f"{html.escape(day.get('arch_families_display') or '—')}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
@@ -302,6 +349,7 @@ def render_week(week_dates: list[str],
             "WEEKLY RESEARCH REPORT",
             f"WEEK {week_number:02d}",
             home_href="../index.html",
+            master_href=f"../toc.html#reader=weeks/{slug}.html",
         )
         summary = make_week_summary_html(
             week_number, week_dates, days, primary_metric, by_camp
@@ -399,6 +447,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
         "WEEKLY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
+        master_href="../toc.html#reader=weeks/index.html",
     )
     rows = [
         "<table class='test-runs-table'><thead><tr>"

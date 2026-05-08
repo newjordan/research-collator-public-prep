@@ -19,7 +19,11 @@ links plus any actionable failures.
 - Do not use any LLM inside the scraper, classifier, or renderer.
 - Keep `stripper.py`, `enrich.py`, `classify.py`, `render_day.py`,
   `render_all.py`, and template verification deterministic.
-- Daily pages must strictly follow `daily-report-v2.5-master-back`.
+- Daily pages must strictly follow `daily-report-v2.6-architecture-recipes`.
+- Active architecture-family codenames render through
+  `data/architecture_recipes.json` as pure body/module/tokenizer/quant/eval
+  copy recipes under the daily header. Do not add provenance, lineage, source
+  paths, parent-body narration, hashes, or conversation text to those cards.
 - `TEMPLATE.md` is authoritative. If code and `TEMPLATE.md` disagree, fix code
   or update both deliberately in the same patch.
 - Do not add a Section 3.0 or supporting-files body section. The canonical daily

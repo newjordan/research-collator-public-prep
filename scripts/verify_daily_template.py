@@ -27,7 +27,14 @@ def require(condition: bool, message: str) -> None:
         raise SystemExit(f"template verification failed: {message}")
 
 
-def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: bool) -> dict:
+def verify_html(
+    date: str,
+    html_path: Path,
+    expect_tests: bool,
+    expect_logs: bool,
+    expected_recipe_names: list[str] | None = None,
+) -> dict:
+    expected_recipe_names = expected_recipe_names or []
     raw = html_path.read_text(encoding="utf-8")
     body = raw
     if "</style></head><body>" in raw:
@@ -38,6 +45,8 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
 
     require("SECTION 1.0 — TRAJECTORY" in body, f"{date}: missing Section 1.0")
     require("SECTION 2.0 — TEST RUNS" in body, f"{date}: missing Section 2.0")
+    require("Architecture tested:" in body,
+            f"{date}: daily summary must lead with architecture reference text")
     require("SECTION 3.0" not in upper, f"{date}: Section 3.0 leaked into body")
     require("SUPPORTING FILES" not in upper, f"{date}: supporting files leaked into body")
     require("CONVERSATION-MINED" not in upper, f"{date}: conversation-mined section leaked into body")
@@ -51,6 +60,36 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
             f"{date}: frostmark is not linked to landing page")
     require('class="h1-master" href="toc.html"' in body and "BACK TO MASTER SHEET" in body,
             f"{date}: missing daily back link to master sheet")
+    recipe_match = re.search(
+        r'<section class="architecture-recipe".*?</section>',
+        body,
+        flags=re.DOTALL,
+    )
+    if expected_recipe_names:
+        require(recipe_match is not None, f"{date}: missing architecture recipe block")
+        require("ARCHITECTURE RECIPE" in body, f"{date}: missing architecture recipe label")
+        recipe_text = recipe_match.group(0).upper() if recipe_match else ""
+        for name in expected_recipe_names:
+            require(name.upper() in recipe_text,
+                    f"{date}: missing architecture recipe for {name}")
+        for forbidden in ("PROVENANCE", "LINEAGE", "SOURCE", "PARENT", "SHA256"):
+            require(forbidden not in recipe_text,
+                    f"{date}: architecture recipe leaked {forbidden}")
+        section_1_pos = body.find("SECTION 1.0 — TRAJECTORY")
+        require(section_1_pos >= 0 and recipe_match.start() < section_1_pos,
+                f"{date}: architecture recipe must render before Section 1.0")
+    if date == render_day.RESEARCH_END_DATE:
+        require(recipe_match is not None, f"{date}: final day missing architecture recipe")
+        recipe_text = recipe_match.group(0).upper() if recipe_match else ""
+        for needle in (
+            "10K-VOCAB CASEOPS LOOP BODY",
+            "MLP_MULT=3.75",
+            "SP10240",
+            "PHASED LORA TTT",
+            "CHUNK=48",
+        ):
+            require(needle in recipe_text,
+                    f"{date}: final submission recipe missing {needle}")
     for forbidden in (
         "figure::before",
         "figure::after",
@@ -93,6 +132,7 @@ def verify_html(date: str, html_path: Path, expect_tests: bool, expect_logs: boo
         "html_path": str(html_path),
         "tests_expected": expect_tests,
         "logs_expected": expect_logs,
+        "architecture_recipes": expected_recipe_names,
         "log_toggles": body.count("details class='log-toggle'"),
         "log_detail_rows": body.count("tr class='log-detail-row'"),
     }
@@ -123,11 +163,22 @@ def main() -> None:
         except SystemExit:
             continue
         html_path = Path(result["html_path"])
+        recipe_book = render_day.load_architecture_recipes()
+        expected_recipe_names = []
+        for family in result.get("arch_families", []):
+            name = family.get("name")
+            recipe = recipe_book.get(name)
+            if not recipe:
+                continue
+            expected_recipe_names.append(
+                str(recipe.get("display") or render_day.public_arch_label(name))
+            )
         checked.append(verify_html(
             date,
             html_path,
             expect_tests=bool(result.get("unique_tests", 0)),
             expect_logs=bool(result.get("n_training_log_rows", 0)),
+            expected_recipe_names=expected_recipe_names,
         ))
 
     require(checked, "no daily pages were verified")

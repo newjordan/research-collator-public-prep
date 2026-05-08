@@ -142,19 +142,47 @@ POINT_PIN_SIZE = 3.8
 POINT_PIN_WIDTH = 0.62
 
 
-def _draw_precision_pins(ax, items: list[dict]) -> None:
-    """Draw a tiny center mark at the exact data coordinate of each point."""
+def _assign_delta_pins(items: list[dict]) -> None:
+    """Tag points by literal value movement versus the previous plotted point."""
+    prev: float | None = None
+    for it in items:
+        value = it.get("value")
+        if not isinstance(value, (int, float)) or not math.isfinite(value):
+            it["delta_pin"] = "neutral"
+            continue
+        if prev is None:
+            it["delta_pin"] = "neutral"
+        elif value > prev:
+            it["delta_pin"] = "up"
+        elif value < prev:
+            it["delta_pin"] = "down"
+        else:
+            it["delta_pin"] = "neutral"
+        prev = float(value)
+
+
+def _draw_delta_pins(ax, items: list[dict], x_key: str) -> None:
+    """Draw a center mark at each point: + up, - down, dot neutral."""
     if not items:
         return
-    ax.plot([it["time"] for it in items],
-            [it["value"] for it in items],
-            linestyle="None",
-            marker="+",
-            markersize=POINT_PIN_SIZE,
-            markeredgewidth=POINT_PIN_WIDTH,
-            color=DARK_BG,
-            zorder=4,
-            label="_nolegend_")
+    marker_by_pin = {
+        "up": "+",
+        "down": "_",
+        "neutral": ".",
+    }
+    for pin, marker in marker_by_pin.items():
+        pin_items = [it for it in items if it.get("delta_pin") == pin]
+        if not pin_items:
+            continue
+        ax.plot([it[x_key] for it in pin_items],
+                [it["value"] for it in pin_items],
+                linestyle="None",
+                marker=marker,
+                markersize=POINT_PIN_SIZE if pin != "neutral" else POINT_PIN_SIZE * 0.82,
+                markeredgewidth=POINT_PIN_WIDTH,
+                color=DARK_BG,
+                zorder=4,
+                label="_nolegend_")
 
 
 # ---------- CHART A ----------------------------------------------------------
@@ -204,6 +232,7 @@ def day_chart(out_path: str | Path,
     if not pts:
         return _stub(out_path, f"{metric_name} — {date}", "no records"), 0
     pts.sort(key=lambda p: p["time"])
+    _assign_delta_pins(pts)
 
     fig, ax = plt.subplots(figsize=(9.0, 3.6))
 
@@ -267,7 +296,7 @@ def day_chart(out_path: str | Path,
                        edgecolors=DARK_BG, linewidths=POINT_EDGE_WIDTH,
                        label=label,
                        zorder=3)
-            _draw_precision_pins(ax, nominal_items)
+            _draw_delta_pins(ax, nominal_items, "time")
         if invalid_items:
             ax.scatter([it["time"] for it in invalid_items],
                        [it["value"] for it in invalid_items],
@@ -278,7 +307,7 @@ def day_chart(out_path: str | Path,
                        linewidths=0.55,
                        label="_nolegend_" if nominal_items else label,
                        zorder=3)
-            _draw_precision_pins(ax, invalid_items)
+            _draw_delta_pins(ax, invalid_items, "time")
 
     # Running-min line — best valid value seen so far. Below-floor eval bugs
     # and crash-class values never move the personal-best step.
@@ -387,7 +416,9 @@ def day_chart(out_path: str | Path,
         dt.timedelta(hours=MAX_DAY_CHART_WINDOW_HOURS),
     )
     span_h = span.total_seconds() / 3600.0
-    if span_h <= 12:
+    if span_h <= 2:
+        loc = mdates.MinuteLocator(byminute=[0, 30])
+    elif span_h <= 12:
         loc = mdates.HourLocator(interval=1)
     elif span_h <= 24:
         loc = mdates.HourLocator(interval=2)
@@ -403,9 +434,15 @@ def day_chart(out_path: str | Path,
     ax.set_title(f"{metric_name.upper()}  ·  {date}", loc="left", pad=10,
                  fontsize=10.5, fontweight="bold", color=DARK_TEXT_HI)
     if panel_label:
-        ax.text(0.0, 1.035, panel_label.upper(), transform=ax.transAxes,
-                fontsize=7.2, color=DARK_TEXT_MUTE, ha="left", va="bottom",
-                fontweight="bold")
+        ax.text(0.012, 0.985, panel_label.upper(), transform=ax.transAxes,
+                fontsize=7.2, color=DARK_TEXT, ha="left", va="top",
+                fontweight="bold",
+                bbox=dict(boxstyle="square,pad=0.18",
+                          facecolor=DARK_BG,
+                          edgecolor=DARK_RULE_HI,
+                          linewidth=0.45,
+                          alpha=0.92),
+                zorder=6)
     if (baseline_to_beat is not None and math.isfinite(baseline_to_beat)
             and ((not is_bpb) or baseline_to_beat >= INVALID_VAL_BPB_FLOOR)):
         baseline_value = f"{baseline_to_beat:.4f}" if is_bpb else f"{baseline_to_beat:.3f}×"
@@ -495,6 +532,7 @@ def day_charts(out_path: str | Path,
         chunk_records = [r for _, r in chunk]
         start = chunk[0][0].strftime("%H:%M")
         end = chunk[-1][0].strftime("%H:%M")
+        time_label = f"{start} UTC" if start == end else f"{start}-{end} UTC"
         chunk_path = out_path.with_name(
             f"{out_path.stem}_{idx:02d}{out_path.suffix}"
         )
@@ -505,7 +543,7 @@ def day_charts(out_path: str | Path,
             metric_name=metric_name,
             baseline_to_beat=baseline_to_beat,
             baseline_label=baseline_label,
-            panel_label=f"panel {idx}/{len(chunks)} · {start}-{end} UTC",
+            panel_label=f"panel {idx}/{len(chunks)} · {time_label}",
             prior_best=prior_best,
         )
         paths.append(path)
@@ -516,6 +554,82 @@ def day_charts(out_path: str | Path,
                     and ((not _is_bpb_metric(metric_name)) or INVALID_VAL_BPB_FLOOR <= v <= 3.0)):
                 prior_best = v if prior_best is None else min(prior_best, v)
     return paths, total
+
+
+def week_focus_chart(out_path: str | Path,
+                     week_dates: list[str],
+                     daily_counts: list[dict],
+                     current_date: str | None = None) -> tuple[str, int]:
+    """Stacked percent bars for category-local daily focus inside one week."""
+    rows = []
+    for date in week_dates:
+        counts = next((d.get("counts", {}) for d in daily_counts if d.get("date") == date), {})
+        total = sum(int(counts.get(camp, 0) or 0) for camp in ("experimental", "neural", "kernel"))
+        rows.append({"date": date, "counts": counts, "total": total})
+
+    out_path = Path(out_path)
+    fig_w = max(6.8, min(10.8, 1.05 * max(1, len(rows)) + 2.6))
+    fig, ax = plt.subplots(figsize=(fig_w, 3.8))
+    x = list(range(len(rows)))
+    bottoms = [0.0 for _ in rows]
+    order = ("experimental", "neural", "kernel")
+    hatch = {"experimental": "", "neural": "////", "kernel": "xx"}
+
+    for camp in order:
+        vals = []
+        for row in rows:
+            total = row["total"]
+            vals.append(100.0 * int(row["counts"].get(camp, 0) or 0) / total if total else 0.0)
+        ax.bar(
+            x,
+            vals,
+            bottom=bottoms,
+            color=CAMP_COLOR.get(camp, COVER_BLACK),
+            edgecolor=COVER_BLACK,
+            linewidth=0.8,
+            hatch=hatch.get(camp, ""),
+            label=CAMP_LABEL.get(camp, camp),
+        )
+        bottoms = [b + v for b, v in zip(bottoms, vals)]
+
+    for idx, row in enumerate(rows):
+        if row["date"] == current_date:
+            ax.axvline(idx, color=COVER_BLACK, linewidth=1.6, alpha=0.95)
+        if row["total"]:
+            ax.text(
+                idx,
+                103,
+                str(row["total"]),
+                ha="center",
+                va="bottom",
+                fontsize=7.5,
+                color=COVER_BLACK,
+            )
+
+    labels = [d[-5:] for d in week_dates]
+    ax.set_title("WEEK-LOCAL DAILY FOCUS SPLIT")
+    ax.set_ylabel("% measured rows")
+    ax.set_xlabel("campaign day in week")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=0)
+    ax.set_ylim(0, 110)
+    ax.yaxis.set_major_locator(plt.MultipleLocator(25))
+    ax.grid(axis="y", alpha=0.35)
+    ax.grid(axis="x", alpha=0.0)
+    ax.legend(loc="upper left", ncol=3, fontsize=7.5)
+    fig.text(
+        0.99,
+        0.01,
+        "bar height = category share of category-local measured rows; top number = row count",
+        ha="right",
+        va="bottom",
+        fontsize=7.0,
+        color=COVER_BLACK,
+    )
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)
+    return str(out_path), len(rows)
 
 
 # ---------- CHART B ----------------------------------------------------------
@@ -542,20 +656,26 @@ def journey_chart(out_path: str | Path,
     dates = [dt.datetime.strptime(d["date"], "%Y-%m-%d") for d in per_day_bests]
     bests = [d["best"] for d in per_day_bests]
     camps = [d["camp"] for d in per_day_bests]
+    journey_points = [
+        {"date": x, "value": y, "camp": c}
+        for x, y, c in zip(dates, bests, camps)
+    ]
+    _assign_delta_pins(journey_points)
 
     fig, ax = plt.subplots(figsize=(11.0, 4.0))
 
     # Per-day scatter colored by camp
     by_camp: dict[str, list[tuple]] = {}
-    for x, y, c in zip(dates, bests, camps):
-        by_camp.setdefault(c, []).append((x, y))
+    for p in journey_points:
+        by_camp.setdefault(p["camp"], []).append(p)
     for c, items in by_camp.items():
-        ax.scatter([x for x, _ in items], [y for _, y in items],
+        ax.scatter([p["date"] for p in items], [p["value"] for p in items],
                    color=CAMP_COLOR.get(c, DARK_TEXT_MUTE),
                    marker=CAMP_MARKER.get(c, "o"),
                    s=34, alpha=0.85, edgecolors=DARK_BG, linewidths=0.4,
                    label=f"{CAMP_LABEL.get(c, c)} ({len(items)})",
                    zorder=3)
+        _draw_delta_pins(ax, items, "date")
 
     # Running-minimum line
     running_min = []
@@ -640,6 +760,7 @@ def week_chart(out_path: str | Path,
     if not pts:
         return _stub(out_path, f"{metric_name} - {week_label}", "no plottable daily points"), 0
     pts.sort(key=lambda p: p["date"])
+    _assign_delta_pins(pts)
 
     fig, ax = plt.subplots(figsize=(9.0, 3.6))
     dates = [p["date"] for p in pts]
@@ -668,13 +789,7 @@ def week_chart(out_path: str | Path,
                    edgecolors=DARK_BG, linewidths=POINT_EDGE_WIDTH,
                    label=f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}",
                    zorder=3)
-        ax.plot([it["date"] for it in items],
-                [it["value"] for it in items],
-                linestyle="None", marker="+",
-                markersize=POINT_PIN_SIZE,
-                markeredgewidth=POINT_PIN_WIDTH,
-                color=DARK_BG,
-                zorder=4, label="_nolegend_")
+        _draw_delta_pins(ax, items, "date")
 
     real_values = [p["value"] for p in pts if (not is_bpb) or p["value"] <= 3.0]
     if real_values:
@@ -756,6 +871,7 @@ def campaign_overlay_chart(out_path: str | Path,
     if not pts:
         return _stub(out_path, f"{metric_name} - {campaign_label}", "no plottable category points"), 0
     pts.sort(key=lambda p: (p["date"], p["camp"]))
+    _assign_delta_pins(pts)
 
     fig, ax = plt.subplots(figsize=(10.8, 4.0))
     dates = [p["date"] for p in pts]
@@ -792,13 +908,7 @@ def campaign_overlay_chart(out_path: str | Path,
                    edgecolors=DARK_BG, linewidths=POINT_EDGE_WIDTH,
                    label=f"{CAMP_LABEL.get(camp, camp).upper()} · {len(items)}",
                    zorder=3)
-        ax.plot([it["date"] for it in items],
-                [it["value"] for it in items],
-                linestyle="None", marker="+",
-                markersize=POINT_PIN_SIZE,
-                markeredgewidth=POINT_PIN_WIDTH,
-                color=DARK_BG,
-                zorder=4, label="_nolegend_")
+        _draw_delta_pins(ax, items, "date")
 
     real_values = [p["value"] for p in pts if (not is_bpb) or p["value"] <= 3.0]
     if real_values:

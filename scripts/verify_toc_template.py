@@ -52,6 +52,10 @@ def verify_toc(html_path: Path) -> dict:
     for marker in ("report-header", "day-summary", "test-runs-table"):
         if marker not in text:
             raise AssertionError(f"TOC missing locked visual block {marker!r}: {html_path}")
+    if 'class="toc-webloader-page2"' not in text:
+        raise AssertionError(f"TOC missing page 2 image above the long loader: {html_path}")
+    if "Research corpus page above the table of contents" not in text:
+        raise AssertionError(f"TOC missing page 2 image alt marker: {html_path}")
     if not render_toc.TOC_BACKGROUND_PATH.exists():
         raise AssertionError(
             f"missing generated TOC background asset: {render_toc.TOC_BACKGROUND_PATH}"
@@ -78,6 +82,10 @@ def verify_toc(html_path: Path) -> dict:
         raise AssertionError(f"TOC missing connected scroll section: {html_path}")
     if text.count('loading="lazy"') != len(frames):
         raise AssertionError(f"TOC reader frames must all be lazy-loaded: {html_path}")
+    if text.count('scrolling="no"') != len(frames):
+        raise AssertionError(f"TOC reader frames must not expose default iframe scrollbars: {html_path}")
+    if "doc.documentElement.style.overflow = 'hidden'" not in text:
+        raise AssertionError(f"TOC reader script must hide iframe viewport overflow: {html_path}")
     if 'src="cover.html"' in text or 'src="toc.html"' in text:
         raise AssertionError(f"TOC must not recursively embed cover or itself: {html_path}")
     daily_links = text.count("open day")

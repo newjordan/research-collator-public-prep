@@ -14,12 +14,13 @@ lab-protocol aesthetic.
 | `enrich.py` | Adds git commits + Claude session JSONLs + Codex session JSONLs to the index. Pulls val_bpb / val_loss out of commit messages with delta-vs-absolute classification + sanity floor. |
 | `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
 | `render_day.py` | Builds one daily HTML report. Header dot-leader fields, classification bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios and render as their own kernel classification. Chat sessions are never rendered as supporting research files. |
+| `data/architecture_recipes.json` | Deterministic daily-page architecture recipe book. Active codenames render as copyable body/module/tokenizer/quant/eval specs under the daily header. No provenance text. |
 | `render_week.py` | Builds weekly HTML reports where each datapoint/row is one rendered daily report. Mixed-metric weeks render one trajectory panel per headline metric. |
 | `render_category.py` | Builds experimental, neural, and kernel cumulative category reports with two-week graph windows. |
 | `render_campaign.py` | Builds the campaign cumulative report. Classification tracks are overlaid only on homogeneous metric charts. |
 | `render_cover.py` | Builds the publication cover page. The cover sheet is rendered here only, and `index.html` mirrors this page. |
-| `render_toc.py` | Builds the table-of-contents page for the full static report set using a generated background, not the cover sheet. |
-| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, category reports, the campaign cumulative page, cover page, TOC, and legacy journey page. |
+| `render_toc.py` | Builds the long-scroll table-of-contents loader for the full static report set. It starts with the page 2 image, then the TOC, using a generated background and not the cover sheet. |
+| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, category reports, the campaign cumulative page, cover page, TOC loader, and legacy journey page. |
 | `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory), `week_chart` (per-week/category-window datapoints), `campaign_overlay_chart` (classification overlay), and `journey_chart` (50-day arc). |
 | `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
 | `scripts/verify_scraper_contract.py` | Fail-closed scraper/index gate for template-critical fields, metrics, day attribution, training-log embeds, and retrieval indexes. |
@@ -40,9 +41,10 @@ lab-protocol aesthetic.
 
 ## Template lock
 
-Daily pages are locked to the `daily-report-v2.5-master-back` standard:
+Daily pages are locked to the `daily-report-v2.6-architecture-recipes` standard:
 
 - base visual lock: `templates/daily_report_locked.html`
+- architecture recipe source: `data/architecture_recipes.json`
 - executable spec: `TEMPLATE.md`
 - renderer gate: `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`
 - verification gate: `python3 scripts/verify_daily_template.py --all`
@@ -62,9 +64,10 @@ from BPB/loss panels.
 
 The publication cover uses `cover-v1.0-first-page` and is the intended site
 entry point at `output/preview/cover.html` and `output/preview/index.html`.
-The table of contents uses `toc-v1.1-connected-scroll` and follows the cover
-at `output/preview/toc.html`; it uses a generated background asset, keeps the
-cover sheet out of TOC, and lazy-loads the connected report reader.
+The table of contents uses `toc-v1.2-page2-webloader` at
+`output/preview/toc.html`; it starts with `assets/page_2_above_toc.jpeg` as
+the page above the TOC in the long loader, uses a generated background asset,
+keeps the cover sheet out of TOC, and lazy-loads the connected report reader.
 
 ## Research chronology
 
@@ -125,8 +128,8 @@ python3 render_week.py --week 1            # one 7-day weekly rollup
 python3 render_category.py --all           # category cumulative reports
 python3 render_campaign.py                 # campaign cumulative overlay
 python3 render_cover.py                    # first-page cover
-python3 render_toc.py                      # table of contents
-python3 render_all.py          # all days + all rollups + cover/TOC
+python3 render_toc.py                      # long loader + table of contents
+python3 render_all.py          # all days + all rollups + cover/TOC loader
 python3 scripts/verify_daily_template.py --all
 python3 scripts/verify_weekly_template.py --all
 python3 scripts/verify_category_template.py --all
@@ -142,8 +145,8 @@ Weekly output lands in `output/preview/weeks/<WEEK>.html`, with the weekly
 index at `output/preview/weeks/index.html`. Category reports land in
 `output/preview/categories/`. The campaign cumulative report lands at
 `output/preview/cumulative.html`. The cover lands at
-`output/preview/cover.html` and `output/preview/index.html`. The table of
-contents lands at `output/preview/toc.html`.
+`output/preview/cover.html` and `output/preview/index.html`. The long-loader
+table of contents lands at `output/preview/toc.html`.
 
 Optional local chat extraction, no paid API:
 

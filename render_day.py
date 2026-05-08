@@ -40,13 +40,16 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
-LOCKED_TEMPLATE_STYLE_SHA256 = "f59278126e43d905677e3fdeb5d8f0f19e9e0a319f2f726484f5db3b0632ca73"
-DAILY_TEMPLATE_STANDARD = "daily-report-v2.5-master-back"
+ARCHITECTURE_RECIPES_PATH = Path(__file__).parent / "data" / "architecture_recipes.json"
+LOCKED_TEMPLATE_STYLE_SHA256 = "9b3664f58ccfc369e10c135199e27d306feb0b79ded51beb7123fdb2f2dd09ec"
+DAILY_TEMPLATE_STANDARD = "daily-report-v2.6-architecture-recipes"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
 FINAL_SUBMISSION_NAME = "Mockingbird"
 FINAL_SUBMISSION_DIR_TOKEN = "2026-05-01_Mockingbird_8xH100"
+FINAL_SUBMISSION_PUBLIC_LABEL = "10k-vocabulary CaseOps loop-body submission"
 TRAINING_LOG_EMBED_CACHE: dict[str, str] = {}
+ARCHITECTURE_RECIPE_CACHE: dict[str, dict] | None = None
 
 DATE_FROM_FILENAME = re.compile(r"(20\d{2})[-_]?(\d{2})[-_]?(\d{2})")
 HARDWARE_PATTERNS = (
@@ -766,8 +769,8 @@ def extract_test_rows(records: list[dict], metric: str,
         vals = extract_metric_for_record(rec.get("metrics_json"), metric)
         if not vals:
             continue
-        # Reference baselines aren't user tests — exclude them from the
-        # Test Runs view (they still appear in supporting files).
+        # Reference baselines aren't user tests, so exclude them from the
+        # Test Runs view. They remain indexed for audit queries.
         if is_reference_baseline_record(rec):
             continue
         title = (rec.get("title") or "(untitled)").strip()
@@ -807,6 +810,8 @@ def extract_test_rows(records: list[dict], metric: str,
         if cur is None:
             row = {
                 "title": title,
+                "metric": metric,
+                "metric_display": metric_display_name(metric),
                 "value": best_val,
                 "n_runs": len(vals),
                 "time": time_str,
@@ -864,6 +869,70 @@ def extract_test_rows(records: list[dict], metric: str,
     return rows
 
 
+def _category_metric_priority(camp: str | None) -> tuple[str, ...]:
+    if camp == KERNEL_CAMP:
+        return KERNEL_METRICS
+    return ("val_bpb", "val_loss", "val_bits_per_byte", "bpb")
+
+
+def _chosen_category_metric(rec: dict) -> str | None:
+    camp = rec.get("camp")
+    for metric in _category_metric_priority(camp):
+        if extract_metric_for_record(rec.get("metrics_json"), metric):
+            return metric
+    return None
+
+
+def extract_category_local_test_rows(records: list[dict]) -> list[dict]:
+    """Measured rows using each record's category-local metric scale."""
+    rows: list[dict] = []
+    metrics = (
+        KERNEL_FB_RATIO_METRIC,
+        KERNEL_FWD_RATIO_METRIC,
+        "val_bpb",
+        "val_loss",
+        "val_bits_per_byte",
+        "bpb",
+    )
+    for metric in metrics:
+        metric_records = [
+            rec for rec in records
+            if not is_reference_baseline_record(rec)
+            and _chosen_category_metric(rec) == metric
+        ]
+        if not metric_records:
+            continue
+        rows.extend(extract_test_rows(metric_records, metric, None))
+
+    rows.sort(key=lambda r: (r.get("time_iso") or "", r.get("camp") or "", r.get("title") or ""))
+    for idx, row in enumerate(rows, start=1):
+        row["n"] = idx
+        row["delta_vs_baseline"] = None
+        row["delta_pct"] = None
+    return rows
+
+
+def category_focus_counts(rows: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = defaultdict(int)
+    for row in rows:
+        camp = row.get("camp") or "experimental"
+        if camp in (KERNEL_CAMP, "experimental", "neural"):
+            counts[camp] += 1
+    return dict(counts)
+
+
+def week_focus_rows(conn: sqlite3.Connection, week_dates: list[str]) -> list[dict]:
+    focus: list[dict] = []
+    for week_date in week_dates:
+        day_records = report_records_for_date(week_date, fetch_day(conn, week_date))
+        final_records = final_submission_records_for_day(week_date, day_records)
+        if final_records:
+            day_records = final_records
+        rows = extract_category_local_test_rows(day_records)
+        focus.append({"date": week_date, "counts": category_focus_counts(rows)})
+    return focus
+
+
 def build_day_chart_records(records: list[dict], metric: str) -> list[dict]:
     """One chart entry per measured-metric occurrence, with run-time.
     For chart input — preserves time_iso so the trajectory plots correctly.
@@ -901,87 +970,13 @@ def _is_in_any_dir(abs_path: str, dirs: set[str]) -> bool:
 
 
 def is_rendered_support_record(rec: dict) -> bool:
-    """True for artifacts allowed to appear as report support evidence."""
+    """True for day-local files/logs allowed to count as visible support stats."""
     return (
         rec.get("camp") != "daily_grind"
         and not is_reference_baseline_record(rec)
         and rec.get("file_kind") in SUPPORTING_FILE_KINDS
         and rec.get("file_kind") not in SUPPORTING_EXCLUDED_KINDS
     )
-
-
-def make_supporting_files_md(records: list[dict], test_record_paths: set[str]) -> str:
-    """Files that directly support the day.
-
-    Section 3 is not a cross-day artifact dump. When measured Test Runs exist,
-    include sibling/child artifacts from those run directories. When the day
-    has no measured runs, include a small day-local list of created files,
-    logs, plans, summaries, and test-adjacent artifacts. Chat transcripts and
-    commits are indexed elsewhere, but never rendered as research support.
-    """
-    out = ["", "## Supporting Files", ""]
-    if not test_record_paths:
-        priority = {
-            "training_log": 0,
-            "md": 1,
-            "py": 2,
-            "json": 3,
-            "csv": 4,
-            "ckpt": 5,
-        }
-        rest = [
-            r for r in records
-            if is_rendered_support_record(r)
-        ]
-        rest = sorted(
-            rest,
-            key=lambda r: (
-                0 if SUPPORTING_RELEVANCE_RE.search(
-                    " ".join([
-                        r.get("abs_path") or "",
-                        r.get("source_label") or "",
-                        r.get("title") or "",
-                    ])
-                ) else 1,
-                priority.get(r.get("file_kind"), 9),
-                r.get("mtime_iso") or "",
-                r.get("source_label") or "",
-            ),
-        )[:12]
-        if not rest:
-            out.append("_No supporting files: no day-local created files, logs, plans, or test artifacts were detected._")
-            return "\n".join(out)
-        for r in rest:
-            rel = r["abs_path"].replace("/home/frosty40/", "~/")
-            title = r["title"] or "(untitled)"
-            link_label, link_href = _build_link(r)
-            link_md = f" — [{link_label}]({link_href})" if link_href else ""
-            out.append(f"- **{r['camp']}** · `{r['source_label']}` · {r['file_kind']} · "
-                       f"`{rel}` — {title}{link_md}")
-        return "\n".join(out)
-
-    test_dirs = {
-        os.path.abspath(str(Path(p).parent))
-        for p in test_record_paths
-        if p.startswith(HOME + "/")
-    }
-    rest = [
-        r for r in records
-        if r["abs_path"] not in test_record_paths
-        and _is_in_any_dir(r.get("abs_path") or "", test_dirs)
-        and is_rendered_support_record(r)
-    ]
-    if not rest:
-        out.append("_No supporting files: no sibling artifacts were found for the detected test runs._")
-        return "\n".join(out)
-    for r in sorted(rest, key=lambda r: (r["camp"], r["source_label"], r["mtime_iso"])):
-        rel = r["abs_path"].replace("/home/frosty40/", "~/")
-        title = r["title"] or "(untitled)"
-        link_label, link_href = _build_link(r)
-        link_md = f" — [{link_label}]({link_href})" if link_href else ""
-        out.append(f"- **{r['camp']}** · `{r['source_label']}` · {r['file_kind']} · "
-                   f"`{rel}` — {title}{link_md}")
-    return "\n".join(out)
 
 
 # Architecture family detection — inferred per-test from title patterns.
@@ -1048,6 +1043,105 @@ ARCH_FAMILIES = [
     ("Modded-nanoGPT",       r"\bmodded[\s_-]?nanogpt\w*"),
 ]
 
+PUBLIC_ARCH_FAMILY_LABELS = {
+    "A-Wing": "legal n-gram GPU mixer",
+    "AR Self-Gen GPTQ": "autoregressive GPTQ calibration",
+    "B-Wing": "entropy-shifted n-gram weighting",
+    "Bandit": "crawler plus cubric n-gram stack",
+    "ClownCar": "crawler-only ngram export body",
+    "Cobra": "controlled A/B quality harness",
+    "DeltaNet": "Gated DeltaNet memory branch",
+    "Exp-D TTT8 Stride32": "TTT8 stride-32 test family",
+    "Fartmagic": "data/runtime workspace",
+    "Frugendorff": "recursive weight-sharing transformer",
+    "Helix": "split-head crawler scale gate",
+    "Medusa": "loop-instructed DeltaNet crawler body",
+    "Megahelix": "fused recurrence megakernel",
+    "Mikey": "looped tokenizer body",
+    "Midnight": "12L GQA mixed-bit tower",
+    "Mockingbird": "10k-vocab CaseOps loop body",
+    "NaiveBaseline": "reference baseline",
+    "Nightcrawler": "widened crawler bottleneck",
+    "Nitrust": "kernel preflight suite",
+    "Ouroboros": "9-flat plus 1-crawler loop body",
+    "Rascal": "11L GQA U-Net body",
+    "Shroud": "trace and flow-capture wrapper",
+    "SOTA Crawler": "crawler-safe train/eval surface",
+    "SOTA v2 TTT": "TTT-only model test",
+    "Staged Hybrid Bench": "staged attention-kernel bench",
+    "Megakernel": "fused kernel implementation",
+    "Whale": "dim-576 attention-kernel body",
+    "X-Wing": "cubric n-gram mixer",
+}
+
+
+def public_arch_label(name: str) -> str:
+    """Reviewer-facing architecture label; internal nicknames stay in paths only."""
+    return PUBLIC_ARCH_FAMILY_LABELS.get(name, name)
+
+
+PUBLIC_TEXT_REPLACEMENTS = [
+    (r"\bFrugendorff[\s_-]+Squared\w*", "recursive weight-sharing depth variant"),
+    (r"\bThe[\s_-]+Frugendorff\w*", "recursive weight-sharing transformer"),
+    (r"\bFrugendorff\w*", "recursive weight-sharing transformer"),
+    (r"\bFX[\s_-]?Wing\w*", "instructed-recurrence crawler"),
+    (r"\bFA[\s_-]?Wing\w*", "flow-instruction crawler hybrid"),
+    (r"\bF[\s_-]?Wing\w*", "crawler recurrence family"),
+    (r"\bX[\s_-]?Wing\w*", "cubric n-gram mixer"),
+    (r"\bA[\s_-]?Wing\w*", "legal n-gram GPU mixer"),
+    (r"\bB[\s_-]?Wing\w*", "entropy-shifted n-gram weighting"),
+    (r"\bBandit[\s_-]+Wagon\w*", "flat+crawler tap-off body"),
+    (r"\bBandit\w*", "crawler plus cubric n-gram stack"),
+    (r"\bFartmagic\w*", "data/runtime workspace"),
+    (r"\bThe[\s_-]+Stinky[\s_-]+Frost[\s_-]+Recipe\w*", "compression recipe"),
+    (r"\bStinky[\s_-]+Frost[\s_-]+Recipe\w*", "compression recipe"),
+    (r"\bSponge[\s_-]+Bath\w*", "TTT stride-32 eval-only experiment"),
+    (r"\benchilada\w*", "12L/2KV/2.75xMLP experiment"),
+    (r"\bkiller[\s_-]+v\d+\w*", "candidate run"),
+    (r"\bJunkyard[\s_-]+Rat\w*", "Triton/model co-design body"),
+    (r"\bRat[\s_-]+Rod\w*", "11L Parallel-Muon/XSA body"),
+    (r"\bNightcrawler[\s_-]+Cubed\w*", "multi-crawler descendant"),
+    (r"\bNightcrawler\w*", "widened crawler bottleneck"),
+    (r"\bClown[\s_-]?Car\w*", "crawler-only ngram export body"),
+    (r"\bMedusa\w*", "loop-instructed DeltaNet crawler body"),
+    (r"\bRascal\w*", "11L GQA U-Net body"),
+    (r"\bMidnight\w*", "12L GQA mixed-bit tower"),
+    (r"\bMockingb[ir]rd\w*", "10k-vocab CaseOps loop body"),
+    (r"\bWhale\w*", "dim-576 attention-kernel body"),
+    (r"\bOuroboros\w*", "9-flat plus 1-crawler loop body"),
+    (r"\bMikey\w*", "looped tokenizer body"),
+    (r"\bRaphe\w*", "compact tokenizer body"),
+    (r"\bDonnie\w*", "loop+TTT compact body"),
+    (r"\bLucky\w*", "neural body variant"),
+    (r"\bLongworm\w*", "long-context causal tap mechanism"),
+    (r"\bGametriome\w*", "long-context bridge body"),
+    (r"\bMoonshot\w*", "RWKV-style recurrence body"),
+    (r"\bTON[\s_-]?E\w*", "rhythm recurrence"),
+    (r"\bton_e\w*", "rhythm recurrence"),
+    (r"\bPurple[\s_-]?\d+\w*", "phrase-cache variant"),
+    (r"\bBW\d+\w*", "crawler variant"),
+    (r"\bTrapper[\s_-]+Keeper\w*", "multi-crawler descendant"),
+    (r"\bSmokestack\w*", "crawler test body"),
+    (r"\bTornado\w*", "EMA teacher/student integration"),
+    (r"\bCobra\w*", "controlled A/B quality harness"),
+    (r"\bGreenRod\w*", "hybrid GatedDeltaNet-attention body"),
+    (r"\bMegahelix\w*", "fused recurrence megakernel"),
+    (r"\bVortexHelix\w*", "fused recurrence megakernel"),
+    (r"\bHelix\w*", "split-head crawler scale gate"),
+    (r"\bShroud\w*", "trace and flow-capture wrapper"),
+]
+
+
+def sanitize_public_text(text: object) -> str:
+    """Replace internal nicknames in visible report text with technical labels."""
+    value = str(text or "")
+    for pattern, replacement in PUBLIC_TEXT_REPLACEMENTS:
+        value = re.sub(pattern, replacement, value, flags=re.IGNORECASE)
+        if pattern.startswith(r"\b"):
+            slug_pattern = r"(?<![A-Za-z])" + pattern[2:]
+            value = re.sub(slug_pattern, replacement, value, flags=re.IGNORECASE)
+    return value
+
 
 def _arch_family_matches(pattern: str, *values: str | None) -> bool:
     for value in values:
@@ -1096,7 +1190,7 @@ def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
 def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
     if not families:
         return "—"
-    parts = [f"{name.upper()} (×{n})" for name, n in families[:cap]]
+    parts = [f"{public_arch_label(name).upper()} (×{n})" for name, n in families[:cap]]
     if len(families) > cap:
         more = sum(n for _, n in families[cap:])
         parts.append(f"+{len(families) - cap} MORE (×{more})")
@@ -1162,10 +1256,43 @@ def _embedded_log_style() -> str:
     .log-toggle { margin: 0; }
     .log-toggle + .log-toggle { margin-top: 6px; }
     .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
         cursor: pointer;
-        color: var(--link);
-        font-weight: 600;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
         white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
     }
     .log-detail-row { display: none; }
     .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
@@ -1204,12 +1331,42 @@ def _embedded_log_style() -> str:
         background: transparent;
     }
     .log-panel strong,
-    .log-panel code,
-    .log-panel a {
+    .log-panel code {
         color: var(--bg);
     }
-    .log-panel a:hover {
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
         border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
     }
     .open-extra {
         margin-top: 6px;
@@ -1277,6 +1434,9 @@ def _daily_template_style() -> str:
         ".bpb-table",
         ".h1-home",
         ".h1-master",
+        ".architecture-recipe",
+        "scrollbar-color: var(--rule-hi) var(--bg);",
+        "::-webkit-scrollbar-thumb",
     ]
     missing = [needle for needle in required if needle not in style]
     if missing:
@@ -1366,6 +1526,241 @@ class TemplateContractError(RuntimeError):
     """Raised when render_day would emit a page outside TEMPLATE.md."""
 
 
+def load_architecture_recipes() -> dict[str, dict]:
+    """Load deterministic copy recipes for detected architecture families."""
+    global ARCHITECTURE_RECIPE_CACHE
+    if ARCHITECTURE_RECIPE_CACHE is not None:
+        return ARCHITECTURE_RECIPE_CACHE
+    try:
+        raw = json.loads(ARCHITECTURE_RECIPES_PATH.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        ARCHITECTURE_RECIPE_CACHE = {}
+        return ARCHITECTURE_RECIPE_CACHE
+    except json.JSONDecodeError as e:
+        raise TemplateContractError(f"invalid architecture recipe JSON: {e}") from e
+
+    if not isinstance(raw, dict):
+        raise TemplateContractError("architecture recipes must be a JSON object")
+    recipes = raw.get("recipes", raw)
+    if not isinstance(recipes, dict):
+        raise TemplateContractError("architecture recipes must be a JSON object")
+    for family, recipe in recipes.items():
+        if not isinstance(recipe, dict):
+            raise TemplateContractError(
+                f"architecture recipe for {family!r} must be an object"
+            )
+        sections = recipe.get("sections")
+        if not isinstance(sections, list):
+            raise TemplateContractError(
+                f"architecture recipe for {family!r} missing sections list"
+            )
+        visible_chunks = [
+            str(recipe.get("display") or ""),
+            str(recipe.get("summary") or ""),
+        ]
+        for section in sections:
+            if not isinstance(section, dict):
+                raise TemplateContractError(
+                    f"architecture recipe section for {family!r} must be an object"
+                )
+            visible_chunks.append(str(section.get("label") or ""))
+            items = section.get("items")
+            if not isinstance(items, list):
+                raise TemplateContractError(
+                    f"architecture recipe section for {family!r} missing items list"
+                )
+            visible_chunks.extend(str(item) for item in items)
+        visible_text = " ".join(visible_chunks).upper()
+        for forbidden in ("PROVENANCE", "LINEAGE", "SOURCE", "PARENT", "SHA256"):
+            if forbidden in visible_text:
+                raise TemplateContractError(
+                    f"architecture recipe for {family!r} contains forbidden term: {forbidden}"
+                )
+    ARCHITECTURE_RECIPE_CACHE = recipes
+    return ARCHITECTURE_RECIPE_CACHE
+
+
+def make_architecture_recipe_html(families: list[tuple[str, int]]) -> tuple[str, list[str]]:
+    """Render copyable architecture recipes for active, known families only."""
+    recipes = load_architecture_recipes()
+    cards: list[str] = []
+    rendered: list[str] = []
+    for name, count in families:
+        if name == "Other":
+            continue
+        recipe = recipes.get(name)
+        if not recipe:
+            continue
+        display = str(recipe.get("display") or public_arch_label(name)).upper()
+        summary = str(recipe.get("summary") or "")
+        lines: list[str] = []
+        for section in recipe.get("sections") or []:
+            if not isinstance(section, dict):
+                continue
+            label = str(section.get("label") or "").strip()
+            items = section.get("items") or []
+            if not label or not isinstance(items, list):
+                continue
+            value = " · ".join(
+                html.escape(str(item))
+                for item in items
+                if str(item).strip()
+            )
+            if not value:
+                continue
+            lines.append(
+                '<div class="ar-line">'
+                f'<span class="ar-key">{html.escape(label.upper())}</span>'
+                f'<span class="ar-val">{value}</span>'
+                "</div>"
+            )
+        if not lines:
+            continue
+        rendered.append(name)
+        cards.append(
+            '<article class="ar-card">'
+            '<div class="ar-head">'
+            f'<span class="ar-name">{html.escape(display)}</span>'
+            f'<span class="ar-count">x{int(count)}</span>'
+            "</div>"
+            f'<p class="ar-summary">{html.escape(summary)}</p>'
+            + "".join(lines) +
+            "</article>"
+        )
+    if not cards:
+        return "", []
+    return (
+        '<section class="architecture-recipe" aria-label="Architecture recipe">'
+        '<div class="ar-kicker">ARCHITECTURE RECIPE</div>'
+        '<div class="ar-cards">'
+        + "".join(cards) +
+        "</div></section>",
+        rendered,
+    )
+
+
+def all_campaign_dates(conn: sqlite3.Connection) -> list[str]:
+    rows = conn.execute(
+        "SELECT abs_path, rel_path, source_label, file_kind, mtime_iso, metrics_json FROM artifacts"
+    ).fetchall()
+    dates: set[str] = set()
+    for row in rows:
+        rec = dict(row)
+        if not is_research_chronology_record(rec):
+            continue
+        date = best_date(rec)
+        if is_research_campaign_date(date):
+            dates.add(date)
+    return sorted(dates)
+
+
+def week_dates_for_date(conn: sqlite3.Connection, date: str) -> list[str]:
+    dates = all_campaign_dates(conn)
+    for idx in range(0, len(dates), 7):
+        window = dates[idx:idx + 7]
+        if date in window:
+            return window
+    return [date]
+
+
+def _recipe_reference_specs(recipe: dict, max_specs: int = 7) -> list[str]:
+    """Short, copyable deterministic specs for the black summary callout."""
+    priority = (
+        "num_layers", "model_dim", "embedding_dim", "vocab_size",
+        "num_heads", "num_kv_heads", "head_dim", "mlp_mult",
+        "matrix_bits", "num_loops", "loop_start", "loop_end",
+        "rope_dims", "eval_seq_len", "train_seq_len",
+    )
+    sections = recipe.get("sections") or []
+    items: list[str] = []
+    freeform: list[str] = []
+    for section in sections:
+        if not isinstance(section, dict):
+            continue
+        label = str(section.get("label") or "").lower()
+        section_items = section.get("items") or []
+        if not isinstance(section_items, list):
+            continue
+        for item in section_items:
+            text = str(item).strip()
+            if not text:
+                continue
+            low = text.lower()
+            if any(low.startswith(key.lower() + "=") for key in priority):
+                items.append(text)
+            elif any(token in label for token in ("token", "quant", "eval", "loop", "feature", "kernel")):
+                freeform.append(text)
+    ordered: list[str] = []
+    for key in priority:
+        for item in items:
+            if item.lower().startswith(key.lower() + "=") and item not in ordered:
+                ordered.append(item)
+                break
+    for item in freeform:
+        if item not in ordered:
+            ordered.append(item)
+    return ordered[:max_specs]
+
+
+def architecture_reference_fragments(families: list[tuple[str, int]],
+                                     max_families: int = 3,
+                                     max_specs: int = 6) -> list[str]:
+    """Plain-text architecture references derived only from deterministic data."""
+    recipes = load_architecture_recipes()
+    fragments: list[str] = []
+    for name, count in families:
+        if name == "Other" or len(fragments) >= max_families:
+            continue
+        recipe = recipes.get(name)
+        display = str((recipe or {}).get("display") or public_arch_label(name)).upper()
+        if recipe:
+            specs = _recipe_reference_specs(recipe, max_specs=max_specs)
+            spec_text = "; ".join(specs)
+            summary = str(recipe.get("summary") or "").strip()
+            body = summary
+            if spec_text:
+                body = f"{body} Specs: {spec_text}." if body else f"Specs: {spec_text}."
+        else:
+            body = (
+                "architecture family detected in measured rows; exact flags "
+                "are preserved in the row details."
+            )
+        fragments.append(f"{display} (x{int(count)}): {body}")
+    return fragments
+
+
+def architecture_technique_terms(families: list[tuple[str, int]],
+                                 max_terms: int = 10) -> list[str]:
+    """Technique vocabulary for summaries, sourced from recipe section items."""
+    recipes = load_architecture_recipes()
+    terms: list[str] = []
+    for name, _count in families:
+        recipe = recipes.get(name)
+        if not recipe:
+            continue
+        for section in recipe.get("sections") or []:
+            if not isinstance(section, dict):
+                continue
+            label = str(section.get("label") or "").lower()
+            if not any(token in label for token in (
+                "token", "position", "loop", "quant", "eval",
+                "feature", "kernel", "crawler", "packaging",
+            )):
+                continue
+            items = section.get("items") or []
+            if not isinstance(items, list):
+                continue
+            for item in items:
+                text = str(item).strip()
+                if not text or "=" in text:
+                    continue
+                if text not in terms:
+                    terms.append(text)
+                if len(terms) >= max_terms:
+                    return terms
+    return terms
+
+
 def assert_daily_template_contract(date: str,
                                    records: list[dict],
                                    header_fields: list[tuple[str, str]],
@@ -1394,6 +1789,21 @@ def assert_daily_template_contract(date: str,
         positions.append(pos)
     if positions != sorted(positions):
         raise TemplateContractError("daily sections are out of canonical order")
+    recipe_pos = qmd_text.find('class="architecture-recipe"')
+    if recipe_pos >= 0 and recipe_pos > positions[0]:
+        raise TemplateContractError("architecture recipe must render before Section 1.0")
+    if recipe_pos >= 0:
+        recipe_match = re.search(
+            r'<section class="architecture-recipe".*?</section>',
+            qmd_text,
+            flags=re.DOTALL,
+        )
+        recipe_text = (recipe_match.group(0) if recipe_match else "").upper()
+        for forbidden in ("PROVENANCE", "LINEAGE", "SOURCE", "PARENT", "SHA256"):
+            if forbidden in recipe_text:
+                raise TemplateContractError(
+                    f"architecture recipe leaked provenance term: {forbidden}"
+                )
     if "DAILY GRIND" in qmd_text.upper():
         raise TemplateContractError("DAILY GRIND section is not in the canonical layout")
     if "SECTION 3.0" in qmd_text.upper() or "SUPPORTING FILES" in qmd_text.upper():
@@ -1540,42 +1950,53 @@ def make_daily_summary_html(date: str, day_index: int | None,
     """Two-paragraph callout that sits between SECTION 1.0 and the chart.
     Generated deterministically from the day's numbers — no LLM."""
     metric = metric_display_name(headline_metric)
-    floor = INVALID_VAL_BPB_FLOOR
     day_label = format_day_index(day_index)
     day_ref = f"Day {day_label}" if day_label != "—" else "Unindexed day"
+    architecture_refs = architecture_reference_fragments(
+        arch_families,
+        max_families=3,
+        max_specs=6,
+    )
+    technique_terms = architecture_technique_terms(arch_families, max_terms=8)
+    if architecture_refs:
+        architecture_text = " ".join(
+            f"<span>{html.escape(fragment)}</span>"
+            for fragment in architecture_refs
+        )
+    else:
+        architecture_text = (
+            "Measured rows did not match a named architecture recipe; exact "
+            "architecture flags are preserved in the run table."
+        )
 
-    # Zero measured validation rows — don't fabricate "allocation skew" or
-    # "the day was about hammering X variants" when the day has support files
-    # but no explicit headline metric output. Common causes: infra/studio,
-    # artifact-only, and session-only days.
+    # Zero measured validation rows: report the absence of metrics and keep any
+    # architecture note tied to deterministic family/recipe data.
     if n_tests == 0:
+        if not architecture_refs:
+            architecture_text = "No measured architecture/test rows were captured on this date."
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
-              f'<div class="ds-body"><p>{day_ref} — '
+              f'<div class="ds-body"><p><strong>Architecture tested:</strong> '
+              f'{architecture_text}</p>'
+              f'<p>{day_ref} — '
               f'<strong>no explicit validation metric</strong> was captured '
               'on this date.</p></div>'
             '</aside>'
         )
 
-    # Allocation tone — only when we actually have runs to talk about.
-    allocation_tone = _classification_tone(by_camp)
-    allocation_distribution = _classification_distribution_text(by_camp)
-
-    # Top architectures
-    top_arch_names = [name for name, _ in arch_families[:2] if name != "Other"]
-    if top_arch_names:
-        arch_phrase = (f"the day was about hammering "
-                       f"{' + '.join(name.upper() for name in top_arch_names)} variants")
-    else:
-        arch_phrase = "the day was a mixed-architecture sweep"
-
     if is_bpb_metric(headline_metric):
-        validity_phrase = (
-            f"with <strong>{valid_count} valid</strong> landings above the {floor:.2f} "
-            f"eval-error floor and <strong>{invalid_count} below-floor</strong> "
-            "readings discarded"
-        )
+        if date == RESEARCH_END_DATE:
+            validity_phrase = (
+                f"with <strong>{valid_count} valid</strong> landings above the "
+                f"{INVALID_VAL_BPB_FLOOR:.2f} BPB validity floor and "
+                f"<strong>{invalid_count} eval/loader-error</strong> readings excluded"
+            )
+        else:
+            validity_phrase = (
+                f"with <strong>{valid_count} valid</strong> rows and "
+                f"<strong>{invalid_count} eval/loader-error</strong> readings excluded"
+            )
     elif is_kernel_metric(headline_metric):
         validity_phrase = (
             f"with <strong>{valid_count}</strong> custom-kernel-vs-FA3 timing rows"
@@ -1583,19 +2004,24 @@ def make_daily_summary_html(date: str, day_index: int | None,
     else:
         validity_phrase = f"with <strong>{valid_count}</strong> measured rows"
 
+    technique_text = ""
+    if technique_terms:
+        technique_text = (
+            " Techniques to copy/reference: "
+            f"<strong>{html.escape('; '.join(technique_terms))}</strong>."
+        )
+
     if is_kernel_metric(headline_metric):
         para1 = (
-            f"{day_ref} ran {n_tests} kernel benchmarks against "
-            f"<strong>{html.escape(metric)}</strong>, {validity_phrase}. "
-            f"Allocation {allocation_tone} ({allocation_distribution}) — "
-            f"{arch_phrase}."
+            f"{day_ref} measured <strong>{n_tests} kernel benchmarks</strong> "
+            f"against <strong>{html.escape(metric)}</strong>, {validity_phrase}."
+            f"{technique_text}"
         )
     else:
         para1 = (
-            f"{day_ref} burned {n_tests} runs against <strong>{html.escape(metric)}</strong>, "
-            f"{validity_phrase}. "
-            f"Allocation {allocation_tone} ({allocation_distribution}) — "
-            f"{arch_phrase}."
+            f"{day_ref} measured <strong>{n_tests} architecture/test rows</strong> "
+            f"against <strong>{html.escape(metric)}</strong>, {validity_phrase}."
+            f"{technique_text}"
         )
 
     # Para 2: best-of-day, PB comparison
@@ -1606,7 +2032,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
     if valid_rows:
         best = min(valid_rows, key=lambda r: r["value"])
         best_value = best["value"]
-        best_title = best.get("title", "(unknown)")
+        best_title = sanitize_public_text(best.get("title", "(unknown)"))
         best_phrase = "Best valid" if is_bpb_metric(headline_metric) else "Best"
         if chart_baseline is not None and best_value < chart_baseline:
             pb_line = (f"<strong>NEW PERSONAL BEST.</strong> {best_phrase} "
@@ -1626,7 +2052,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
                        f"No prior baseline to compare against.")
     else:
         if is_bpb_metric(headline_metric):
-            pb_line = "<strong>No valid runs.</strong> Every measurement landed below the eval-error floor."
+            pb_line = "<strong>No valid runs.</strong> Every measurement was excluded as an eval/loader-error reading."
         else:
             pb_line = "<strong>No measured rows.</strong> No finite metric values were available."
 
@@ -1647,7 +2073,8 @@ def make_daily_summary_html(date: str, day_index: int | None,
     return (
         '<aside class="day-summary">'
           '<div class="ds-key">DAILY SUMMARY</div>'
-          f'<div class="ds-body"><p>{para1}</p><p>{pb_line}</p></div>'
+          f'<div class="ds-body"><p><strong>Architecture tested:</strong> '
+          f'{architecture_text}</p><p>{para1}</p><p>{pb_line}</p></div>'
         '</aside>'
     )
 
@@ -1696,7 +2123,7 @@ def make_metric_spread_table_md(test_rows: list[dict], headline_metric: str,
         else:
             med = (vals[n // 2 - 1] + vals[n // 2]) / 2.0
         rows.append(
-            f'<tr><td>{html.escape(fam.upper())}</td>'
+            f'<tr><td>{html.escape(public_arch_label(fam).upper())}</td>'
             f'<td>{n}</td><td>{format_metric_value(headline_metric, mn)}</td>'
             f'<td>{format_metric_value(headline_metric, med)}</td>'
             f'<td>{format_metric_value(headline_metric, mx)}</td></tr>'
@@ -1748,49 +2175,6 @@ def make_camp_bar_html(by_camp: dict[str, int]) -> str:
     )
 
 
-def make_grind_md(records: list[dict]) -> str:
-    """Daily Grind = the narrative trail of the day:
-       - codex_rollouts (camp=daily_grind) — daily session summaries
-       - codex_session / claude_session — actual collaboration transcripts
-    Both go here because they're 'how the day went' not 'what got tested'."""
-    grind = [r for r in records
-             if r["camp"] == "daily_grind"
-             or r.get("file_kind") in ("codex_session", "claude_session")]
-    if not grind:
-        return "_No codex/claude sessions or rollups recorded for this date._"
-    chunks = []
-    # Sessions first (longest), then rollups
-    sessions = [r for r in grind if r.get("file_kind") in ("codex_session", "claude_session")]
-    rollups = [r for r in grind if r.get("file_kind") not in ("codex_session", "claude_session")]
-    if sessions:
-        # Compute total session-time signal
-        total_hours = 0.0
-        for r in sessions:
-            try:
-                md = json.loads(r.get("metrics_json") or "{}")
-                d = md.get("session_duration_seconds")
-                if isinstance(d, (int, float)):
-                    total_hours += d / 3600.0
-            except json.JSONDecodeError:
-                pass
-        chunks.append(
-            f"**{len(sessions)} sessions logged** "
-            f"(~{total_hours:.1f}h cumulative, may overlap):\n"
-        )
-        for r in sorted(sessions, key=lambda r: r["mtime_iso"]):
-            t = r["title"] or "(untitled session)"
-            s = (r["summary"] or "").strip()
-            kind = "claude" if r.get("file_kind") == "claude_session" else "codex"
-            chunks.append(f"- **[{kind}]** {t[:90]} — {s}")
-        if rollups:
-            chunks.append("")
-    for r in sorted(rollups, key=lambda r: r["mtime_iso"]):
-        t = r["title"] or "(untitled rollup)"
-        s = (r["summary"] or "").strip()
-        chunks.append(f"- **[rollup]** {t}" + (f" — {s}" if s else ""))
-    return "\n".join(chunks)
-
-
 def _format_bytes(n: object) -> str:
     try:
         value = int(n)
@@ -1820,7 +2204,7 @@ def _pre_text_one_line(text: str) -> str:
     md_to_html passes raw HTML through line-by-line, so embedded logs must not
     introduce literal newlines into the table markup.
     """
-    normalized = text.replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "\uFFFD")
+    normalized = sanitize_public_text(text).replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "\uFFFD")
     return html.escape(normalized).replace("\n", "&#10;")
 
 
@@ -1849,14 +2233,12 @@ def _training_log_toggle_html(idx: int, total: int) -> str:
 
 def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
     abs_path = ref.get("abs_path") or ""
-    basename = ref.get("basename") or "training_log"
+    basename = sanitize_public_text(ref.get("basename") or "training_log")
     text = _read_training_log_text(abs_path)
     size = _format_bytes(ref.get("size"))
     meta_parts = [html.escape(_training_log_summary_label(idx, total)), html.escape(basename)]
     if size:
         meta_parts.append(html.escape(size))
-    if ref.get("href"):
-        meta_parts.append(_anchor_html(ref.get("href_label") or "open file", ref["href"]))
     meta = " · ".join(meta_parts)
     return (
         "<div class='log-panel'>"
@@ -1867,17 +2249,10 @@ def _training_log_panel_html(ref: dict, idx: int, total: int) -> str:
 
 
 def _row_evidence_panel_html(row: dict) -> str:
-    links: list[str] = []
-    if row.get("link_href"):
-        links.append(_anchor_html(row.get("link_label") or "open", row["link_href"]))
-    if row.get("run_script"):
-        links.append(_anchor_html("run.sh", row["run_script"]))
-
     facts: list[tuple[str, str]] = [
-        ("source", str(row.get("source_label") or "unknown")),
+        ("source", sanitize_public_text(row.get("source_label") or "unknown")),
         ("classification", CAMP_DISPLAY_LABEL.get(row.get("camp"), str(row.get("camp") or "unknown"))),
         ("metric_source", str(row.get("val_bpb_source") or "unknown")),
-        ("path", str(row.get("abs_path") or "unknown")),
     ]
     if row.get("time_iso"):
         facts.insert(0, ("time", str(row["time_iso"])))
@@ -1895,17 +2270,12 @@ def _row_evidence_panel_html(row: dict) -> str:
         "</div>"
         for k, v in facts
     )
-    link_html = (
-        "<div class='log-meta'><strong>open</strong>: " + " · ".join(links) + "</div>"
-        if links else
-        "<div class='log-meta'><strong>open</strong>: no source link recovered</div>"
-    )
-    title = html.escape(str(row.get("title") or "(untitled)"))
+    title = html.escape(sanitize_public_text(row.get("title") or "(untitled)"))
     return (
         "<div class='log-panel'>"
         "<div class='log-meta'><strong>row evidence</strong></div>"
         f"<div class='log-meta'><strong>ablation</strong>: {title}</div>"
-        f"{fact_html}{link_html}"
+        f"{fact_html}"
         "</div>"
     )
 
@@ -1951,7 +2321,7 @@ def make_test_table_md(rows: list[dict], metric: str,
         + "</tr></thead><tbody>"
     )
     for r in rows:
-        ablation = r.get("display_ablation") or r["title"]
+        ablation = sanitize_public_text(r.get("display_ablation") or r["title"])
         if r["n_runs"] > 1:
             ablation = f"{ablation} (×{r['n_runs']})"
         if len(ablation) > 80:
@@ -2169,7 +2539,6 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     )
     headline_text = " · ".join(headline_bits)
 
-    grind_md = make_grind_md(records)
     approved_ablation_labels = apply_approved_ablation_labels(test_rows, date)
     test_table_md = make_camp_test_tables_md(test_rows, headline_metric or "metric", chart_baseline)
 
@@ -2210,8 +2579,13 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     ]
     alloc_bar_html = make_alloc_bar_html(by_camp) if test_rows else None
     report_header = make_report_header_html(header_fields, alloc_bar=alloc_bar_html)
+    architecture_recipe_html, rendered_architecture_recipes = make_architecture_recipe_html(arch_families)
 
-    h1_html = make_report_h1_html("DAILY RESEARCH REPORT", date, master_href="toc.html")
+    h1_html = make_report_h1_html(
+        "DAILY RESEARCH REPORT",
+        date,
+        master_href=f"toc.html#reader={date}.html",
+    )
 
     # Daily summary callout (between SECTION 1.0 and the chart)
     daily_summary = make_daily_summary_html(
@@ -2233,6 +2607,10 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "",
         report_header,
         "",
+    ]
+    if architecture_recipe_html:
+        qmd_lines += [architecture_recipe_html, ""]
+    qmd_lines += [
         "## SECTION 1.0 — TRAJECTORY",
         "",
         daily_summary,
@@ -2429,6 +2807,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             for name, count in arch_families
         ],
         "arch_families_display": format_arch_families(arch_families),
+        "architecture_recipes_rendered": rendered_architecture_recipes,
         "chart_n_points": chart_n,
         "chart_panels": len(chart_paths),
         "chart_baseline_to_beat": chart_baseline,

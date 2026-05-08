@@ -55,6 +55,7 @@ from render_day import (
     make_report_header_html,
     metric_display_name,
     report_records_for_date,
+    sanitize_public_text,
 )
 
 
@@ -192,6 +193,70 @@ def image_data_uri(path: str | Path) -> str:
         return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 
+def category_action_style() -> str:
+    return """
+    .category-action,
+    .test-runs-table td a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+    }
+    .category-action::before,
+    .test-runs-table td a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .category-action:hover,
+    .category-action:focus-visible,
+    .test-runs-table td a:hover,
+    .test-runs-table td a:focus-visible {
+        background: var(--rule-hi);
+        color: var(--bg);
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-panel a,
+    .log-panel a.category-action {
+        border-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+    }
+    .log-panel a::before,
+    .log-panel a.category-action::before {
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible,
+    .log-panel a.category-action:hover,
+    .log-panel a.category-action:focus-visible {
+        border-bottom-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    """
+
+
 def points_for_window(points: list[dict[str, Any]],
                       window: dict[str, Any]) -> list[dict[str, Any]]:
     return [p for p in points if window["start"] <= p["date"] <= window["end"]]
@@ -245,6 +310,12 @@ def make_category_summary_html(category: str,
             f"same y-axis. Each window's chart panel covers at most two "
             f"research weeks so progress stays readable inside the panel.</p>"
         )
+        if category == "neural":
+            body += (
+                f"<p>Neural BPB validity convention: values below "
+                f"<strong>{render_day.INVALID_VAL_BPB_FLOOR:.2f}</strong> "
+                f"are treated as eval/loader-error readings.</p>"
+            )
     return (
         '<aside class="day-summary">'
         '<div class="ds-key">CATEGORY SUMMARY</div>'
@@ -270,7 +341,7 @@ def render_window_section(conn: sqlite3.Connection,
                 "date": p["date"],
                 "value": p["value"],
                 "camp": category,
-                "title": p["title"] or p["date"],
+                "title": sanitize_public_text(p["title"] or p["date"]),
                 "n": idx,
             })
         slug = window_slug(window, metric)
@@ -312,7 +383,7 @@ def make_window_table_html(category: str,
         "</tr></thead><tbody>"
     ]
     for idx, p in enumerate(window_points, start=1):
-        title = p["title"] or "(untitled)"
+        title = sanitize_public_text(p["title"] or "(untitled)")
         rows.append(
             "<tr>"
             f"<td><strong>{idx}</strong></td>"
@@ -336,7 +407,7 @@ def make_window_table_html(category: str,
             f"{html.escape(window['end'])}</div>"
             f"<div class='log-meta'><strong>date</strong>: "
             f"{html.escape(p['date'])} "
-            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"<a class='category-action' href='../{html.escape(p['date'])}.html'>open daily report</a>"
             f"</div>"
             f"<div class='log-meta'><strong>metric</strong>: "
             f"{html.escape(p['metric_display'])} "
@@ -346,11 +417,9 @@ def make_window_table_html(category: str,
             f"<div class='log-meta'><strong>category rows on date</strong>: "
             f"{int(p['n_category_rows'])} (best value shown above)</div>"
             f"<div class='log-meta'><strong>row title</strong>: "
-            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
-            f"<div class='log-meta'><strong>abs path</strong>: "
-            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
@@ -372,7 +441,7 @@ def make_full_table_html(category: str,
     ]
     for idx, p in enumerate(points, start=1):
         win_label = f"{p['window']:02d}" if p["window"] else "—"
-        title = p["title"] or "(untitled)"
+        title = sanitize_public_text(p["title"] or "(untitled)")
         rows.append(
             "<tr>"
             f"<td><strong>{idx}</strong></td>"
@@ -398,7 +467,7 @@ def make_full_table_html(category: str,
             f"{html.escape(p['window_end'] or '—')})</div>"
             f"<div class='log-meta'><strong>date</strong>: "
             f"{html.escape(p['date'])} "
-            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"<a class='category-action' href='../{html.escape(p['date'])}.html'>open daily report</a>"
             f"</div>"
             f"<div class='log-meta'><strong>metric</strong>: "
             f"{html.escape(p['metric_display'])} "
@@ -408,11 +477,9 @@ def make_full_table_html(category: str,
             f"<div class='log-meta'><strong>category rows on date</strong>: "
             f"{int(p['n_category_rows'])}</div>"
             f"<div class='log-meta'><strong>row title</strong>: "
-            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
-            f"<div class='log-meta'><strong>abs path</strong>: "
-            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
@@ -473,6 +540,7 @@ def render_category(conn: sqlite3.Connection,
         f"{CATEGORY_LABEL[category]} RESEARCH REPORT",
         "CAMPAIGN",
         home_href="../index.html",
+        master_href=f"../toc.html#reader=categories/{category}.html",
     )
 
     # ----- HTML body -----
@@ -508,7 +576,7 @@ def render_category(conn: sqlite3.Connection,
     full_html = (
         "<!doctype html><html><head><meta charset='utf-8'>"
         f"<title>{CATEGORY_LABEL[category].title()} Research Report</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + "\n".join(body_parts)
         + _embedded_log_script()
         + "</body></html>"
@@ -599,7 +667,7 @@ def render_category_index(summaries: list[dict[str, Any]],
             f"<td>{int(s['windows_active'])} / {int(s['windows_total'])}</td>"
             f"<td>{int(s['chart_panels'])}</td>"
             f"<td>{html.escape(metric_blurb)}</td>"
-            f"<td><a href='{html.escape(Path(s['html_path']).name)}'>"
+            f"<td><a class='category-action' href='{html.escape(Path(s['html_path']).name)}'>"
             f"open category</a></td>"
             "</tr>"
         )
@@ -609,6 +677,7 @@ def render_category_index(summaries: list[dict[str, Any]],
         "CATEGORY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
+        master_href="../toc.html#reader=categories/index.html",
     )
     header_fields = [
         ("CATEGORIES", str(len(summaries))),
@@ -633,7 +702,7 @@ def render_category_index(summaries: list[dict[str, Any]],
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
         "<title>Category Research Reports</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + body
         + "</body></html>",
         encoding="utf-8",

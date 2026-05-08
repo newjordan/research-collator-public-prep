@@ -66,6 +66,8 @@ def verify_week(summary: dict) -> dict:
     for heading in ("SECTION 1.0 — WEEK TRAJECTORY", "SECTION 2.0 — DAILY REPORTS"):
         if heading not in text:
             raise AssertionError(f"missing weekly heading {heading!r}: {html_path}")
+    if "Architectures tested:" not in text:
+        raise AssertionError(f"weekly summary must lead with architecture reference text: {html_path}")
     if "report-header" not in text or "day-summary" not in text:
         raise AssertionError(f"weekly page missing locked daily visual blocks: {html_path}")
     for forbidden in ("BEST DAY", "DAILY METRIC SPREAD", "<th>median</th>", "PRIOR WEEK"):
@@ -87,8 +89,8 @@ def verify_week(summary: dict) -> dict:
             f"figures={figures} chart_panels={summary['chart_panels']}"
         )
     if "2026-05-01" in summary["dates"]:
-        if "MOCKINGBIRD (×4)" not in text:
-            raise AssertionError(f"final week lost Mockingbird final-day marker: {html_path}")
+        if "10K-VOCAB CASEOPS LOOP BODY (×4)" not in text:
+            raise AssertionError(f"final week lost final-submission marker: {html_path}")
         if re.search(r"MIDNIGHT|open_parameter_golf_junkyard", text, re.IGNORECASE):
             raise AssertionError(f"final week contains stale final-day wrong attribution: {html_path}")
     return {

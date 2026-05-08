@@ -49,6 +49,20 @@ def _require_home_link(text: str, html_path: Path) -> None:
         raise AssertionError(f"frostmark is not linked to landing page: {html_path}")
 
 
+def _require_native_controls(text: str, html_path: Path) -> None:
+    required = (
+        "scrollbar-color: var(--rule-hi) var(--bg);",
+        "::-webkit-scrollbar-thumb",
+        ".log-toggle summary::-webkit-details-marker { display: none; }",
+        ".log-toggle summary::before",
+    )
+    missing = [needle for needle in required if needle not in text]
+    if missing:
+        raise AssertionError(
+            f"native controls are missing flat locked styling in {html_path}: {missing}"
+        )
+
+
 def _verify_index(html_path: Path) -> dict:
     if not html_path.exists():
         raise AssertionError(f"missing category index html: {html_path}")
@@ -57,6 +71,7 @@ def _verify_index(html_path: Path) -> dict:
         raise AssertionError(f"missing category index h1 marker: {html_path}")
     _require_clean_bottom(text, html_path)
     _require_home_link(text, html_path)
+    _require_native_controls(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"category index must have exactly two h2 sections: {html_path}"
@@ -99,6 +114,7 @@ def _verify_category(summary: dict) -> dict:
         raise AssertionError(f"missing category h1 marker: {html_path}")
     _require_clean_bottom(text, html_path)
     _require_home_link(text, html_path)
+    _require_native_controls(text, html_path)
     if text.count("<h2>") != 2:
         raise AssertionError(
             f"category page must have exactly two h2 sections: {html_path}"

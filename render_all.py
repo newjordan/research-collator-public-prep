@@ -40,6 +40,7 @@ import plot as plot_mod
 import render_campaign
 import render_category
 import render_cover
+import render_intro
 import render_toc
 import render_week
 from render_day import (
@@ -159,7 +160,7 @@ def render_index(dates_with_results: list[dict],
         "<h1>Research — Daily Reports</h1>",
         f"<p class='muted'>Generated {dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes')} UTC. "
         f"Spans {len(days_summary)} research days from {RESEARCH_START_DATE} to {RESEARCH_END_DATE}. "
-        "Final submission: Mockingbird.</p>",
+        "Final submission: 10k-vocabulary CaseOps loop-body submission.</p>",
     ]
 
     # Headline stats
@@ -362,6 +363,8 @@ def main():
     print("[6/9] rendering publication cover...")
     cover_summary = render_cover.render_cover_page()
     print(f"      cover page: {cover_summary.get('html_path')}")
+    intro_summary = render_intro.render_intro_page()
+    print(f"      intro page: {intro_summary.get('html_path')}")
 
     print("[7/9] rendering table of contents...")
     toc_summary = render_toc.render_toc_report(

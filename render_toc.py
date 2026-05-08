@@ -14,6 +14,7 @@ import render_week
 from render_day import (
     DAILY_TEMPLATE_STANDARD,
     HTML_DIR,
+    INVALID_VAL_BPB_FLOOR,
     LOCKED_TEMPLATE_STYLE_SHA256,
     OUT_ROOT,
     RESEARCH_END_DATE,
@@ -24,10 +25,12 @@ from render_day import (
 )
 
 
-TOC_TEMPLATE_STANDARD = "toc-v1.1-connected-scroll"
+TOC_TEMPLATE_STANDARD = "toc-v1.2-page2-webloader"
 TOC_QMD_DIR = OUT_ROOT / "toc"
 TOC_HTML_PATH = HTML_DIR / "toc.html"
 TOC_BACKGROUND_PATH = Path("assets/toc_background_generated.png")
+TOC_WEBLOADER_COVER_PATH = Path("assets/cover_sheet_final.jpeg")
+TOC_WEBLOADER_PAGE2_PATH = Path("assets/page_2_above_toc.jpeg")
 
 
 def image_data_uri(path: str | Path) -> str:
@@ -54,6 +57,51 @@ def toc_extra_style() -> str:
     """
     return f"""
     {bg_css}
+    html,
+    body.toc-page,
+    body.toc-page * {{
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }}
+    html::-webkit-scrollbar,
+    body.toc-page::-webkit-scrollbar,
+    body.toc-page *::-webkit-scrollbar {{
+      width: 0 !important;
+      height: 0 !important;
+      display: none !important;
+    }}
+    body.toc-page .toc-page-scrollbar {{
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 16px;
+      height: 100vh;
+      background: #050605;
+      border-left: 1px solid rgba(139,55,2,0.72);
+      z-index: 9999;
+      pointer-events: auto;
+      cursor: pointer;
+      border-radius: 0 !important;
+      overflow: hidden;
+    }}
+    body.toc-page .toc-page-scrollbar-thumb {{
+      position: absolute;
+      left: 2px;
+      top: 0;
+      width: 12px;
+      height: 48px;
+      background: #8b3702;
+      border: 1px solid #050605;
+      border-radius: 0 !important;
+      clip-path: inset(0 0 0 0);
+      appearance: none;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }}
+    body.toc-page .toc-page-scrollbar-thumb.is-dragging {{
+      cursor: grabbing;
+    }}
     body.toc-page .toc-kicker {{
       margin: -6px 0 18px;
       color: var(--accent);
@@ -84,13 +132,52 @@ def toc_extra_style() -> str:
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }}
-    body.toc-page .toc-reader-topline strong,
-    body.toc-page .toc-reader-topline a {{
+    body.toc-page .toc-reader-topline strong {{
       color: var(--bg);
     }}
+    body.toc-page .toc-action,
+    body.toc-page .test-runs-table td a,
     body.toc-page .toc-reader-open {{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      color: var(--bg);
+      cursor: pointer;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
       white-space: nowrap;
-      border-bottom-color: var(--bg);
+      list-style: none;
+      user-select: none;
+      border-radius: 0;
+    }}
+    body.toc-page .toc-action::before,
+    body.toc-page .test-runs-table td a::before,
+    body.toc-page .toc-reader-open::before {{
+      content: "";
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      background: var(--bg);
+    }}
+    body.toc-page .toc-action:hover,
+    body.toc-page .toc-action:focus-visible,
+    body.toc-page .test-runs-table td a:hover,
+    body.toc-page .test-runs-table td a:focus-visible,
+    body.toc-page .toc-reader-open:hover,
+    body.toc-page .toc-reader-open:focus-visible {{
+      background: var(--rule-hi);
+      color: var(--bg);
+      border-bottom-color: var(--rule-hi);
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
     }}
     body.toc-page .toc-reader-frame {{
       display: block;
@@ -100,6 +187,52 @@ def toc_extra_style() -> str:
       border-top: none;
       background: var(--bg);
     }}
+    body.toc-page .toc-webloader-intro {{
+      min-height: 100vh;
+      width: 100vw;
+      display: grid;
+      place-items: start center;
+      margin: -32px calc(50% - 50vw) 0;
+      padding: 0;
+      border-bottom: 0;
+      overflow: visible;
+      background: #050605;
+    }}
+    body.toc-page .toc-webloader-intro iframe {{
+      display: block;
+      width: 85vw;
+      max-width: none;
+      aspect-ratio: 1053 / 1494;
+      height: auto;
+      border: 0;
+      background: #050605;
+    }}
+    body.toc-page .toc-webloader-cover,
+    body.toc-page .toc-webloader-page2 {{
+      min-height: 100vh;
+      width: 100vw;
+      display: grid;
+      place-items: start center;
+      margin: 0 calc(50% - 50vw) 36px;
+      padding: 0;
+      border-bottom: 1px solid var(--rule-hi);
+      overflow: visible;
+      background: #050605;
+    }}
+    body.toc-page .toc-webloader-cover {{
+      margin-top: -32px;
+      border-bottom: 0;
+    }}
+    body.toc-page .toc-webloader-cover img,
+    body.toc-page .toc-webloader-page2 img {{
+      display: block;
+      width: 85vw;
+      max-width: none;
+      height: auto;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      box-shadow: 0 24px 80px rgba(5,6,5,0.35);
+    }}
     @media (max-width: 760px) {{
       body.toc-page .toc-reader-topline {{
         align-items: flex-start;
@@ -107,6 +240,15 @@ def toc_extra_style() -> str:
       }}
       body.toc-page .toc-reader-frame {{
         min-height: 560px;
+      }}
+      body.toc-page .toc-webloader-page2 {{
+        min-height: 100vh;
+      }}
+      body.toc-page .toc-webloader-cover {{
+        min-height: 100vh;
+      }}
+      body.toc-page .toc-webloader-intro {{
+        min-height: 100vh;
       }}
     }}
     """
@@ -121,34 +263,21 @@ def make_layer_table(dates: list[str],
         "<th>LAYER</th><th>COUNT</th><th>OPEN</th><th>FUNCTION</th>"
         "</tr></thead><tbody>"
     ]
-    campaign_layer = (
-        "CAMPAIGN CUMULATIVE",
-        "1",
-        "cumulative.html",
-        "classification overlay plus campaign facts",
-    )
-    if campaign_summary:
-        campaign_layer = (
-            "CAMPAIGN CUMULATIVE",
-            f"{campaign_summary.get('chart_panels', 0)} panels",
-            "cumulative.html",
-            f"{campaign_summary.get('n_points', 0)} category datapoints overlaid by metric",
-        )
     layers = [
         ("PUBLICATION COVER", "1", "cover.html", "first page; cover image appears there only"),
+        ("ADDRESS TO THE READER", "1", "intro.html", "public intro letter and evidence starting points"),
         ("TABLE OF CONTENTS", "1", "toc.html", "navigation, reading order, and connected scroll"),
-        campaign_layer,
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
         ("DAILY REPORTS", str(len(dates)), f"{dates[0]}.html", "one locked evidence page per campaign day"),
-        ("FINAL SUBMISSION", "MOCKINGBIRD", f"{RESEARCH_END_DATE}.html", "final campaign day and submitted Mockingbird evidence"),
+        ("FINAL SUBMISSION", "10K CASEOPS", f"{RESEARCH_END_DATE}.html", "final campaign day and submitted 10k-vocabulary CaseOps evidence"),
     ]
     for label, count, href, function in layers:
         rows.append(
             "<tr>"
             f"<td><strong>{html.escape(label)}</strong></td>"
             f"<td>{html.escape(str(count))}</td>"
-            f"<td><a href='{html.escape(href)}'>open</a></td>"
+            f"<td><a class='toc-action' href='{html.escape(href)}'>open</a></td>"
             f"<td>{html.escape(function)}</td>"
             "</tr>"
         )
@@ -172,7 +301,7 @@ def make_week_table(week_summaries: list[dict[str, Any]]) -> str:
             f"<td>{int(week['n_days'])} ({int(week['n_measured_days'])} measured)</td>"
             f"<td>{html.escape(week.get('primary_metric_display') or '—')}</td>"
             f"<td>{html.escape(render_week.format_camp_counts(week.get('by_camp')))}</td>"
-            f"<td><a href='weeks/{html.escape(Path(week['html_path']).name)}'>open week</a></td>"
+            f"<td><a class='toc-action' href='weeks/{html.escape(Path(week['html_path']).name)}'>open week</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -194,7 +323,7 @@ def make_category_table(category_summaries: list[dict[str, Any]]) -> str:
             f"<td>{int(category.get('n_points') or 0)}</td>"
             f"<td>{int(category.get('windows_active') or 0)} / {int(category.get('windows_total') or 0)}</td>"
             f"<td>{int(category.get('chart_panels') or 0)}</td>"
-            f"<td><a href='categories/{html.escape(Path(category['html_path']).name)}'>open category</a></td>"
+            f"<td><a class='toc-action' href='categories/{html.escape(Path(category['html_path']).name)}'>open category</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -219,7 +348,7 @@ def make_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) -> st
             f"<td>{html.escape(day.get('headline_metric_display') or '—')}</td>"
             f"<td>{html.escape(day.get('best_headline_value_display') or '—')}</td>"
             f"<td>{html.escape(camps)}</td>"
-            f"<td><a href='{html.escape(date)}.html'>open day</a></td>"
+            f"<td><a class='toc-action' href='{html.escape(date)}.html'>open day</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -230,11 +359,6 @@ def connected_reader_items(dates: list[str],
                            week_summaries: list[dict[str, Any]],
                            category_summaries: list[dict[str, Any]]) -> list[dict[str, str]]:
     items: list[dict[str, str]] = [
-        {
-            "kind": "campaign",
-            "label": "CAMPAIGN CUMULATIVE",
-            "href": "cumulative.html",
-        },
         {
             "kind": "category-index",
             "label": "CATEGORY INDEX",
@@ -282,25 +406,104 @@ def make_connected_reader_html(dates: list[str],
             f'<section class="toc-reader-entry" data-reader-kind="{kind}">'
             f'<div class="toc-reader-topline">'
             f'<strong>{idx:02d} / {label}</strong>'
-            f'<a class="toc-reader-open" href="{href}">open standalone</a>'
+            f'<a class="toc-reader-open toc-action" href="{href}">open standalone</a>'
             f'</div>'
             f'<iframe class="toc-reader-frame" src="{href}" title="{label}" '
-            f'loading="lazy" data-reader-href="{href}" data-reader-kind="{kind}"></iframe>'
+            f'loading="lazy" scrolling="no" data-reader-href="{href}" '
+            f'data-reader-kind="{kind}"></iframe>'
             f'</section>'
         )
     parts.append("</div>")
     return "\n".join(parts)
 
 
+def make_webloader_page2_html() -> str:
+    if not TOC_WEBLOADER_PAGE2_PATH.exists():
+        return ""
+    image_uri = image_data_uri(TOC_WEBLOADER_PAGE2_PATH)
+    return (
+        '<section class="toc-webloader-page2" aria-label="Publication page 2">'
+        f'<img src="{image_uri}" alt="Research corpus page above the table of contents">'
+        "</section>"
+    )
+
+
+def make_webloader_cover_html() -> str:
+    if not TOC_WEBLOADER_COVER_PATH.exists():
+        return ""
+    image_uri = image_data_uri(TOC_WEBLOADER_COVER_PATH)
+    return (
+        '<section class="toc-webloader-cover" aria-label="Publication landing page">'
+        f'<img src="{image_uri}" alt="Research corpus landing page">'
+        "</section>"
+    )
+
+
+def make_webloader_intro_html() -> str:
+    return (
+        '<section class="toc-webloader-intro" aria-label="Address to the Reader">'
+        '<iframe src="intro.html?embed=1" title="Address to the Reader" loading="eager"></iframe>'
+        "</section>"
+    )
+
+
 def connected_reader_script() -> str:
     return """
 <script>
 (function(){
+  function decodeHashValue(value) {
+    try { return decodeURIComponent(value); } catch (e) { return value; }
+  }
+  function normalizeHref(value) {
+    return String(value || '').replace(/^\\.\\//, '');
+  }
+  function readerEntryForHref(href) {
+    var target = normalizeHref(href);
+    var entries = Array.prototype.slice.call(document.querySelectorAll('.toc-reader-entry'));
+    for (var i = 0; i < entries.length; i++) {
+      var frame = entries[i].querySelector('.toc-reader-frame');
+      if (frame && normalizeHref(frame.getAttribute('data-reader-href')) === target) {
+        return entries[i];
+      }
+    }
+    return null;
+  }
+  function scrollToReaderHref(href, updateHash) {
+    var entry = readerEntryForHref(href);
+    if (!entry) return false;
+    entry.scrollIntoView({ block: 'start' });
+    if (updateHash && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#reader=' + encodeURIComponent(normalizeHref(href)));
+    }
+    return true;
+  }
+  function restoreReaderHash() {
+    var match = String(window.location.hash || '').match(/^#reader=(.+)$/);
+    if (!match) return;
+    var href = decodeHashValue(match[1]);
+    if (!href) return;
+    requestAnimationFrame(function(){ scrollToReaderHref(href, false); });
+    setTimeout(function(){ scrollToReaderHref(href, false); }, 350);
+    setTimeout(function(){ scrollToReaderHref(href, false); }, 1200);
+  }
   function resizeFrame(frame) {
     try {
       var doc = frame.contentDocument;
       if (!doc) return;
       doc.querySelectorAll('a').forEach(function(a){ a.target = '_top'; });
+      if (!doc._tocMasterReturnBound) {
+        doc._tocMasterReturnBound = true;
+        doc.addEventListener('click', function(event) {
+          var a = event.target && event.target.closest ? event.target.closest('a') : null;
+          if (!a || !a.classList || !a.classList.contains('h1-master')) return;
+          var href = a.getAttribute('href') || '';
+          if (href.indexOf('toc.html') === -1) return;
+          event.preventDefault();
+          scrollToReaderHref(frame.getAttribute('data-reader-href'), true);
+        }, true);
+      }
+      if (doc.documentElement) doc.documentElement.style.overflow = 'hidden';
+      if (doc.body) doc.body.style.overflow = 'hidden';
       var size = function() {
         var body = doc.body;
         var root = doc.documentElement;
@@ -330,6 +533,108 @@ def connected_reader_script() -> str:
       resizeFrame(frame);
     }
   });
+  window.addEventListener('hashchange', restoreReaderHash);
+  window.addEventListener('load', restoreReaderHash);
+  restoreReaderHash();
+})();
+</script>
+"""
+
+
+def page_scrollbar_html() -> str:
+    return (
+        '<div class="toc-page-scrollbar" aria-hidden="true">'
+        '<div class="toc-page-scrollbar-thumb"></div>'
+        '</div>'
+    )
+
+
+def page_scrollbar_script() -> str:
+    return """
+<script>
+(function(){
+  var track = document.querySelector('.toc-page-scrollbar');
+  var thumb = document.querySelector('.toc-page-scrollbar-thumb');
+  if (!track || !thumb) return;
+  var drag = null;
+
+  function metrics() {
+    var root = document.documentElement;
+    var body = document.body;
+    var scrollHeight = Math.max(
+      root ? root.scrollHeight : 0,
+      body ? body.scrollHeight : 0
+    );
+    var clientHeight = window.innerHeight || (root ? root.clientHeight : 0) || 1;
+    var maxScroll = Math.max(0, scrollHeight - clientHeight);
+    var trackHeight = track.clientHeight;
+    var ratio = clientHeight / Math.max(scrollHeight, clientHeight);
+    var thumbHeight = Math.max(48, Math.floor(trackHeight * ratio));
+    var maxTop = Math.max(0, trackHeight - thumbHeight);
+    return {
+      root: root,
+      body: body,
+      clientHeight: clientHeight,
+      maxScroll: maxScroll,
+      trackHeight: trackHeight,
+      thumbHeight: thumbHeight,
+      maxTop: maxTop
+    };
+  }
+
+  function scrollToTopValue(value) {
+    window.scrollTo(0, Math.max(0, value));
+  }
+
+  function syncPageThumb() {
+    var m = metrics();
+    var scrollTop = window.pageYOffset || m.root.scrollTop || (m.body ? m.body.scrollTop : 0) || 0;
+    var top = m.maxScroll > 0 ? Math.floor((scrollTop / m.maxScroll) * m.maxTop) : 0;
+    thumb.style.height = m.thumbHeight + 'px';
+    thumb.style.transform = 'translateY(' + top + 'px)';
+  }
+
+  function pageYToScroll(pageY, offset) {
+    var rect = track.getBoundingClientRect();
+    var m = metrics();
+    var top = Math.max(0, Math.min(m.maxTop, pageY - rect.top - offset));
+    return m.maxTop > 0 ? (top / m.maxTop) * m.maxScroll : 0;
+  }
+
+  thumb.addEventListener('pointerdown', function(event) {
+    var rect = thumb.getBoundingClientRect();
+    drag = { offset: event.clientY - rect.top };
+    thumb.classList.add('is-dragging');
+    thumb.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  thumb.addEventListener('pointermove', function(event) {
+    if (!drag) return;
+    scrollToTopValue(pageYToScroll(event.clientY, drag.offset));
+    event.preventDefault();
+  });
+
+  function stopDrag(event) {
+    if (!drag) return;
+    drag = null;
+    thumb.classList.remove('is-dragging');
+    try { thumb.releasePointerCapture(event.pointerId); } catch (e) {}
+  }
+
+  thumb.addEventListener('pointerup', stopDrag);
+  thumb.addEventListener('pointercancel', stopDrag);
+
+  track.addEventListener('pointerdown', function(event) {
+    if (event.target === thumb) return;
+    var m = metrics();
+    scrollToTopValue(pageYToScroll(event.clientY, m.thumbHeight / 2));
+    event.preventDefault();
+  });
+
+  window.addEventListener('scroll', syncPageThumb, { passive: true });
+  window.addEventListener('resize', syncPageThumb);
+  syncPageThumb();
 })();
 </script>
 """
@@ -339,21 +644,13 @@ def make_summary_html(dates: list[str],
                       week_summaries: list[dict[str, Any]],
                       category_summaries: list[dict[str, Any]],
                       campaign_summary: dict | None) -> str:
-    category_points = sum(int(c.get("n_points") or 0) for c in category_summaries)
-    campaign_points = int(campaign_summary.get("n_points") or 0) if campaign_summary else category_points
     body = (
-        f"<p>This table of contents maps the full campaign publication: "
-        f"<strong>{len(dates)} daily reports</strong>, "
-        f"<strong>{len(week_summaries)} weekly reports</strong>, "
-        f"<strong>{len(category_summaries)} category reports</strong>, and "
-        f"<strong>1 campaign cumulative report</strong>.</p>"
         f"<p>The report set spans <strong>{RESEARCH_START_DATE}</strong> through "
         f"<strong>{RESEARCH_END_DATE}</strong>, ending with "
-        f"<strong>Mockingbird</strong>. The cumulative layer carries "
-        f"<strong>{campaign_points}</strong> category-local datapoints.</p>"
-        f"<p>The cover page is first in the sequence. The cover image is "
-        f"reserved for <strong>cover.html</strong> only; this TOC uses a "
-        f"separate generated dossier background for navigation.</p>"
+        f"<strong>a 10k-vocabulary CaseOps loop-body submission</strong>.</p>"
+        f"<p>BPB validity convention: values below "
+        f"<strong>{INVALID_VAL_BPB_FLOOR:.2f}</strong> are treated as "
+        f"eval/loader-error readings and excluded from best-valid comparisons.</p>"
     )
     return (
         '<aside class="day-summary">'
@@ -372,12 +669,12 @@ def render_toc_report(dates: list[str],
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     TOC_QMD_DIR.mkdir(parents=True, exist_ok=True)
     header_fields = [
-        ("DOCUMENT", "PARAMETER GOLF CAMPAIGN"),
+        ("DOCUMENT", "COMPETITION DATA LOGS"),
+        ("COMPETITION", "OPENAI PARAMETER GOLF"),
         ("DATES", f"{RESEARCH_START_DATE} TO {RESEARCH_END_DATE}"),
-        ("DAILY REPORTS", str(len(dates))),
-        ("WEEKLY REPORTS", str(len(week_summaries))),
         ("CATEGORY REPORTS", str(len(category_summaries))),
-        ("FINAL", "MOCKINGBIRD"),
+        ("WEEKLY REPORTS", str(len(week_summaries))),
+        ("DAILY REPORTS", str(len(dates))),
     ]
     h1_html = make_report_h1_html("TABLE OF CONTENTS", "CAMPAIGN")
     report_header = make_report_header_html(header_fields)
@@ -391,8 +688,15 @@ def render_toc_report(dates: list[str],
     connected_reader = make_connected_reader_html(
         dates, week_summaries, category_summaries
     )
+    webloader_cover = make_webloader_cover_html()
+    webloader_intro = make_webloader_intro_html()
+    webloader_page2 = make_webloader_page2_html()
 
     body_parts = [
+        page_scrollbar_html(),
+        webloader_cover,
+        webloader_intro,
+        webloader_page2,
         h1_html,
         "<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>",
         report_header,
@@ -418,11 +722,18 @@ def render_toc_report(dates: list[str],
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
         + "\n".join(body_parts)
         + connected_reader_script()
+        + page_scrollbar_script()
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")
 
     qmd_lines = [
+        webloader_cover,
+        "",
+        webloader_intro,
+        "",
+        webloader_page2,
+        "",
         h1_html,
         "",
         report_header,

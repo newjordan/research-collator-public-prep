@@ -29,8 +29,8 @@ def verify_cover(html_path: Path) -> dict:
         raise AssertionError(f"missing cover image alt marker: {html_path}")
     if text.count("<img ") != 1:
         raise AssertionError(f"cover page must render exactly one image: {html_path}")
-    if "Enter Table of Contents" not in text or "toc.html" not in text:
-        raise AssertionError(f"cover page must link into the TOC: {html_path}")
+    if '<a href="intro.html">Enter</a>' not in text:
+        raise AssertionError(f"cover page must link into the intro page: {html_path}")
     return {
         "html_path": str(html_path),
         "images": text.count("<img "),

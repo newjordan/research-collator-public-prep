@@ -132,7 +132,7 @@ def render_cover_page() -> dict:
     </div>
     <div class="enter-row">
       <span>{RESEARCH_START_DATE} / {RESEARCH_END_DATE}</span>
-      <a href="toc.html">Enter Table of Contents</a>
+      <a href="intro.html">Enter</a>
     </div>
   </main>
 </body>
@@ -147,7 +147,7 @@ def render_cover_page() -> dict:
             "",
             f"Cover image: `{cover_path}`",
             "",
-            "[Enter Table of Contents](../preview/toc.html)",
+            "[Enter](../preview/intro.html)",
             "",
         ]),
         encoding="utf-8",
