@@ -697,7 +697,6 @@ def render_toc_report(dates: list[str],
         dates, week_summaries, category_summaries, campaign_summary
     )
     layer_table = make_layer_table(dates, week_summaries, category_summaries, campaign_summary)
-    category_table = make_category_table(category_summaries)
     week_table = make_week_table(week_summaries)
     daily_table = make_lazy_daily_table(dates, days_summary)
     connected_reader = make_connected_reader_html(
@@ -721,8 +720,6 @@ def render_toc_report(dates: list[str],
     body_parts.extend([
         layer_table,
         "<h2>SECTION 2.0 — REPORT INDEX</h2>",
-        "<h3>CAMPAIGN AND CATEGORY REPORTS</h3>",
-        category_table,
         "<h3>WEEKLY REPORTS</h3>",
         week_table,
         "<h3>DAILY REPORTS</h3>",
@@ -761,10 +758,6 @@ def render_toc_report(dates: list[str],
         layer_table,
         "",
         "## SECTION 2.0 — REPORT INDEX",
-        "",
-        "### CAMPAIGN AND CATEGORY REPORTS",
-        "",
-        category_table,
         "",
         "### WEEKLY REPORTS",
         "",
