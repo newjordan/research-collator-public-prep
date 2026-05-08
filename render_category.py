@@ -36,6 +36,7 @@ from render_day import (
     ASSETS_DIR,
     DAILY_TEMPLATE_STANDARD,
     DB,
+    FRAGMENTS_DIR,
     HTML_DIR,
     KERNEL_CAMP,
     KERNEL_FB_RATIO_METRIC,
@@ -749,6 +750,29 @@ def make_full_table_html(category: str,
     return "\n".join(rows)
 
 
+def make_lazy_full_table_html(category: str,
+                              points: list[dict[str, Any]]) -> str:
+    if not points:
+        return make_full_table_html(category, points)
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_path = FRAGMENTS_DIR / f"category_{category}_full_table.html"
+    fragment_path.write_text(make_full_table_html(category, points), encoding="utf-8")
+    fragment_href = f"../fragments/{fragment_path.name}"
+    target_id = f"category-{category}-full-table"
+    return (
+        "<div class='lazy-test-shell'>"
+        f"<p class='muted'>Full {html.escape(CATEGORY_LABEL[category].lower())} "
+        "daily datapoint rows are loaded on demand for scan speed.</p>"
+        "<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='load full table' data-hide-label='hide full table' "
+        "data-loading-label='loading full table' data-error-label='table load failed'>load full table</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        "</div>"
+    )
+
+
 # ---------- per-category render ----------------------------------------------
 
 def render_category(conn: sqlite3.Connection,
@@ -834,7 +858,7 @@ def render_category(conn: sqlite3.Connection,
 
     body_parts.extend([
         "<h2>SECTION 2.0 — CATEGORY DAILY DATAPOINTS</h2>",
-        make_full_table_html(category, points),
+        make_lazy_full_table_html(category, points),
     ])
 
     full_html = (
