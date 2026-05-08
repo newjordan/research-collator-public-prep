@@ -433,6 +433,7 @@ def make_connected_reader_html(dates: list[str],
         starts_collapsed = item["kind"] == "category" and item["href"] in {
             "categories/experimental.html",
             "categories/neural.html",
+            "categories/kernel.html",
         }
         collapsed_class = " is-collapsed" if starts_collapsed else ""
         expanded_attr = "false" if starts_collapsed else "true"
