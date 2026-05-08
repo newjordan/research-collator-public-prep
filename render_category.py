@@ -20,11 +20,15 @@ import datetime as dt
 import html
 import json
 import os
+import re
 import sqlite3
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 import plot as plot_mod
 import render_day
@@ -41,6 +45,7 @@ from render_day import (
     OUT_ROOT,
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
+    GITHUB_REMOTES,
     _daily_template_style,
     _embedded_log_script,
     compute_day_index,
@@ -75,6 +80,33 @@ CATEGORY_QMD_DIR = OUT_ROOT / "categories"
 CATEGORY_HTML_DIR = HTML_DIR / "categories"
 CATEGORY_ASSETS_DIR = ASSETS_DIR / "categories"
 BIWEEKLY_WINDOW_WEEKS = 2
+ARCHITECTURE_MASTER_SHEET_URL = (
+    "https://github.com/newjordan/research-collator/blob/"
+    "art/palette-switcher/ARCHITECTURE_FAMILY_MASTER_SHEET.md"
+)
+LOCAL_TO_GIT_SOURCE = {
+    "parameter-golf-lab": "git:parameter-golf-lab",
+    "open_parameter_golf_junkyard": "git:parameter-golf-lab",
+    "parameter-golf-cross-repo": "git:parameter-golf-lab",
+    "sota_crawler": "git:sota_crawler",
+    "SOTA_FINAL": "git:SOTA_FINAL",
+    "sota_rascal": "git:sota_rascal",
+    "sota_nueral": "git:sota_nueral",
+    "pg_whale": "git:pg_whale",
+    "rascal-private": "git:rascal-private",
+}
+PUBLIC_SOURCE_ROOTS = {
+    "parameter-golf-lab": "/home/frosty40/llm_research/parameter-golf-lab",
+    "open_parameter_golf_junkyard": "/home/frosty40/llm_research/parameter-golf-lab",
+    "parameter-golf-cross-repo": "/home/frosty40/llm_research/parameter-golf-cross-repo",
+    "sota_crawler": "/home/frosty40/llm_research/sota_crawler",
+    "SOTA_FINAL": "/home/frosty40/llm_research/SOTA_FINAL",
+    "sota_rascal": "/home/frosty40/llm_research/sota_rascal",
+    "sota_nueral": "/home/frosty40/llm_research/sota_nueral",
+    "pg_whale": "/home/frosty40/llm_research/pg_whale",
+    "rascal-private": "/home/frosty40/llm_research/rascal-private",
+}
+PUBLIC_URL_CHECK_CACHE: dict[str, bool] = {}
 
 
 # ---------- data --------------------------------------------------------------
@@ -122,6 +154,166 @@ def window_slug(window: dict[str, Any], metric: str | None = None) -> str:
     return base
 
 
+def _repo_raw_root(github_base: str) -> str:
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/?$", github_base)
+    if not m:
+        return ""
+    return f"https://raw.githubusercontent.com/{m.group(1)}/{m.group(2)}"
+
+
+def public_url_exists(url: str) -> bool:
+    if not url:
+        return False
+    if url in PUBLIC_URL_CHECK_CACHE:
+        return PUBLIC_URL_CHECK_CACHE[url]
+    req = Request(url, method="HEAD", headers={"User-Agent": "research-collator"})
+    try:
+        with urlopen(req, timeout=4) as resp:
+            ok = 200 <= int(resp.status) < 400
+    except Exception:
+        ok = False
+    PUBLIC_URL_CHECK_CACHE[url] = ok
+    return ok
+
+
+def _public_rel_path(source_label: str, abs_path: str, rel_path: str) -> str:
+    if rel_path:
+        return rel_path.strip("/")
+    root = PUBLIC_SOURCE_ROOTS.get(source_label)
+    if root and abs_path.startswith(root.rstrip("/") + "/"):
+        return abs_path[len(root.rstrip("/")) + 1:]
+    return ""
+
+
+def tracked_commit_for_path(source_label: str, public_rel: str) -> dict[str, str]:
+    root = PUBLIC_SOURCE_ROOTS.get(source_label)
+    git_label = LOCAL_TO_GIT_SOURCE.get(source_label)
+    base = GITHUB_REMOTES.get(git_label or "", "")
+    if not root or not git_label or not base or not public_rel:
+        return {}
+    try:
+        sha = subprocess.check_output(
+            ["git", "-C", root, "rev-list", "-n", "1", "--all", "--", public_rel],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return {}
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        return {}
+    try:
+        title = subprocess.check_output(
+            ["git", "-C", root, "log", "-1", "--format=%s", sha],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        title = ""
+    return {
+        "sha": sha,
+        "short_sha": sha[:7],
+        "title": title,
+        "url": f"{base}/commit/{sha}",
+        "base": base,
+        "rel_path": public_rel,
+    }
+
+
+def nearest_public_commit(conn: sqlite3.Connection,
+                          source_label: str,
+                          mtime_iso: str) -> dict[str, str]:
+    git_label = LOCAL_TO_GIT_SOURCE.get(source_label)
+    if not git_label or not mtime_iso:
+        return {}
+    row = conn.execute(
+        """
+        SELECT rel_path, title, mtime_iso
+        FROM artifacts
+        WHERE source_label = ?
+          AND file_kind = 'git_commit'
+          AND ABS(julianday(mtime_iso) - julianday(?)) <= 2.0
+        ORDER BY ABS(julianday(mtime_iso) - julianday(?)) ASC
+        LIMIT 1
+        """,
+        (git_label, mtime_iso, mtime_iso),
+    ).fetchone()
+    if not row:
+        return {}
+    sha = str(row["rel_path"] or "").strip()
+    base = GITHUB_REMOTES.get(git_label, "")
+    if not sha or not base:
+        return {}
+    return {
+        "sha": sha,
+        "short_sha": sha[:7],
+        "title": str(row["title"] or ""),
+        "time": str(row["mtime_iso"] or ""),
+        "url": f"{base}/commit/{sha}",
+        "base": base,
+    }
+
+
+def public_artifact_links(conn: sqlite3.Connection,
+                          source_label: str,
+                          abs_path: str,
+                          rel_path: str,
+                          mtime_iso: str) -> dict[str, str]:
+    if source_label.startswith("git:"):
+        sha = rel_path.strip() or abs_path.rsplit("/", 1)[-1].strip()
+        base = GITHUB_REMOTES.get(source_label, "")
+        if re.fullmatch(r"[0-9a-f]{40}", sha) and base:
+            return {
+                "sha": sha,
+                "short_sha": sha[:7],
+                "title": "",
+                "time": mtime_iso,
+                "url": f"{base}/commit/{sha}",
+                "base": base,
+            }
+        return {}
+    public_rel = _public_rel_path(source_label, abs_path, rel_path)
+    exact = tracked_commit_for_path(source_label, public_rel)
+    if exact:
+        encoded_path = quote(public_rel, safe="/")
+        raw_root = _repo_raw_root(exact["base"])
+        if raw_root:
+            raw_url = f"{raw_root}/{exact['sha']}/{encoded_path}"
+            if public_url_exists(raw_url):
+                exact["blob_url"] = f"{exact['base']}/blob/{exact['sha']}/{encoded_path}"
+                exact["raw_url"] = raw_url
+        return exact
+    commit = nearest_public_commit(conn, source_label, mtime_iso)
+    if not commit or not public_rel:
+        return commit
+    commit["rel_path"] = public_rel
+    return commit
+
+
+def condition_text_for_path(abs_path: str) -> str:
+    if not abs_path:
+        return ""
+    path = Path(abs_path)
+    search_dirs = [path.parent, *list(path.parents)[:6]]
+    seen: set[Path] = set()
+    for directory in search_dirs:
+        if directory in seen:
+            continue
+        seen.add(directory)
+        for name in ("RESOLVED_CONDITION.txt", "CONDITION.md"):
+            candidate = directory / name
+            if not candidate.exists() or not candidate.is_file():
+                continue
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            text = sanitize_public_text(text)
+            text = re.sub(r"\s+", " ", text).strip()
+            if text:
+                return text[:420]
+    return ""
+
+
 def _category_rows_for_day(conn: sqlite3.Connection,
                            date: str,
                            category: str,
@@ -166,6 +358,15 @@ def build_category_datapoints(conn: sqlite3.Connection,
         metric, cat_rows = chosen
         cat_rows.sort(key=lambda r: r["value"])
         best = cat_rows[0]
+        source_records = best.get("source_records") or []
+        source_ref = source_records[0] if source_records else {}
+        public_source = public_artifact_links(
+            conn,
+            source_label=best.get("source_label") or "",
+            abs_path=best.get("abs_path") or "",
+            rel_path=source_ref.get("rel_path") or "",
+            mtime_iso=source_ref.get("mtime_iso") or "",
+        )
         win = window_for_date(windows, date)
         points.append({
             "date": date,
@@ -176,7 +377,10 @@ def build_category_datapoints(conn: sqlite3.Connection,
             "value_display": format_metric_value(metric, best["value"]),
             "title": (best.get("title") or "").strip(),
             "abs_path": best.get("abs_path") or "",
+            "rel_path": source_ref.get("rel_path") or "",
             "source_label": best.get("source_label") or "",
+            "public_source": public_source,
+            "condition_text": condition_text_for_path(best.get("abs_path") or ""),
             "n_category_rows": len(cat_rows),
             "n_runs": int(best.get("n_runs") or 1),
             "window": win["window"] if win else None,
@@ -255,6 +459,60 @@ def category_action_style() -> str:
         outline-offset: 2px;
     }
     """
+
+
+def public_source_buttons_html(point: dict[str, Any]) -> str:
+    source = point.get("public_source") or {}
+    buttons: list[str] = [
+        f"<a class='category-action' href='{html.escape(ARCHITECTURE_MASTER_SHEET_URL, quote=True)}'>"
+        "architecture sheet</a>"
+    ]
+    if source.get("blob_url"):
+        buttons.insert(
+            0,
+            f"<a class='category-action' href='{html.escape(source['blob_url'], quote=True)}'>"
+            "view source</a>",
+        )
+    if source.get("raw_url"):
+        buttons.insert(
+            1,
+            f"<a class='category-action' href='{html.escape(source['raw_url'], quote=True)}' download>"
+            "download file</a>",
+        )
+    if source.get("url"):
+        buttons.append(
+            f"<a class='category-action' href='{html.escape(source['url'], quote=True)}'>"
+            "commit</a>"
+        )
+    return (
+        "<div class='log-meta'><strong>public files</strong>: "
+        + " ".join(buttons)
+        + "</div>"
+    )
+
+
+def public_source_meta_html(point: dict[str, Any]) -> str:
+    source = point.get("public_source") or {}
+    lines: list[str] = []
+    if source.get("short_sha"):
+        title = sanitize_public_text(source.get("title") or "")
+        lines.append(
+            f"<div class='log-meta'><strong>commit</strong>: "
+            f"<code>{html.escape(source['short_sha'])}</code>"
+            + (f" - {html.escape(title[:180])}" if title else "")
+            + "</div>"
+        )
+    if source.get("blob_url") and point.get("rel_path"):
+        lines.append(
+            f"<div class='log-meta'><strong>file path</strong>: "
+            f"<code>{html.escape(point['rel_path'])}</code></div>"
+        )
+    if point.get("condition_text"):
+        lines.append(
+            f"<div class='log-meta'><strong>condition</strong>: "
+            f"{html.escape(point['condition_text'])}</div>"
+        )
+    return "".join(lines)
 
 
 def points_for_window(points: list[dict[str, Any]],
@@ -420,6 +678,8 @@ def make_window_table_html(category: str,
             f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
+            f"{public_source_buttons_html(p)}"
+            f"{public_source_meta_html(p)}"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
@@ -480,6 +740,8 @@ def make_full_table_html(category: str,
             f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
+            f"{public_source_buttons_html(p)}"
+            f"{public_source_meta_html(p)}"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
