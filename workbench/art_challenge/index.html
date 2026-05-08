@@ -39,7 +39,9 @@
       transition: filter 220ms ease;
     }
 
-    /* Top-left meta label, kept tight. */
+    /* Top-left meta label and palette chip strip — hidden by default
+       now that the stamp is the primary interaction. Both reappear
+       when the page is loaded with ?debug=1 for tuning. */
     .label {
       position: fixed;
       top: 8px;
@@ -53,15 +55,19 @@
       color: var(--chrome-fg);
       border: 1px solid var(--chrome-rule);
       pointer-events: none;
+      display: none;
     }
+    body.debug .label,
+    body.debug .switcher { display: flex; }
 
-    /* Palette switcher — fixed top-right, mono-style chip strip. */
+    /* Palette switcher — fixed top-right, mono-style chip strip.
+       Hidden in normal view; shown under body.debug. */
     .switcher {
       position: fixed;
       top: 8px;
       right: 8px;
       z-index: 20;
-      display: flex;
+      display: none;
       flex-wrap: wrap;
       gap: 6px;
       padding: 6px;
@@ -100,6 +106,66 @@
       align-self: center;
       padding: 0 4px 0 2px;
     }
+
+    /* ----- "smooth_brain" stamp click-target -------------------------
+       Invisible button positioned over the stamp inside the parchment
+       art. Geometry is computed in JS from .intro-shell's rect so we
+       don't have to touch the underlying intro.html. Append ?debug=1
+       to the URL to outline the hitbox while tuning. */
+    .stamp-btn {
+      position: fixed;
+      z-index: 40;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      outline: 0;
+    }
+    .stamp-btn[hidden] { display: none; }
+    .stamp-btn:focus-visible {
+      outline: 1px dashed var(--chrome-fg);
+      outline-offset: 2px;
+    }
+    .stamp-btn[data-debug="1"] {
+      background: rgba(255, 0, 255, 0.12);
+      outline: 1px dashed magenta;
+    }
+
+    /* ----- Radial color wipe overlay ---------------------------------
+       Sits above iframes AND chrome so the entire surface participates
+       in the cascade. mix-blend-mode: color tints the visible result
+       with the OLD palette's hue, so even after we instantly swap the
+       iframe filter to the NEW palette, the area outside the growing
+       radial mask still LOOKS like the old palette. The mask grows
+       from the click point until the new tone has overtaken everything.
+       Dither edge is intentionally postponed — the `--wipe-feather`
+       band is where it'll plug in later. */
+    .wipe-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      background-color: var(--wipe-tint, transparent);
+      mix-blend-mode: color;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      --wipe-r: 0px;
+      --wipe-cx: 50%;
+      --wipe-cy: 50%;
+      --wipe-feather: 8px;
+      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+    }
+    .wipe-overlay.is-running { opacity: 1; }
   </style>
 </head>
 <body>
@@ -123,6 +189,12 @@
     <iframe src="intro.html" title="page 2 — intro"></iframe>
     <iframe src="toc.html" title="table of contents"></iframe>
   </div>
+
+  <!-- The stamp button — geometry set by JS to track .intro-shell. -->
+  <button class="stamp-btn" type="button" aria-label="Cycle palette via smooth_brain stamp" hidden></button>
+
+  <!-- Radial color wipe overlay. -->
+  <div class="wipe-overlay" aria-hidden="true"></div>
 
   <script>
     /* Each preset defines:
@@ -194,6 +266,8 @@
     const buttons = document.querySelectorAll(".switcher button[data-preset]");
     const labelEl = document.querySelector(".label");
 
+    let currentPalette = "original";
+
     function applyPreset(name) {
       const p = PRESETS[name];
       if (!p) return;
@@ -206,6 +280,7 @@
       buttons.forEach((b) => {
         b.setAttribute("aria-pressed", b.dataset.preset === name ? "true" : "false");
       });
+      currentPalette = name;
       try { localStorage.setItem("palette", name); } catch (_) {}
     }
 
@@ -219,6 +294,171 @@
       if (saved && PRESETS[saved]) initial = saved;
     } catch (_) {}
     applyPreset(initial);
+
+    /* ============================================================
+       Stamp button + radial color wipe
+       ============================================================
+       The "smooth_brain" stamp lives inside the parchment art on
+       intro.html. We don't modify the image — instead we project a
+       click-target onto its rect by sampling .intro-shell's geometry
+       at runtime. On click we cycle palette and run a radial wipe:
+       the iframe filter switches instantly to the NEW palette, but a
+       full-viewport overlay tinted with the OLD palette's hue (via
+       mix-blend-mode: color) sits on top, masked from a circle whose
+       radius animates outward from the click point. So the user sees
+       the new color "spread" out from the stamp.
+       Tunables that matter are bunched here for fast iteration. */
+
+    const STAMP_RECT_PCT = {
+      // Percentages of .intro-shell's own width / height. Adjust here.
+      left:   0.78,
+      top:    0.025,
+      width:  0.17,
+      height: 0.05,
+    };
+
+    const WIPE = {
+      durationMs: 750,
+      // Easing: easeOutCubic gives a confident push that settles late.
+      ease: (t) => 1 - Math.pow(1 - t, 3),
+      // Slight overshoot past the farthest corner so the trailing
+      // edge clears before we drop the overlay.
+      overshootPx: 60,
+    };
+
+    const PALETTE_CYCLE = [
+      "original", "phosphor", "amber", "cyan", "magenta",
+      "grey", "bw", "sepia", "invert", "bluep",
+    ];
+
+    const stampBtn   = document.querySelector(".stamp-btn");
+    const wipeEl     = document.querySelector(".wipe-overlay");
+    const introFrame = document.querySelector('iframe[title^="page 2"]');
+
+    // ?debug=1 outlines the stamp hitbox AND surfaces the palette chip
+    // strip / status label, so we can tune coords and watch state.
+    if (new URLSearchParams(location.search).get("debug") === "1") {
+      stampBtn.dataset.debug = "1";
+      document.body.classList.add("debug");
+    }
+
+    function getIntroShell() {
+      try {
+        return introFrame &&
+               introFrame.contentDocument &&
+               introFrame.contentDocument.querySelector(".intro-shell");
+      } catch (_) { return null; }
+    }
+
+    function layoutStamp() {
+      const shell = getIntroShell();
+      if (!shell || !introFrame) { stampBtn.hidden = true; return; }
+      const ifr = introFrame.getBoundingClientRect();
+      const sr  = shell.getBoundingClientRect();
+      const left   = ifr.left + sr.left + sr.width  * STAMP_RECT_PCT.left;
+      const top    = ifr.top  + sr.top  + sr.height * STAMP_RECT_PCT.top;
+      const width  = sr.width  * STAMP_RECT_PCT.width;
+      const height = sr.height * STAMP_RECT_PCT.height;
+      // Hide if intro is off-screen, so the click target doesn't sit
+      // floating over the TOC.
+      if (top + height < 0 || top > window.innerHeight) {
+        stampBtn.hidden = true;
+        return;
+      }
+      stampBtn.hidden = false;
+      stampBtn.style.left   = left   + "px";
+      stampBtn.style.top    = top    + "px";
+      stampBtn.style.width  = width  + "px";
+      stampBtn.style.height = height + "px";
+    }
+
+    // Poll until .intro-shell is actually present in the iframe's
+    // document. We can't trust a single readyState check because the
+    // iframe transiently reports "complete" on about:blank before the
+    // real src loads. Polls every animation frame for ~3 seconds.
+    function waitForShellThen(cb) {
+      let tries = 0;
+      const limit = 180;
+      (function probe() {
+        if (getIntroShell()) { cb(); return; }
+        if (++tries > limit) return;
+        requestAnimationFrame(probe);
+      })();
+    }
+
+    if (introFrame) {
+      const wireIntro = () => {
+        waitForShellThen(() => {
+          layoutStamp();
+          try {
+            const w = introFrame.contentWindow;
+            if (w) w.addEventListener("scroll", layoutStamp, { passive: true });
+          } catch (_) {}
+        });
+      };
+      introFrame.addEventListener("load", wireIntro);
+      // Also fire immediately in case the iframe finished loading
+      // before this script attached its listener.
+      wireIntro();
+    }
+    window.addEventListener("resize", layoutStamp, { passive: true });
+    window.addEventListener("scroll", layoutStamp, { passive: true });
+
+    function maxRadiusFrom(cx, cy) {
+      const w = window.innerWidth, h = window.innerHeight;
+      return Math.max(
+        Math.hypot(cx,     cy),
+        Math.hypot(w - cx, cy),
+        Math.hypot(cx,     h - cy),
+        Math.hypot(w - cx, h - cy)
+      );
+    }
+
+    let wipeRunning = false;
+    function runWipe(cx, cy, oldPaletteName, newPaletteName) {
+      if (wipeRunning) return;
+      wipeRunning = true;
+      const oldPreset = PRESETS[oldPaletteName];
+      const targetR = maxRadiusFrom(cx, cy) + WIPE.overshootPx;
+
+      wipeEl.style.setProperty("--wipe-tint", oldPreset.chrome.fg);
+      wipeEl.style.setProperty("--wipe-cx",   cx + "px");
+      wipeEl.style.setProperty("--wipe-cy",   cy + "px");
+      wipeEl.style.setProperty("--wipe-r",    "0px");
+      wipeEl.classList.add("is-running");
+
+      // Switch palette under the overlay. mix-blend tinting will
+      // make the iframe still LOOK old until the mask reveals it.
+      applyPreset(newPaletteName);
+
+      const start = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - start) / WIPE.durationMs);
+        wipeEl.style.setProperty("--wipe-r", (WIPE.ease(t) * targetR) + "px");
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          wipeEl.classList.remove("is-running");
+          // Reset for next run; transition handles the fade-out.
+          setTimeout(() => {
+            wipeEl.style.setProperty("--wipe-r", "0px");
+            wipeRunning = false;
+          }, 200);
+        }
+      }
+      requestAnimationFrame(step);
+    }
+
+    function nextPalette(name) {
+      const idx = PALETTE_CYCLE.indexOf(name);
+      const j = (idx < 0 ? 0 : idx + 1) % PALETTE_CYCLE.length;
+      return PALETTE_CYCLE[j];
+    }
+
+    stampBtn.addEventListener("click", (e) => {
+      const cx = e.clientX, cy = e.clientY;
+      runWipe(cx, cy, currentPalette, nextPalette(currentPalette));
+    });
   </script>
 </body>
 </html>
