@@ -372,15 +372,7 @@ def toc_extra_style() -> str:
       --wipe-r: 0px;
       --wipe-cx: 50%;
       --wipe-cy: 50%;
-      --wipe-feather: 2px;
-      --wipe-band: 104px;
-      --wipe-band-inner: 44px;
-      --wipe-band-outer: 180px;
-      --wipe-pulse: 0px;
-      --wipe-cell: 16px;
-      --wipe-cell-half: 8px;
-      --wipe-cell-mark: 12px;
-      --wipe-angle: 0deg;
+      --wipe-feather: 8px;
       -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
         transparent 0,
         transparent calc(var(--wipe-r) - var(--wipe-feather)),
@@ -394,56 +386,6 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .wipe-overlay.is-running {{
       opacity: 1;
-    }}
-    body.toc-page .wipe-dither-overlay {{
-      position: fixed;
-      inset: 0;
-      z-index: 10002;
-      pointer-events: none;
-      background-color: var(--wipe-tint, transparent);
-      background-image:
-        repeating-conic-gradient(
-          from var(--wipe-angle) at var(--wipe-cx) var(--wipe-cy),
-          rgba(255,255,255,0.00) 0deg,
-          rgba(255,255,255,0.00) 10deg,
-          rgba(255,255,255,0.78) 10deg,
-          rgba(255,255,255,0.78) 20deg
-        ),
-        repeating-linear-gradient(
-          45deg,
-          rgba(0,0,0,0.00) 0,
-          rgba(0,0,0,0.00) var(--wipe-cell-half),
-          rgba(0,0,0,0.62) var(--wipe-cell-half),
-          rgba(0,0,0,0.62) var(--wipe-cell)
-        ),
-        repeating-linear-gradient(
-          -45deg,
-          rgba(255,255,255,0.00) 0,
-          rgba(255,255,255,0.00) var(--wipe-cell-mark),
-          rgba(255,255,255,0.48) var(--wipe-cell-mark),
-          rgba(255,255,255,0.48) var(--wipe-cell)
-        );
-      background-blend-mode: hard-light, multiply, screen;
-      mix-blend-mode: color;
-      opacity: 0;
-      transition: opacity 120ms ease;
-      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
-        transparent 0,
-        transparent calc(var(--wipe-r) - var(--wipe-band) - var(--wipe-pulse)),
-        #000 calc(var(--wipe-r) - var(--wipe-band-inner) - var(--wipe-pulse)),
-        #000 calc(var(--wipe-r) + var(--wipe-band) + var(--wipe-pulse)),
-        transparent calc(var(--wipe-r) + var(--wipe-band-outer) + var(--wipe-pulse)),
-        transparent 100%);
-      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
-        transparent 0,
-        transparent calc(var(--wipe-r) - var(--wipe-band) - var(--wipe-pulse)),
-        #000 calc(var(--wipe-r) - var(--wipe-band-inner) - var(--wipe-pulse)),
-        #000 calc(var(--wipe-r) + var(--wipe-band) + var(--wipe-pulse)),
-        transparent calc(var(--wipe-r) + var(--wipe-band-outer) + var(--wipe-pulse)),
-        transparent 100%);
-    }}
-    body.toc-page .wipe-dither-overlay.is-running {{
-      opacity: 0.92;
     }}
     @media (max-width: 760px) {{
       body.toc-page .toc-reader-topline {{
@@ -1038,7 +980,6 @@ def render_toc_report(dates: list[str],
         webloader_intro,
         webloader_page2,
         '<div class="wipe-overlay" aria-hidden="true"></div>',
-        '<div class="wipe-dither-overlay" aria-hidden="true"></div>',
         h1_html,
         "<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>",
         report_header,
