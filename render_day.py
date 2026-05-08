@@ -35,6 +35,7 @@ OUT_ROOT = Path("/home/frosty40/research_collator/output")
 QMD_DIR = OUT_ROOT / "days"
 HTML_DIR = OUT_ROOT / "preview"
 ASSETS_DIR = OUT_ROOT / "assets"
+FRAGMENTS_DIR = HTML_DIR / "fragments"
 ABLATION_LABELS_PATH = Path(os.environ.get(
     "ABLATION_LABELS_PATH",
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
@@ -1477,6 +1478,64 @@ def _embedded_log_style() -> str:
         color: var(--muted);
         font-size: 10px;
     }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
     """
 
 
@@ -1491,9 +1550,43 @@ def _embedded_log_script() -> str:
         "tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});"
         "row.classList.toggle('is-open',open);"
         "}"
-        "document.querySelectorAll('details.log-toggle').forEach(function(d){"
+        "function bind(root){"
+        "(root||document).querySelectorAll('details.log-toggle').forEach(function(d){"
+        "if(d.dataset.bound)return;"
+        "d.dataset.bound='1';"
         "d.addEventListener('toggle',function(){sync(d);});"
         "sync(d);"
+        "});"
+        "}"
+        "bind(document);"
+        "document.querySelectorAll('[data-lazy-fragment]').forEach(function(btn){"
+        "btn.addEventListener('click',function(){"
+        "var target=document.getElementById(btn.getAttribute('data-target'));"
+        "var url=btn.getAttribute('data-lazy-fragment');"
+        "if(!target||!url)return;"
+        "if(btn.dataset.loaded==='1'){"
+        "target.hidden=!target.hidden;"
+        "btn.textContent=target.hidden?'load kernel tests':'hide kernel tests';"
+        "return;"
+        "}"
+        "btn.disabled=true;"
+        "btn.textContent='loading kernel tests';"
+        "fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();})"
+        ".then(function(html){"
+        "target.innerHTML=html;"
+        "target.hidden=false;"
+        "btn.dataset.loaded='1';"
+        "btn.disabled=false;"
+        "btn.textContent='hide kernel tests';"
+        "bind(target);"
+        "})"
+        ".catch(function(err){"
+        "btn.disabled=false;"
+        "btn.textContent='load failed';"
+        "target.hidden=false;"
+        "target.innerHTML='<p class=\"muted\">Unable to load kernel test list: '+err.message+'</p>';"
+        "});"
+        "});"
         "});"
         "})();</script>"
     )
@@ -1945,7 +2038,11 @@ def assert_daily_template_contract(date: str,
             raise TemplateContractError(
                 f"test table header drifted: expected {expected_header!r}, got {bad_headers[0]!r}"
             )
-    elif n_tests and expected_html_header not in test_table_md:
+    elif (
+        n_tests
+        and expected_html_header not in test_table_md
+        and "data-lazy-fragment" not in test_table_md
+    ):
         raise TemplateContractError(
             f"test table header drifted: expected HTML header {expected_html_header!r}"
         )
@@ -2463,6 +2560,60 @@ def make_test_table_md(rows: list[dict], metric: str,
     return "\n".join(out)
 
 
+def _kernel_lazy_summary_html(rows: list[dict], metric: str) -> str:
+    valid = [
+        r for r in rows
+        if is_valid_metric_value(metric, r["value"])
+    ]
+    values = sorted(r["value"] for r in valid)
+    if values:
+        med = values[len(values) // 2] if len(values) % 2 else (
+            values[len(values) // 2 - 1] + values[len(values) // 2]
+        ) / 2.0
+        metric_text = (
+            f"min {format_metric_value(metric, values[0])} / "
+            f"median {format_metric_value(metric, med)} / "
+            f"max {format_metric_value(metric, values[-1])}"
+        )
+    else:
+        metric_text = "no finite kernel metric rows"
+    sources = sorted({sanitize_public_text(r.get("source_label") or "") for r in rows if r.get("source_label")})
+    hardware = sorted({str(r.get("hardware") or "") for r in rows if r.get("hardware")})
+    return (
+        "<div class='lazy-test-meta'>"
+        f"<span>{len(rows)} kernel rows</span>"
+        f"<span>{len(valid)} measured</span>"
+        f"<span>{html.escape(metric_text)}</span>"
+        f"<span>{html.escape(', '.join(hardware[:3]) or 'hardware mixed')}</span>"
+        f"<span>{html.escape(', '.join(sources[:3]) or 'sources mixed')}</span>"
+        "</div>"
+    )
+
+
+def make_lazy_kernel_test_table_md(date: str, rows: list[dict], metric: str,
+                                   reference_baseline: float | None) -> str:
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_name = f"{date}_{metric}_kernel_tests.html"
+    fragment_path = FRAGMENTS_DIR / fragment_name
+    fragment_path.write_text(
+        make_test_table_md(rows, metric, reference_baseline),
+        encoding="utf-8",
+    )
+    target_id = f"kernel-tests-{date}-{metric}".replace("_", "-")
+    return (
+        "<div class='lazy-test-card'>"
+        "<p><strong>KERNEL TEST RUNS</strong></p>"
+        f"{_kernel_lazy_summary_html(rows, metric)}"
+        "<p class='muted'>Full kernel benchmark rows are kept out of the main page for scan speed. "
+        "Load them only when inspecting the kernel test list.</p>"
+        f"<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='fragments/{html.escape(fragment_name, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}'>load kernel tests</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        "</div>"
+    )
+
+
 def load_approved_ablation_labels(path: Path = ABLATION_LABELS_PATH) -> dict[tuple[str, int, str], str]:
     """Load human-approved local-model labels.
 
@@ -2522,6 +2673,7 @@ def apply_approved_ablation_labels(rows: list[dict], date: str,
 
 
 def make_camp_test_tables_md(rows: list[dict], metric: str,
+                             date: str,
                              reference_baseline: float | None) -> str:
     if not rows:
         return make_test_table_md(rows, metric, reference_baseline)
@@ -2539,7 +2691,12 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
         label = CAMP_DISPLAY_LABEL.get(camp, camp).upper()
         sections.append(f"### {label} TEST RUNS — {len(camp_rows)}")
         sections.append("")
-        sections.append(make_test_table_md(camp_rows, metric, reference_baseline))
+        if camp == KERNEL_CAMP and is_kernel_metric(metric):
+            sections.append(
+                make_lazy_kernel_test_table_md(date, camp_rows, metric, reference_baseline)
+            )
+        else:
+            sections.append(make_test_table_md(camp_rows, metric, reference_baseline))
         sections.append("")
     return "\n".join(sections).strip()
 
@@ -2646,7 +2803,9 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     headline_text = " · ".join(headline_bits)
 
     approved_ablation_labels = apply_approved_ablation_labels(test_rows, date)
-    test_table_md = make_camp_test_tables_md(test_rows, headline_metric or "metric", chart_baseline)
+    test_table_md = make_camp_test_tables_md(
+        test_rows, headline_metric or "metric", date, chart_baseline
+    )
 
     # Compute day index across the corpus (Day 1, Day 12, etc.)
     day_index = compute_day_index(conn, date)
