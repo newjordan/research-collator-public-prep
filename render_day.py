@@ -1643,9 +1643,9 @@ def _embedded_log_script() -> str:
         "d.addEventListener('toggle',function(){sync(d);});"
         "sync(d);"
         "});"
-        "}"
-        "bind(document);"
-        "document.querySelectorAll('[data-lazy-fragment]').forEach(function(btn){"
+        "(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){"
+        "if(btn.dataset.lazyBound)return;"
+        "btn.dataset.lazyBound='1';"
         "btn.addEventListener('click',function(){"
         "var target=document.getElementById(btn.getAttribute('data-target'));"
         "var url=btn.getAttribute('data-lazy-fragment');"
@@ -1678,6 +1678,8 @@ def _embedded_log_script() -> str:
         "});"
         "});"
         "});"
+        "}"
+        "bind(document);"
         "})();</script>"
     )
 
