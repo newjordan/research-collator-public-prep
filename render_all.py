@@ -89,6 +89,24 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
     return {"date": date, "best": best_v, "camp": best_camp, "title": best_title}
 
 
+def minify_preview_html(root: Path = HTML_DIR) -> dict[str, int]:
+    """Conservatively minify generated HTML without touching text node content."""
+    before = 0
+    after = 0
+    count = 0
+    for path in root.rglob("*.html"):
+        raw = path.read_text(encoding="utf-8")
+        minified = re.sub(r">\s+<", "><", raw).strip()
+        if not minified:
+            continue
+        before += len(raw.encode("utf-8"))
+        after += len(minified.encode("utf-8"))
+        count += 1
+        if minified != raw:
+            path.write_text(minified, encoding="utf-8")
+    return {"files": count, "before": before, "after": after, "saved": before - after}
+
+
 def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
     """Remove date-named outputs no longer in the canonical campaign."""
     active = set(active_dates)
@@ -421,6 +439,12 @@ def main():
     )
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     (HTML_DIR / "journey.html").write_text(journey_html)
+
+    minify_summary = minify_preview_html()
+    print(
+        f"      minified {minify_summary['files']} HTML files, "
+        f"saved {minify_summary['saved'] / 1024:.1f} KiB"
+    )
 
     # The legacy journey page points at the assets dir directly via relative URL.
     print(
