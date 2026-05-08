@@ -117,6 +117,9 @@ def toc_extra_style() -> str:
     body.toc-page .toc-reader-entry.is-collapsed .toc-reader-frame {{
       display: none;
     }}
+    body.toc-page .toc-reader-entry.is-collapsed .toc-reader-day-list {{
+      display: none;
+    }}
     body.toc-page .toc-reader-topline {{
       display: flex;
       align-items: center;
@@ -193,6 +196,12 @@ def toc_extra_style() -> str:
       min-height: 720px;
       border: 1px solid var(--rule-hi);
       border-top: none;
+      background: var(--bg);
+    }}
+    body.toc-page .toc-reader-day-list {{
+      border: 1px solid var(--rule-hi);
+      border-top: none;
+      padding: 10px;
       background: var(--bg);
     }}
     body.toc-page .toc-webloader-intro {{
@@ -423,10 +432,12 @@ def make_connected_reader_html(dates: list[str],
                                week_summaries: list[dict[str, Any]],
                                category_summaries: list[dict[str, Any]]) -> str:
     parts = ["<div class=\"toc-reader\" data-connected-reader=\"true\">"]
-    for idx, item in enumerate(
-        connected_reader_items(dates, week_summaries, category_summaries),
-        start=1,
-    ):
+    idx = 1
+    day_items: list[dict[str, str]] = []
+    for item in connected_reader_items(dates, week_summaries, category_summaries):
+        if item["kind"] == "day":
+            day_items.append(item)
+            continue
         kind = html.escape(item["kind"], quote=True)
         label = html.escape(item["label"])
         href = html.escape(item["href"], quote=True)
@@ -457,6 +468,40 @@ def make_connected_reader_html(dates: list[str],
             f'loading="lazy" scrolling="no" data-reader-href="{href}" '
             f'data-reader-kind="{kind}"></iframe>'
             f'</section>'
+        )
+        idx += 1
+    if day_items:
+        day_rows = [
+            "<table class='test-runs-table'><thead><tr>"
+            "<th>DAY</th><th>DATE</th><th>OPEN</th></tr></thead><tbody>"
+        ]
+        for day in day_items:
+            day_href = html.escape(day["href"], quote=True)
+            day_label = html.escape(day["label"])
+            day_date = html.escape(day["href"].replace(".html", ""))
+            day_rows.append(
+                "<tr "
+                f"data-reader-href='{day_href}'>"
+                f"<td><strong>{day_label}</strong></td>"
+                f"<td>{day_date}</td>"
+                f"<td><a class='toc-action' href='{day_href}'>open day</a></td>"
+                "</tr>"
+            )
+        day_rows.append("</tbody></table>")
+        parts.append(
+            '<section class="toc-reader-entry toc-reader-day-group is-collapsed" '
+            'data-reader-kind="day-group">'
+            '<div class="toc-reader-topline">'
+            f'<strong>{idx:02d} / DAILY REPORTS · {len(day_items)} DAYS</strong>'
+            '<span class="toc-reader-actions">'
+            '<button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button>'
+            '<a class="toc-reader-open toc-action" href="2026-03-18.html">open first day</a>'
+            '</span>'
+            '</div>'
+            '<div class="toc-reader-day-list">'
+            + "".join(day_rows) +
+            '</div>'
+            '</section>'
         )
     parts.append("</div>")
     return "\n".join(parts)
@@ -513,6 +558,8 @@ def connected_reader_script() -> str:
       if (frame && normalizeHref(frame.getAttribute('data-reader-href')) === target) {
         return entries[i];
       }
+      var linked = entries[i].querySelector('[data-reader-href="' + target.replace(/"/g, '\\"') + '"]');
+      if (linked) return entries[i];
     }
     return null;
   }
