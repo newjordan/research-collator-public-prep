@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import render_week
+from render_intro import palette_easter_egg_controls, palette_easter_egg_script
 from render_day import (
     DAILY_TEMPLATE_STANDARD,
     FRAGMENTS_DIR,
@@ -27,7 +28,7 @@ from render_day import (
 )
 
 
-TOC_TEMPLATE_STANDARD = "toc-v1.2-page2-webloader"
+TOC_TEMPLATE_STANDARD = "toc-v1.3-palette-sync"
 TOC_QMD_DIR = OUT_ROOT / "toc"
 TOC_HTML_PATH = HTML_DIR / "toc.html"
 TOC_BACKGROUND_PATH = Path("assets/toc_background_generated.png")
@@ -52,6 +53,86 @@ def toc_extra_style() -> str:
     """
     return f"""
     {bg_css}
+    :root {{
+      --tone-filter: none;
+      --chrome-bg: #050605;
+      --chrome-fg: #8b3702;
+      --chrome-rule: #8b3702;
+      --chrome-bg-soft: #0c0907;
+    }}
+    body.toc-page {{
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
+      transform-origin: top center;
+    }}
+    body.toc-page .palette-label {{
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      padding: 4px 8px;
+      background: var(--chrome-bg);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }}
+    body.toc-page .palette-switcher {{
+      position: fixed;
+      top: 8px;
+      right: 24px;
+      z-index: 10000;
+      display: none;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      max-width: min(80vw, 720px);
+      padding: 6px;
+      background: var(--chrome-bg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+    }}
+    body.toc-page.debug .palette-label,
+    body.toc-page.debug .palette-switcher {{
+      display: flex;
+    }}
+    body.toc-page .palette-switcher span {{
+      align-self: center;
+      padding: 0 4px 0 2px;
+      color: var(--chrome-fg);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }}
+    body.toc-page .palette-switcher button {{
+      padding: 5px 9px;
+      background: var(--chrome-bg-soft);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      border-radius: 0;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }}
+    body.toc-page .palette-switcher button:hover,
+    body.toc-page .palette-switcher button:focus-visible,
+    body.toc-page .palette-switcher button[aria-pressed="true"] {{
+      background: var(--chrome-fg);
+      color: var(--chrome-bg);
+      outline: 0;
+    }}
     html,
     body.toc-page,
     body.toc-page * {{
@@ -532,7 +613,7 @@ def make_webloader_cover_html() -> str:
 def make_webloader_intro_html() -> str:
     return (
         '<section class="toc-webloader-intro" aria-label="Address to the Reader">'
-        '<iframe src="intro.html?embed=1" title="Address to the Reader" loading="eager"></iframe>'
+        '<iframe src="intro.html?embed=1&amp;nofilter=1" title="Address to the Reader" loading="eager"></iframe>'
         "</section>"
     )
 
@@ -817,6 +898,7 @@ def render_toc_report(dates: list[str],
     webloader_page2 = make_webloader_page2_html()
 
     body_parts = [
+        palette_easter_egg_controls(),
         page_scrollbar_html(),
         webloader_cover,
         webloader_intro,
@@ -846,6 +928,7 @@ def render_toc_report(dates: list[str],
         + connected_reader_script()
         + _embedded_log_script()
         + page_scrollbar_script()
+        + palette_easter_egg_script(include_stamp=False)
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")

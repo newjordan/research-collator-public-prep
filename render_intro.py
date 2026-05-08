@@ -11,7 +11,7 @@ from pathlib import Path
 from render_day import HTML_DIR, OUT_ROOT, preview_asset_src
 
 
-INTRO_TEMPLATE_STANDARD = "intro-v1.0-scroll-panel"
+INTRO_TEMPLATE_STANDARD = "intro-v1.1-palette-stamp"
 INTRO_HTML_PATH = HTML_DIR / "intro.html"
 INTRO_QMD_DIR = OUT_ROOT / "intro"
 INTRO_ART_PATH = Path("assets/intro_summary_panel.png")
@@ -83,6 +83,351 @@ def intro_copy_html(text: str) -> str:
     return "\n".join(html_blocks)
 
 
+def palette_easter_egg_style() -> str:
+    return """
+    :root {
+      --tone-filter: none;
+      --chrome-bg: #050605;
+      --chrome-fg: #8b3702;
+      --chrome-rule: #8b3702;
+      --chrome-bg-soft: #0c0907;
+      --wipe-tint: transparent;
+      --wipe-r: 0px;
+      --wipe-cx: 50%;
+      --wipe-cy: 50%;
+      --wipe-feather: 8px;
+    }
+    .intro-toned {
+      position: absolute;
+      inset: 0;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
+    }
+    body.palette-nofilter .intro-toned {
+      filter: none;
+    }
+    .stamp-btn {
+      position: absolute;
+      left: 78%;
+      top: 2.5%;
+      width: 17%;
+      height: 5%;
+      z-index: 40;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      outline: 0;
+    }
+    .stamp-btn:focus-visible {
+      outline: 1px dashed var(--chrome-fg);
+      outline-offset: 2px;
+    }
+    body.debug .stamp-btn {
+      background: rgba(255, 0, 255, 0.12);
+      outline: 1px dashed magenta;
+    }
+    .wipe-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      pointer-events: none;
+      background-color: var(--wipe-tint);
+      mix-blend-mode: color;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+    }
+    .wipe-overlay.is-running {
+      opacity: 1;
+    }
+    .palette-label {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 70;
+      display: none;
+      align-items: center;
+      padding: 4px 8px;
+      background: var(--chrome-bg);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+    .palette-switcher {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      z-index: 70;
+      display: none;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      max-width: min(80vw, 720px);
+      padding: 6px;
+      background: var(--chrome-bg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+    }
+    body.debug .palette-label,
+    body.debug .palette-switcher {
+      display: flex;
+    }
+    .palette-switcher span {
+      align-self: center;
+      padding: 0 4px 0 2px;
+      color: var(--chrome-fg);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+    .palette-switcher button {
+      padding: 5px 9px;
+      background: var(--chrome-bg-soft);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      border-radius: 0;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .palette-switcher button:hover,
+    .palette-switcher button:focus-visible,
+    .palette-switcher button[aria-pressed="true"] {
+      background: var(--chrome-fg);
+      color: var(--chrome-bg);
+      outline: 0;
+    }
+    """
+
+
+def palette_easter_egg_controls() -> str:
+    return """
+  <div class="palette-label" aria-hidden="true">palette: original</div>
+  <nav class="palette-switcher" aria-label="Palette switcher">
+    <span>palette</span>
+    <button type="button" data-preset="original" aria-pressed="true">Original</button>
+    <button type="button" data-preset="phosphor">Phosphor</button>
+    <button type="button" data-preset="amber">Amber</button>
+    <button type="button" data-preset="cyan">Cyan</button>
+    <button type="button" data-preset="magenta">Magenta</button>
+    <button type="button" data-preset="grey">Grey</button>
+    <button type="button" data-preset="bw">B&amp;W</button>
+    <button type="button" data-preset="sepia">Sepia</button>
+    <button type="button" data-preset="invert">Invert</button>
+    <button type="button" data-preset="bluep">Blueprint</button>
+  </nav>
+    """
+
+
+def palette_easter_egg_script(include_stamp: bool = True) -> str:
+    stamp_block = """
+  var stampBtn = document.querySelector('.stamp-btn');
+  var wipeEl = document.querySelector('.wipe-overlay');
+  var wipeRunning = false;
+  var WIPE_DURATION_MS = 750;
+  var WIPE_OVERSHOOT_PX = 60;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function maxRadiusFrom(cx, cy) {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    return Math.max(
+      Math.hypot(cx, cy),
+      Math.hypot(w - cx, cy),
+      Math.hypot(cx, h - cy),
+      Math.hypot(w - cx, h - cy)
+    );
+  }
+
+  function runWipe(cx, cy, oldPaletteName, newPaletteName) {
+    if (!wipeEl || wipeRunning) {
+      applyPreset(newPaletteName, true);
+      return;
+    }
+    wipeRunning = true;
+    var oldPreset = PRESETS[oldPaletteName] || PRESETS.original;
+    var targetR = maxRadiusFrom(cx, cy) + WIPE_OVERSHOOT_PX;
+    root.style.setProperty('--wipe-tint', oldPreset.chrome.fg);
+    root.style.setProperty('--wipe-cx', cx + 'px');
+    root.style.setProperty('--wipe-cy', cy + 'px');
+    root.style.setProperty('--wipe-r', '0px');
+    wipeEl.classList.add('is-running');
+    applyPreset(newPaletteName, true);
+
+    var start = performance.now();
+    function step(now) {
+      var t = Math.min(1, (now - start) / WIPE_DURATION_MS);
+      root.style.setProperty('--wipe-r', (easeOutCubic(t) * targetR) + 'px');
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        wipeEl.classList.remove('is-running');
+        setTimeout(function() {
+          root.style.setProperty('--wipe-r', '0px');
+          wipeRunning = false;
+        }, 200);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  if (stampBtn) {
+    stampBtn.addEventListener('click', function(event) {
+      runWipe(event.clientX, event.clientY, currentPalette, nextPalette(currentPalette));
+    });
+  }
+    """ if include_stamp else ""
+
+    return f"""
+<script>
+(function() {{
+  var PRESETS = {{
+    original: {{
+      label: 'Original',
+      filter: 'none',
+      chrome: {{ bg:'#050605', fg:'#8b3702', rule:'#8b3702', bgSoft:'#0c0907' }}
+    }},
+    phosphor: {{
+      label: 'Phosphor Green (CRT)',
+      filter: 'grayscale(1) sepia(1) hue-rotate(65deg) saturate(7) brightness(0.95)',
+      chrome: {{ bg:'#000800', fg:'#33ff66', rule:'#33ff66', bgSoft:'#031003' }}
+    }},
+    amber: {{
+      label: 'Amber CRT',
+      filter: 'grayscale(1) sepia(1) hue-rotate(-12deg) saturate(3.6) brightness(1.05)',
+      chrome: {{ bg:'#0a0500', fg:'#ffb000', rule:'#ffb000', bgSoft:'#160c00' }}
+    }},
+    cyan: {{
+      label: 'Cyan Terminal',
+      filter: 'grayscale(1) sepia(1) hue-rotate(170deg) saturate(4) brightness(1.0)',
+      chrome: {{ bg:'#001218', fg:'#3fe6ff', rule:'#3fe6ff', bgSoft:'#02181f' }}
+    }},
+    magenta: {{
+      label: 'Magenta',
+      filter: 'grayscale(1) sepia(1) hue-rotate(255deg) saturate(4) brightness(1.0)',
+      chrome: {{ bg:'#150018', fg:'#ff5cd2', rule:'#ff5cd2', bgSoft:'#1d0220' }}
+    }},
+    grey: {{
+      label: 'Grey',
+      filter: 'grayscale(1) brightness(1.0) contrast(1.0)',
+      chrome: {{ bg:'#0c0c0c', fg:'#cfcfcf', rule:'#cfcfcf', bgSoft:'#161616' }}
+    }},
+    bw: {{
+      label: 'High Contrast B&W',
+      filter: 'grayscale(1) contrast(1.6) brightness(1.0)',
+      chrome: {{ bg:'#000000', fg:'#ffffff', rule:'#ffffff', bgSoft:'#0a0a0a' }}
+    }},
+    sepia: {{
+      label: 'Sepia',
+      filter: 'sepia(1) saturate(1.3) brightness(1.0)',
+      chrome: {{ bg:'#1a0f06', fg:'#d8a866', rule:'#d8a866', bgSoft:'#221409' }}
+    }},
+    invert: {{
+      label: 'Inverted',
+      filter: 'invert(1) hue-rotate(180deg)',
+      chrome: {{ bg:'#f4f4f4', fg:'#1a1a1a', rule:'#1a1a1a', bgSoft:'#e6e6e6' }}
+    }},
+    bluep: {{
+      label: 'Blueprint',
+      filter: 'grayscale(1) sepia(1) hue-rotate(195deg) saturate(5) brightness(0.9) contrast(1.15)',
+      chrome: {{ bg:'#011024', fg:'#7ec8ff', rule:'#7ec8ff', bgSoft:'#021833' }}
+    }}
+  }};
+  var PALETTE_CYCLE = [
+    'original', 'phosphor', 'amber', 'cyan', 'magenta',
+    'grey', 'bw', 'sepia', 'invert', 'bluep'
+  ];
+  var params = new URLSearchParams(window.location.search);
+  var root = document.documentElement;
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.palette-switcher button[data-preset]'));
+  var labelEl = document.querySelector('.palette-label');
+  var noFilter = params.get('nofilter') === '1';
+  var currentPalette = 'original';
+
+  if (params.get('debug') === '1') {{
+    document.body.classList.add('debug');
+  }}
+  if (noFilter) {{
+    document.body.classList.add('palette-nofilter');
+  }}
+
+  function validPalette(name) {{
+    return PRESETS[name] ? name : 'original';
+  }}
+
+  function applyPreset(name, persist) {{
+    name = validPalette(name);
+    var p = PRESETS[name];
+    root.style.setProperty('--tone-filter', noFilter ? 'none' : p.filter);
+    root.style.setProperty('--chrome-bg', p.chrome.bg);
+    root.style.setProperty('--chrome-fg', p.chrome.fg);
+    root.style.setProperty('--chrome-rule', p.chrome.rule);
+    root.style.setProperty('--chrome-bg-soft', p.chrome.bgSoft);
+    if (labelEl) labelEl.textContent = 'palette: ' + p.label.toLowerCase();
+    buttons.forEach(function(button) {{
+      button.setAttribute('aria-pressed', button.dataset.preset === name ? 'true' : 'false');
+    }});
+    currentPalette = name;
+    if (persist !== false) {{
+      try {{ localStorage.setItem('palette', name); }} catch (e) {{}}
+    }}
+  }}
+
+  function nextPalette(name) {{
+    var index = PALETTE_CYCLE.indexOf(name);
+    return PALETTE_CYCLE[(index < 0 ? 1 : index + 1) % PALETTE_CYCLE.length];
+  }}
+
+  buttons.forEach(function(button) {{
+    button.addEventListener('click', function() {{
+      applyPreset(button.dataset.preset, true);
+    }});
+  }});
+
+  var initial = 'original';
+  try {{
+    var saved = localStorage.getItem('palette');
+    if (saved && PRESETS[saved]) initial = saved;
+  }} catch (e) {{}}
+  applyPreset(initial, false);
+
+  window.addEventListener('storage', function(event) {{
+    if (event.key === 'palette' && event.newValue && PRESETS[event.newValue]) {{
+      applyPreset(event.newValue, false);
+    }}
+  }});
+{stamp_block}
+}})();
+</script>
+"""
+
+
 def render_intro_page() -> dict:
     if not INTRO_ART_PATH.exists():
         raise SystemExit(f"missing intro artwork: {INTRO_ART_PATH}")
@@ -126,6 +471,7 @@ def render_intro_page() -> dict:
       aspect-ratio: 1053 / 1494;
       background: var(--page-bg);
     }}
+{palette_easter_egg_style()}
     body.intro-embed {{
       min-height: 100vh;
       padding: 0;
@@ -314,18 +660,23 @@ def render_intro_page() -> dict:
       document.body.classList.add('intro-embed');
     }}
   </script>
+{palette_easter_egg_controls()}
   <main class="intro-shell" aria-label="Address to the Reader">
-    <img class="intro-art" src="{art_uri}" alt="">
-    <img class="intro-br-overlay" src="{br_overlay_uri}" alt="">
-    <article class="intro-scroll">
-      {copy_html}
-    </article>
-    <div class="intro-scrollbar" aria-hidden="true">
-      <div class="intro-scrollbar-thumb"></div>
+    <div class="intro-toned">
+      <img class="intro-art" src="{art_uri}" alt="">
+      <img class="intro-br-overlay" src="{br_overlay_uri}" alt="">
+      <article class="intro-scroll">
+        {copy_html}
+      </article>
+      <div class="intro-scrollbar" aria-hidden="true">
+        <div class="intro-scrollbar-thumb"></div>
+      </div>
+      <nav class="intro-nav" aria-label="Intro navigation">
+        <a href="toc.html">Enter Report</a>
+      </nav>
     </div>
-    <nav class="intro-nav" aria-label="Intro navigation">
-      <a href="toc.html">Enter Report</a>
-    </nav>
+    <button class="stamp-btn" type="button" aria-label="Cycle palette via smooth brain stamp"></button>
+    <div class="wipe-overlay" aria-hidden="true"></div>
   </main>
   <script>
     (function() {{
@@ -350,6 +701,7 @@ def render_intro_page() -> dict:
       syncThumb();
     }})();
   </script>
+{palette_easter_egg_script(include_stamp=True)}
 </body>
 </html>
 """
