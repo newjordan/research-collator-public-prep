@@ -34,6 +34,68 @@
         }
       ]
     },
+    "X-Wing": {
+      "display": "INSTRUCTED CRAWLER RECURRENCE FAMILY",
+      "summary": "Crawler-oriented recurrence experiments that tested instruction-conditioned loop behavior and DeltaNet-adjacent crawler variants.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "shared crawler recurrence path",
+            "content-derived loop instructions",
+            "crawler loop rope scaling",
+            "DeltaNet crawler recurrence variants"
+          ]
+        },
+        {
+          "label": "TEST SURFACE",
+          "items": [
+            "GB10 micro probes",
+            "H100/runpod follow-up logs",
+            "commit-level architecture entries",
+            "crawler branch retained as the strongest follow-on direction"
+          ]
+        }
+      ]
+    },
+    "Rat Rod": {
+      "display": "RECURRENT GREEN-BRANCH PROTOTYPE",
+      "summary": "Fast prototype line around green-branch recurrence, complement mixing, and residual/value-routing variants before later crawler consolidation.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "green-branch recurrent path",
+            "value-residual variants",
+            "complement-mix alpha variants",
+            "high-speed prototype iteration"
+          ]
+        },
+        {
+          "label": "SWEEPS",
+          "items": [
+            "remote fast A/B runs",
+            "synthetic branch variants",
+            "green v7 follow-up",
+            "warmdown and SWA schedule probes"
+          ]
+        }
+      ]
+    },
+    "GreenRod": {
+      "display": "HYBRID GATEDDELTANET-ATTENTION BODY",
+      "summary": "Hybrid GreenRod branch combining GatedDeltaNet-style memory with attention-body changes as part of the March 27 exploratory campaign.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "GatedDeltaNet-attention hybrid",
+            "X1 experimental branch",
+            "H100/runpod measurement path"
+          ]
+        }
+      ]
+    },
     "Mockingbird": {
       "display": "10K-VOCAB CASEOPS LOOP BODY",
       "summary": "SP10240 CaseOps neural body: copy as an 11-layer, dim-512, looped GQA transformer with phased LoRA TTT packaging.",
