@@ -15,7 +15,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import html
 import json
@@ -59,6 +58,7 @@ from render_day import (
     make_report_h1_html,
     make_report_header_html,
     metric_display_name,
+    preview_chart_src,
     report_records_for_date,
     sanitize_public_text,
 )
@@ -395,11 +395,6 @@ def build_category_datapoints(conn: sqlite3.Connection,
 
 
 # ---------- rendering helpers -------------------------------------------------
-
-def image_data_uri(path: str | Path) -> str:
-    with open(path, "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
-
 
 def category_action_style() -> str:
     return """
@@ -827,9 +822,10 @@ def render_category(conn: sqlite3.Connection,
             f"TO {html.escape(win['end'])}</h3>"
         )
         for panel in section["chart_panels"]:
+            chart_src = preview_chart_src(panel["path"], "../index.html")
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(panel['path'])}' "
+                f"<img src='{html.escape(chart_src, quote=True)}' "
                 f"alt='{html.escape(CATEGORY_LABEL[category])} window "
                 f"{win['window']:02d} {panel['metric']}'/>"
                 "</figure>"

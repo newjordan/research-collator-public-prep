@@ -14,7 +14,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import hashlib
 import html
@@ -1284,6 +1283,18 @@ def preview_asset_src(path: str | Path, home_href: str = "", asset_name: str | N
     return f"{prefix}assets/{dst.name}"
 
 
+def preview_chart_src(path: str | Path, home_href: str = "") -> str:
+    """Copy a generated chart into preview/assets with a collision-safe name."""
+    src = Path(path)
+    try:
+        rel = src.resolve().relative_to(OUT_ROOT.resolve())
+        name_basis = str(rel)
+    except ValueError:
+        name_basis = src.name
+    asset_name = "chart_" + re.sub(r"[^A-Za-z0-9._-]+", "_", name_basis)
+    return preview_asset_src(src, home_href, asset_name)
+
+
 def _frosted_flake_src(home_href: str) -> str:
     """Use one shared static mark instead of base64-inlining it per page."""
     return preview_asset_src(_FROSTED_FLAKE_PATH, home_href)
@@ -2454,6 +2465,14 @@ def _training_log_fragment_path(date: str, row_n: int, idx: int, abs_path: str) 
     return FRAGMENTS_DIR / f"{safe_date}_row{row_n:04d}_log{idx}_{key}.html"
 
 
+def _row_detail_fragment_path(date: str, row: dict) -> Path:
+    row_n = int(row.get("n") or 0)
+    key_basis = f"{row.get('abs_path') or ''}:{row.get('title') or ''}:{row.get('time_iso') or ''}"
+    key = hashlib.sha256(key_basis.encode("utf-8", errors="replace")).hexdigest()[:12]
+    safe_date = re.sub(r"[^0-9-]+", "-", date or "unknown").strip("-") or "unknown"
+    return FRAGMENTS_DIR / f"{safe_date}_row{row_n:04d}_details_{key}.html"
+
+
 def clear_day_fragments(date: str) -> None:
     if not FRAGMENTS_DIR.exists():
         return
@@ -2551,7 +2570,21 @@ def make_log_detail_row_html(row: dict, date: str) -> str:
         for idx, ref in enumerate(logs, start=1)
     )
     panels += _row_evidence_panel_html(row)
-    return f"<tr class='log-detail-row'><td colspan='8'>{panels}</td></tr>"
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_path = _row_detail_fragment_path(date, row)
+    fragment_path.write_text(panels, encoding="utf-8")
+    fragment_href = f"fragments/{fragment_path.name}"
+    target_id = f"row-detail-{date}-{row_n}".replace("_", "-")
+    return (
+        "<tr class='log-detail-row'><td colspan='8'>"
+        "<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='load details' data-hide-label='hide details' "
+        "data-loading-label='loading details' data-error-label='details load failed'>load details</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        "</td></tr>"
+    )
 
 
 def _td_html(value: str, class_name: str | None = None) -> str:
@@ -3034,14 +3067,13 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
                     alt = line[2:alt_end]
                     img_path = line[alt_end + 2:-1]
                     full = (QMD_DIR / img_path).resolve()
-                    try:
-                        with open(full, "rb") as f:
-                            b64 = base64.b64encode(f.read()).decode("ascii")
+                    img_src = preview_chart_src(full)
+                    if img_src:
                         out.append(
-                            f"<figure><img src='data:image/png;base64,{b64}' "
+                            f"<figure><img src='{html.escape(img_src, quote=True)}' "
                             f"alt='{html.escape(alt)}'/></figure>"
                         )
-                    except OSError:
+                    else:
                         out.append(f"<p class='muted'>[missing image: {html.escape(img_path)}]</p>")
                 else:
                     out.append(f"<p>{format_cell(line)}</p>")

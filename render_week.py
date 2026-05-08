@@ -12,7 +12,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import html
 import os
@@ -50,6 +49,7 @@ from render_day import (
     make_alloc_bar_html,
     make_report_h1_html,
     make_report_header_html,
+    preview_chart_src,
     best_date,
 )
 
@@ -157,11 +157,6 @@ def metric_counts_display(days: list[dict[str, Any]]) -> str:
         f"{metric_display_name(metric)} (×{count})"
         for metric, count in counts.most_common()
     )
-
-
-def image_data_uri(path: str | Path) -> str:
-    with open(path, "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 
 def weekly_action_style() -> str:
@@ -450,9 +445,10 @@ def render_week(week_dates: list[str],
         ]
         for panel in chart_panels:
             metric_label = metric_display_name(panel["metric"])
+            chart_src = preview_chart_src(panel["path"], "../index.html")
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(panel['path'])}' "
+                f"<img src='{html.escape(chart_src, quote=True)}' "
                 f"alt='Week {week_number:02d} daily trajectory · {html.escape(metric_label)}'/>"
                 "</figure>"
             )
