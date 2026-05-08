@@ -1,0 +1,471 @@
+W0323 14:57:21.729000 162521 torch/distributed/run.py:803] 
+W0323 14:57:21.729000 162521 torch/distributed/run.py:803] *****************************************
+W0323 14:57:21.729000 162521 torch/distributed/run.py:803] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0323 14:57:21.729000 162521 torch/distributed/run.py:803] *****************************************
+logs/3a113a64-bf8b-4bb6-a386-10280f841433.txt
+val_bpb:enabled tokenizer_kind=sentencepiece tokenizer_path=./data/tokenizers/fineweb_1024_bpe.model
+train_loader:dataset:fineweb10B_sp1024 train_shards:80
+val_loader:shards pattern=./data/datasets/fineweb10B_sp1024/fineweb_val_*.bin tokens:62021632
+model_params:26960988
+XSA:last_11 world_size:8 grad_accum_steps:1
+num_heads:8 num_kv_heads:4 embed_lr:0.035 matrix_lr:0.025
+train_batch_tokens:786432 train_seq_len:2048 iterations:7500 warmup_steps:20 max_wallclock_seconds:600.000
+seed:1337
+warmup_step:1/20
+warmup_step:2/20
+warmup_step:3/20
+warmup_step:4/20
+warmup_step:5/20
+warmup_step:6/20
+warmup_step:7/20
+warmup_step:8/20
+warmup_step:9/20
+warmup_step:10/20
+warmup_step:11/20
+warmup_step:12/20
+warmup_step:13/20
+warmup_step:14/20
+warmup_step:15/20
+warmup_step:16/20
+warmup_step:17/20
+warmup_step:18/20
+warmup_step:19/20
+warmup_step:20/20
+step:0/7500 val_loss:6.9285 val_bpb:4.1034 train_time:0ms step_avg:0.02ms
+step:1/7500 train_loss:6.9302 train_time:146ms step_avg:145.64ms
+step:2/7500 train_loss:8.5907 train_time:236ms step_avg:118.22ms
+step:3/7500 train_loss:7.6937 train_time:323ms step_avg:107.77ms
+step:4/7500 train_loss:7.3370 train_time:411ms step_avg:102.66ms
+step:5/7500 train_loss:7.0998 train_time:499ms step_avg:99.75ms
+step:6/7500 train_loss:6.9139 train_time:585ms step_avg:97.54ms
+step:7/7500 train_loss:6.7676 train_time:672ms step_avg:95.97ms
+step:8/7500 train_loss:6.7205 train_time:759ms step_avg:94.89ms
+step:9/7500 train_loss:6.3823 train_time:846ms step_avg:93.98ms
+step:10/7500 train_loss:6.0434 train_time:933ms step_avg:93.32ms
+step:500/7500 train_loss:2.3943 train_time:44432ms step_avg:88.86ms
+step:1000/7500 train_loss:2.2666 train_time:88971ms step_avg:88.97ms
+step:1500/7500 train_loss:2.2117 train_time:133505ms step_avg:89.00ms
+step:2000/7500 train_loss:2.0496 train_time:177957ms step_avg:88.98ms
+step:2500/7500 train_loss:2.1604 train_time:222369ms step_avg:88.95ms
+step:3000/7500 train_loss:2.1525 train_time:266754ms step_avg:88.92ms
+step:3500/7500 train_loss:2.1711 train_time:311101ms step_avg:88.89ms
+step:4000/7500 train_loss:1.9722 train_time:355457ms step_avg:88.86ms
+step:4000/7500 val_loss:2.0665 val_bpb:1.2239 train_time:355462ms step_avg:88.87ms
+step:4500/7500 train_loss:2.1319 train_time:399773ms step_avg:88.84ms
+step:5000/7500 train_loss:2.1070 train_time:444124ms step_avg:88.82ms
+step:5500/7500 train_loss:2.0152 train_time:488428ms step_avg:88.81ms
+late_qat:enabled step:5507 scale:0.4997
+step:6000/7500 train_loss:1.9329 train_time:532765ms step_avg:88.79ms
+swa:start step:6300
+step:6500/7500 train_loss:2.0689 train_time:577266ms step_avg:88.81ms
+step:6755/7500 val_loss:1.9286 val_bpb:1.1422 train_time:600047ms step_avg:88.83ms
+stopping_early: wallclock_cap train_time:600047ms step:6755/7500
+peak memory allocated: 22043 MiB reserved: 22092 MiB
+ema:applying EMA weights
+DIAGNOSTIC post_ema val_loss:1.9267 val_bpb:1.1411 eval_time:2065ms
+Serialized model: 106113033 bytes
+Code size: 84994 bytes
+gptq:calibrating with training data...
+gptq:calibrated 68 layers in 3.9s
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+gptq_quantize: 66 GPTQ-int6, 0 GPTQ-int8, 0 naive
+Serialized model int6+zstd: 15946696 bytes
+Total submission size int6+zstd: 16031690 bytes
+Total submission size int8+zlib: 16031690 bytes
+final_int6_roundtrip val_loss:1.9339 val_bpb:1.1453 eval_time:40089ms
+final_int6_roundtrip_exact val_loss:1.93386645 val_bpb:1.14534464
+final_int6_sliding_window val_loss:1.8936 val_bpb:1.1215 stride:64 eval_time:96982ms
+final_int6_sliding_window_exact val_loss:1.89360623 val_bpb:1.12150324
+final_int8_zlib_roundtrip_exact val_loss:1.89360623 val_bpb:1.12150324
+ttt_sliding:start chunks=1893 windows=969088 lr=0.002 epochs=3 freeze=2
+ttt_sliding:unfrozen=21255242 freeze_embed=True
+ttt_sliding:optimizer=SGD lr=0.002 momentum=0.9
+  ttt[1/1893] bpb=1.155709 lr=0.002000 t=1s
+  ttt[6/1893] bpb=1.134290 lr=0.001949 t=2s
+  ttt[11/1893] bpb=1.147195 lr=0.001801 t=4s
+  ttt[16/1893] bpb=1.131664 lr=0.001572 t=5s
+  ttt[21/1893] bpb=1.131071 lr=0.001285 t=7s
+  ttt[26/1893] bpb=1.113478 lr=0.000968 t=8s
+  ttt[31/1893] bpb=1.129521 lr=0.000655 t=10s
+  ttt[36/1893] bpb=1.118224 lr=0.000377 t=11s
+  ttt[41/1893] bpb=1.116620 lr=0.000162 t=13s
+  ttt[46/1893] bpb=1.114476 lr=0.000033 t=14s
+  ttt[51/1893] bpb=1.110772 lr=done t=16s
+  ttt[56/1893] bpb=1.125013 lr=done t=16s
+  ttt[61/1893] bpb=1.117141 lr=done t=17s
+  ttt[66/1893] bpb=1.111007 lr=done t=17s
+  ttt[71/1893] bpb=1.115249 lr=done t=18s
+  ttt[76/1893] bpb=1.117943 lr=done t=18s
+  ttt[81/1893] bpb=1.114689 lr=done t=19s
+  ttt[86/1893] bpb=1.114598 lr=done t=20s
+  ttt[91/1893] bpb=1.115659 lr=done t=20s
+  ttt[96/1893] bpb=1.115790 lr=done t=21s
+  ttt[101/1893] bpb=1.119229 lr=done t=21s
+  ttt[106/1893] bpb=1.121622 lr=done t=22s
+  ttt[111/1893] bpb=1.121682 lr=done t=22s
+  ttt[116/1893] bpb=1.115779 lr=done t=23s
+  ttt[121/1893] bpb=1.115384 lr=done t=23s
+  ttt[126/1893] bpb=1.116434 lr=done t=24s
+  ttt[131/1893] bpb=1.115808 lr=done t=24s
+  ttt[136/1893] bpb=1.117194 lr=done t=25s
+  ttt[141/1893] bpb=1.121495 lr=done t=25s
+  ttt[146/1893] bpb=1.121654 lr=done t=26s
+  ttt[151/1893] bpb=1.123284 lr=done t=26s
+  ttt[156/1893] bpb=1.123234 lr=done t=27s
+  ttt[161/1893] bpb=1.122842 lr=done t=27s
+  ttt[166/1893] bpb=1.128060 lr=done t=28s
+  ttt[171/1893] bpb=1.127333 lr=done t=29s
+  ttt[176/1893] bpb=1.128643 lr=done t=29s
+  ttt[181/1893] bpb=1.129689 lr=done t=30s
+  ttt[186/1893] bpb=1.131974 lr=done t=30s
+  ttt[191/1893] bpb=1.136985 lr=done t=31s
+  ttt[196/1893] bpb=1.135111 lr=done t=31s
+  ttt[201/1893] bpb=1.135846 lr=done t=32s
+  ttt[206/1893] bpb=1.133641 lr=done t=32s
+  ttt[211/1893] bpb=1.133760 lr=done t=33s
+  ttt[216/1893] bpb=1.136129 lr=done t=33s
+  ttt[221/1893] bpb=1.135353 lr=done t=34s
+  ttt[226/1893] bpb=1.135774 lr=done t=34s
+  ttt[231/1893] bpb=1.134042 lr=done t=35s
+  ttt[236/1893] bpb=1.135099 lr=done t=35s
+  ttt[241/1893] bpb=1.134416 lr=done t=36s
+  ttt[246/1893] bpb=1.133546 lr=done t=37s
+  ttt[251/1893] bpb=1.133866 lr=done t=37s
+  ttt[256/1893] bpb=1.133568 lr=done t=38s
+  ttt[261/1893] bpb=1.130974 lr=done t=38s
+  ttt[266/1893] bpb=1.129444 lr=done t=39s
+  ttt[271/1893] bpb=1.129945 lr=done t=39s
+  ttt[276/1893] bpb=1.130030 lr=done t=40s
+  ttt[281/1893] bpb=1.131311 lr=done t=40s
+  ttt[286/1893] bpb=1.132404 lr=done t=41s
+  ttt[291/1893] bpb=1.133200 lr=done t=41s
+  ttt[296/1893] bpb=1.134090 lr=done t=42s
+  ttt[301/1893] bpb=1.133906 lr=done t=42s
+  ttt[306/1893] bpb=1.134712 lr=done t=43s
+  ttt[311/1893] bpb=1.135997 lr=done t=43s
+  ttt[316/1893] bpb=1.137286 lr=done t=44s
+  ttt[321/1893] bpb=1.137958 lr=done t=44s
+  ttt[326/1893] bpb=1.138488 lr=done t=45s
+  ttt[331/1893] bpb=1.137760 lr=done t=46s
+  ttt[336/1893] bpb=1.137640 lr=done t=46s
+  ttt[341/1893] bpb=1.136809 lr=done t=47s
+  ttt[346/1893] bpb=1.137242 lr=done t=47s
+  ttt[351/1893] bpb=1.139140 lr=done t=48s
+  ttt[356/1893] bpb=1.138922 lr=done t=48s
+  ttt[361/1893] bpb=1.139382 lr=done t=49s
+  ttt[366/1893] bpb=1.137944 lr=done t=49s
+  ttt[371/1893] bpb=1.138664 lr=done t=50s
+  ttt[376/1893] bpb=1.138478 lr=done t=50s
+  ttt[381/1893] bpb=1.138835 lr=done t=51s
+  ttt[386/1893] bpb=1.138211 lr=done t=51s
+  ttt[391/1893] bpb=1.138596 lr=done t=52s
+  ttt[396/1893] bpb=1.137758 lr=done t=52s
+  ttt[401/1893] bpb=1.136475 lr=done t=53s
+  ttt[406/1893] bpb=1.136126 lr=done t=54s
+  ttt[411/1893] bpb=1.135387 lr=done t=54s
+  ttt[416/1893] bpb=1.134379 lr=done t=55s
+  ttt[421/1893] bpb=1.134391 lr=done t=55s
+  ttt[426/1893] bpb=1.134236 lr=done t=56s
+  ttt[431/1893] bpb=1.134258 lr=done t=56s
+  ttt[436/1893] bpb=1.134007 lr=done t=57s
+  ttt[441/1893] bpb=1.134652 lr=done t=57s
+  ttt[446/1893] bpb=1.135110 lr=done t=58s
+  ttt[451/1893] bpb=1.134964 lr=done t=58s
+  ttt[456/1893] bpb=1.134176 lr=done t=59s
+  ttt[461/1893] bpb=1.133859 lr=done t=59s
+  ttt[466/1893] bpb=1.134430 lr=done t=60s
+  ttt[471/1893] bpb=1.134446 lr=done t=60s
+  ttt[476/1893] bpb=1.134294 lr=done t=61s
+  ttt[481/1893] bpb=1.134100 lr=done t=62s
+  ttt[486/1893] bpb=1.133396 lr=done t=62s
+  ttt[491/1893] bpb=1.133034 lr=done t=63s
+  ttt[496/1893] bpb=1.132847 lr=done t=63s
+  ttt[501/1893] bpb=1.132564 lr=done t=64s
+  ttt[506/1893] bpb=1.132067 lr=done t=64s
+  ttt[511/1893] bpb=1.131905 lr=done t=65s
+  ttt[516/1893] bpb=1.130203 lr=done t=65s
+  ttt[521/1893] bpb=1.129585 lr=done t=66s
+  ttt[526/1893] bpb=1.130303 lr=done t=66s
+  ttt[531/1893] bpb=1.130780 lr=done t=67s
+  ttt[536/1893] bpb=1.130232 lr=done t=67s
+  ttt[541/1893] bpb=1.131117 lr=done t=68s
+  ttt[546/1893] bpb=1.130437 lr=done t=68s
+  ttt[551/1893] bpb=1.130112 lr=done t=69s
+  ttt[556/1893] bpb=1.131127 lr=done t=69s
+  ttt[561/1893] bpb=1.130650 lr=done t=70s
+  ttt[566/1893] bpb=1.130150 lr=done t=71s
+  ttt[571/1893] bpb=1.129650 lr=done t=71s
+  ttt[576/1893] bpb=1.128945 lr=done t=72s
+  ttt[581/1893] bpb=1.128817 lr=done t=72s
+  ttt[586/1893] bpb=1.129130 lr=done t=73s
+  ttt[591/1893] bpb=1.128224 lr=done t=73s
+  ttt[596/1893] bpb=1.128722 lr=done t=74s
+  ttt[601/1893] bpb=1.128716 lr=done t=74s
+  ttt[606/1893] bpb=1.128690 lr=done t=75s
+  ttt[611/1893] bpb=1.128630 lr=done t=75s
+  ttt[616/1893] bpb=1.128881 lr=done t=76s
+  ttt[621/1893] bpb=1.128503 lr=done t=76s
+  ttt[626/1893] bpb=1.128954 lr=done t=77s
+  ttt[631/1893] bpb=1.129233 lr=done t=77s
+  ttt[636/1893] bpb=1.128532 lr=done t=78s
+  ttt[641/1893] bpb=1.129014 lr=done t=79s
+  ttt[646/1893] bpb=1.129742 lr=done t=79s
+  ttt[651/1893] bpb=1.129129 lr=done t=80s
+  ttt[656/1893] bpb=1.129198 lr=done t=80s
+  ttt[661/1893] bpb=1.128585 lr=done t=81s
+  ttt[666/1893] bpb=1.129084 lr=done t=81s
+  ttt[671/1893] bpb=1.128959 lr=done t=82s
+  ttt[676/1893] bpb=1.129275 lr=done t=82s
+  ttt[681/1893] bpb=1.129686 lr=done t=83s
+  ttt[686/1893] bpb=1.129634 lr=done t=83s
+  ttt[691/1893] bpb=1.130699 lr=done t=84s
+  ttt[696/1893] bpb=1.130501 lr=done t=84s
+  ttt[701/1893] bpb=1.130149 lr=done t=85s
+  ttt[706/1893] bpb=1.129693 lr=done t=85s
+  ttt[711/1893] bpb=1.130090 lr=done t=86s
+  ttt[716/1893] bpb=1.129485 lr=done t=86s
+  ttt[721/1893] bpb=1.129754 lr=done t=87s
+  ttt[726/1893] bpb=1.129496 lr=done t=88s
+  ttt[731/1893] bpb=1.129841 lr=done t=88s
+  ttt[736/1893] bpb=1.130178 lr=done t=89s
+  ttt[741/1893] bpb=1.129988 lr=done t=89s
+  ttt[746/1893] bpb=1.130115 lr=done t=90s
+  ttt[751/1893] bpb=1.129839 lr=done t=90s
+  ttt[756/1893] bpb=1.129929 lr=done t=91s
+  ttt[761/1893] bpb=1.129771 lr=done t=91s
+  ttt[766/1893] bpb=1.129723 lr=done t=92s
+  ttt[771/1893] bpb=1.129460 lr=done t=92s
+  ttt[776/1893] bpb=1.129811 lr=done t=93s
+  ttt[781/1893] bpb=1.130179 lr=done t=93s
+  ttt[786/1893] bpb=1.129671 lr=done t=94s
+  ttt[791/1893] bpb=1.129764 lr=done t=94s
+  ttt[796/1893] bpb=1.129988 lr=done t=95s
+  ttt[801/1893] bpb=1.130093 lr=done t=96s
+  ttt[806/1893] bpb=1.129952 lr=done t=96s
+  ttt[811/1893] bpb=1.129866 lr=done t=97s
+  ttt[816/1893] bpb=1.129633 lr=done t=97s
+  ttt[821/1893] bpb=1.129678 lr=done t=98s
+  ttt[826/1893] bpb=1.129870 lr=done t=98s
+  ttt[831/1893] bpb=1.129488 lr=done t=99s
+  ttt[836/1893] bpb=1.128876 lr=done t=99s
+  ttt[841/1893] bpb=1.128837 lr=done t=100s
+  ttt[846/1893] bpb=1.128825 lr=done t=100s
+  ttt[851/1893] bpb=1.128584 lr=done t=101s
+  ttt[856/1893] bpb=1.128411 lr=done t=101s
+  ttt[861/1893] bpb=1.128362 lr=done t=102s
+  ttt[866/1893] bpb=1.128574 lr=done t=102s
+  ttt[871/1893] bpb=1.128655 lr=done t=103s
+  ttt[876/1893] bpb=1.128671 lr=done t=103s
+  ttt[881/1893] bpb=1.128847 lr=done t=104s
+  ttt[886/1893] bpb=1.128657 lr=done t=105s
+  ttt[891/1893] bpb=1.128395 lr=done t=105s
+  ttt[896/1893] bpb=1.128374 lr=done t=106s
+  ttt[901/1893] bpb=1.128149 lr=done t=106s
+  ttt[906/1893] bpb=1.127964 lr=done t=107s
+  ttt[911/1893] bpb=1.128297 lr=done t=107s
+  ttt[916/1893] bpb=1.128654 lr=done t=108s
+  ttt[921/1893] bpb=1.128798 lr=done t=108s
+  ttt[926/1893] bpb=1.129009 lr=done t=109s
+  ttt[931/1893] bpb=1.128774 lr=done t=109s
+  ttt[936/1893] bpb=1.128405 lr=done t=110s
+  ttt[941/1893] bpb=1.128443 lr=done t=110s
+  ttt[946/1893] bpb=1.128980 lr=done t=111s
+  ttt[951/1893] bpb=1.128851 lr=done t=111s
+  ttt[956/1893] bpb=1.129251 lr=done t=112s
+  ttt[961/1893] bpb=1.128924 lr=done t=113s
+  ttt[966/1893] bpb=1.129382 lr=done t=113s
+  ttt[971/1893] bpb=1.129806 lr=done t=114s
+  ttt[976/1893] bpb=1.130027 lr=done t=114s
+  ttt[981/1893] bpb=1.129922 lr=done t=115s
+  ttt[986/1893] bpb=1.130024 lr=done t=115s
+  ttt[991/1893] bpb=1.129940 lr=done t=116s
+  ttt[996/1893] bpb=1.129874 lr=done t=116s
+  ttt[1001/1893] bpb=1.129909 lr=done t=117s
+  ttt[1006/1893] bpb=1.129677 lr=done t=117s
+  ttt[1011/1893] bpb=1.129717 lr=done t=118s
+  ttt[1016/1893] bpb=1.130134 lr=done t=118s
+  ttt[1021/1893] bpb=1.130076 lr=done t=119s
+  ttt[1026/1893] bpb=1.130252 lr=done t=119s
+  ttt[1031/1893] bpb=1.130531 lr=done t=120s
+  ttt[1036/1893] bpb=1.130387 lr=done t=121s
+  ttt[1041/1893] bpb=1.130164 lr=done t=121s
+  ttt[1046/1893] bpb=1.130034 lr=done t=122s
+  ttt[1051/1893] bpb=1.129939 lr=done t=122s
+  ttt[1056/1893] bpb=1.130111 lr=done t=123s
+  ttt[1061/1893] bpb=1.130003 lr=done t=123s
+  ttt[1066/1893] bpb=1.130258 lr=done t=124s
+  ttt[1071/1893] bpb=1.130617 lr=done t=124s
+  ttt[1076/1893] bpb=1.130916 lr=done t=125s
+  ttt[1081/1893] bpb=1.130906 lr=done t=125s
+  ttt[1086/1893] bpb=1.131779 lr=done t=126s
+  ttt[1091/1893] bpb=1.131624 lr=done t=126s
+  ttt[1096/1893] bpb=1.131679 lr=done t=127s
+  ttt[1101/1893] bpb=1.131668 lr=done t=127s
+  ttt[1106/1893] bpb=1.131618 lr=done t=128s
+  ttt[1111/1893] bpb=1.131500 lr=done t=128s
+  ttt[1116/1893] bpb=1.131315 lr=done t=129s
+  ttt[1121/1893] bpb=1.131283 lr=done t=130s
+  ttt[1126/1893] bpb=1.130907 lr=done t=130s
+  ttt[1131/1893] bpb=1.131144 lr=done t=131s
+  ttt[1136/1893] bpb=1.130935 lr=done t=131s
+  ttt[1141/1893] bpb=1.130866 lr=done t=132s
+  ttt[1146/1893] bpb=1.131141 lr=done t=132s
+  ttt[1151/1893] bpb=1.130875 lr=done t=133s
+  ttt[1156/1893] bpb=1.130639 lr=done t=133s
+  ttt[1161/1893] bpb=1.130500 lr=done t=134s
+  ttt[1166/1893] bpb=1.130860 lr=done t=134s
+  ttt[1171/1893] bpb=1.130812 lr=done t=135s
+  ttt[1176/1893] bpb=1.130339 lr=done t=135s
+  ttt[1181/1893] bpb=1.130080 lr=done t=136s
+  ttt[1186/1893] bpb=1.130155 lr=done t=136s
+  ttt[1191/1893] bpb=1.129945 lr=done t=137s
+  ttt[1196/1893] bpb=1.130114 lr=done t=138s
+  ttt[1201/1893] bpb=1.130350 lr=done t=138s
+  ttt[1206/1893] bpb=1.130283 lr=done t=139s
+  ttt[1211/1893] bpb=1.129889 lr=done t=139s
+  ttt[1216/1893] bpb=1.130084 lr=done t=140s
+  ttt[1221/1893] bpb=1.129598 lr=done t=140s
+  ttt[1226/1893] bpb=1.129597 lr=done t=141s
+  ttt[1231/1893] bpb=1.129323 lr=done t=141s
+  ttt[1236/1893] bpb=1.129280 lr=done t=142s
+  ttt[1241/1893] bpb=1.128962 lr=done t=142s
+  ttt[1246/1893] bpb=1.128758 lr=done t=143s
+  ttt[1251/1893] bpb=1.128363 lr=done t=143s
+  ttt[1256/1893] bpb=1.128362 lr=done t=144s
+  ttt[1261/1893] bpb=1.128342 lr=done t=144s
+  ttt[1266/1893] bpb=1.128212 lr=done t=145s
+  ttt[1271/1893] bpb=1.127989 lr=done t=145s
+  ttt[1276/1893] bpb=1.127698 lr=done t=146s
+  ttt[1281/1893] bpb=1.127804 lr=done t=147s
+  ttt[1286/1893] bpb=1.127805 lr=done t=147s
+  ttt[1291/1893] bpb=1.127566 lr=done t=148s
+  ttt[1296/1893] bpb=1.127391 lr=done t=148s
+  ttt[1301/1893] bpb=1.126989 lr=done t=149s
+  ttt[1306/1893] bpb=1.126788 lr=done t=149s
+  ttt[1311/1893] bpb=1.126613 lr=done t=150s
+  ttt[1316/1893] bpb=1.126617 lr=done t=150s
+  ttt[1321/1893] bpb=1.126286 lr=done t=151s
+  ttt[1326/1893] bpb=1.126317 lr=done t=151s
+  ttt[1331/1893] bpb=1.126230 lr=done t=152s
+  ttt[1336/1893] bpb=1.126216 lr=done t=152s
+  ttt[1341/1893] bpb=1.126108 lr=done t=153s
+  ttt[1346/1893] bpb=1.125812 lr=done t=153s
+  ttt[1351/1893] bpb=1.126055 lr=done t=154s
+  ttt[1356/1893] bpb=1.126139 lr=done t=155s
+  ttt[1361/1893] bpb=1.126116 lr=done t=155s
+  ttt[1366/1893] bpb=1.125997 lr=done t=156s
+  ttt[1371/1893] bpb=1.125965 lr=done t=156s
+  ttt[1376/1893] bpb=1.126077 lr=done t=157s
+  ttt[1381/1893] bpb=1.125970 lr=done t=157s
+  ttt[1386/1893] bpb=1.125981 lr=done t=158s
+  ttt[1391/1893] bpb=1.125570 lr=done t=158s
+  ttt[1396/1893] bpb=1.125586 lr=done t=159s
+  ttt[1401/1893] bpb=1.125549 lr=done t=159s
+  ttt[1406/1893] bpb=1.125482 lr=done t=160s
+  ttt[1411/1893] bpb=1.125674 lr=done t=160s
+  ttt[1416/1893] bpb=1.125806 lr=done t=161s
+  ttt[1421/1893] bpb=1.125934 lr=done t=161s
+  ttt[1426/1893] bpb=1.125866 lr=done t=162s
+  ttt[1431/1893] bpb=1.125646 lr=done t=162s
+  ttt[1436/1893] bpb=1.125858 lr=done t=163s
+  ttt[1441/1893] bpb=1.126146 lr=done t=164s
+  ttt[1446/1893] bpb=1.126356 lr=done t=164s
+  ttt[1451/1893] bpb=1.126482 lr=done t=165s
+  ttt[1456/1893] bpb=1.126429 lr=done t=165s
+  ttt[1461/1893] bpb=1.126032 lr=done t=166s
+  ttt[1466/1893] bpb=1.126385 lr=done t=166s
+  ttt[1471/1893] bpb=1.127073 lr=done t=167s
+  ttt[1476/1893] bpb=1.127012 lr=done t=167s
+  ttt[1481/1893] bpb=1.126614 lr=done t=168s
+  ttt[1486/1893] bpb=1.126653 lr=done t=168s
+  ttt[1491/1893] bpb=1.126428 lr=done t=169s
+  ttt[1496/1893] bpb=1.126422 lr=done t=169s
+  ttt[1501/1893] bpb=1.126348 lr=done t=170s
+  ttt[1506/1893] bpb=1.126424 lr=done t=170s
+  ttt[1511/1893] bpb=1.126386 lr=done t=171s
+  ttt[1516/1893] bpb=1.126444 lr=done t=172s
+  ttt[1521/1893] bpb=1.126430 lr=done t=172s
+  ttt[1526/1893] bpb=1.126240 lr=done t=173s
+  ttt[1531/1893] bpb=1.125920 lr=done t=173s
+  ttt[1536/1893] bpb=1.125865 lr=done t=174s
+  ttt[1541/1893] bpb=1.125784 lr=done t=174s
+  ttt[1546/1893] bpb=1.125945 lr=done t=175s
+  ttt[1551/1893] bpb=1.126119 lr=done t=175s
+  ttt[1556/1893] bpb=1.126022 lr=done t=176s
+  ttt[1561/1893] bpb=1.126141 lr=done t=176s
+  ttt[1566/1893] bpb=1.126025 lr=done t=177s
+  ttt[1571/1893] bpb=1.125986 lr=done t=177s
+  ttt[1576/1893] bpb=1.125964 lr=done t=178s
+  ttt[1581/1893] bpb=1.126100 lr=done t=178s
+  ttt[1586/1893] bpb=1.126149 lr=done t=179s
+  ttt[1591/1893] bpb=1.125967 lr=done t=179s
+  ttt[1596/1893] bpb=1.125908 lr=done t=180s
+  ttt[1601/1893] bpb=1.126148 lr=done t=181s
+  ttt[1606/1893] bpb=1.126202 lr=done t=181s
+  ttt[1611/1893] bpb=1.126092 lr=done t=182s
+  ttt[1616/1893] bpb=1.125996 lr=done t=182s
+  ttt[1621/1893] bpb=1.125701 lr=done t=183s
+  ttt[1626/1893] bpb=1.125749 lr=done t=183s
+  ttt[1631/1893] bpb=1.126005 lr=done t=184s
+  ttt[1636/1893] bpb=1.126062 lr=done t=184s
+  ttt[1641/1893] bpb=1.126029 lr=done t=185s
+  ttt[1646/1893] bpb=1.126156 lr=done t=185s
+  ttt[1651/1893] bpb=1.125980 lr=done t=186s
+  ttt[1656/1893] bpb=1.125951 lr=done t=186s
+  ttt[1661/1893] bpb=1.125874 lr=done t=187s
+  ttt[1666/1893] bpb=1.126133 lr=done t=187s
+  ttt[1671/1893] bpb=1.126344 lr=done t=188s
+  ttt[1676/1893] bpb=1.126433 lr=done t=189s
+  ttt[1681/1893] bpb=1.126493 lr=done t=189s
+  ttt[1686/1893] bpb=1.126000 lr=done t=190s
+  ttt[1691/1893] bpb=1.126336 lr=done t=190s
+  ttt[1696/1893] bpb=1.126517 lr=done t=191s
+  ttt[1701/1893] bpb=1.126508 lr=done t=191s
+  ttt[1706/1893] bpb=1.126514 lr=done t=192s
+  ttt[1711/1893] bpb=1.126531 lr=done t=192s
+  ttt[1716/1893] bpb=1.126371 lr=done t=193s
+  ttt[1721/1893] bpb=1.126529 lr=done t=193s
+  ttt[1726/1893] bpb=1.126586 lr=done t=194s
+  ttt[1731/1893] bpb=1.126402 lr=done t=194s
+  ttt[1736/1893] bpb=1.126240 lr=done t=195s
+  ttt[1741/1893] bpb=1.126211 lr=done t=195s
+  ttt[1746/1893] bpb=1.126010 lr=done t=196s
+  ttt[1751/1893] bpb=1.126051 lr=done t=196s
+  ttt[1756/1893] bpb=1.126057 lr=done t=197s
+  ttt[1761/1893] bpb=1.126196 lr=done t=198s
+  ttt[1766/1893] bpb=1.126027 lr=done t=198s
+  ttt[1771/1893] bpb=1.126103 lr=done t=199s
+  ttt[1776/1893] bpb=1.126069 lr=done t=199s
+  ttt[1781/1893] bpb=1.126155 lr=done t=200s
+  ttt[1786/1893] bpb=1.125929 lr=done t=200s
+  ttt[1791/1893] bpb=1.125753 lr=done t=201s
+  ttt[1796/1893] bpb=1.125540 lr=done t=201s
+  ttt[1801/1893] bpb=1.125638 lr=done t=202s
+  ttt[1806/1893] bpb=1.125652 lr=done t=202s
+  ttt[1811/1893] bpb=1.125532 lr=done t=203s
+  ttt[1816/1893] bpb=1.125677 lr=done t=203s
+  ttt[1821/1893] bpb=1.125589 lr=done t=204s
+  ttt[1826/1893] bpb=1.125442 lr=done t=204s
+  ttt[1831/1893] bpb=1.124998 lr=done t=205s
+  ttt[1836/1893] bpb=1.124924 lr=done t=206s
+  ttt[1841/1893] bpb=1.124986 lr=done t=206s
+  ttt[1846/1893] bpb=1.124817 lr=done t=207s
+  ttt[1851/1893] bpb=1.124766 lr=done t=207s
+  ttt[1856/1893] bpb=1.124581 lr=done t=208s
+  ttt[1861/1893] bpb=1.124401 lr=done t=208s
+  ttt[1866/1893] bpb=1.124475 lr=done t=209s
+  ttt[1871/1893] bpb=1.124388 lr=done t=209s
+  ttt[1876/1893] bpb=1.124264 lr=done t=210s
+  ttt[1881/1893] bpb=1.123938 lr=done t=210s
+  ttt[1886/1893] bpb=1.123823 lr=done t=211s
+  ttt[1891/1893] bpb=1.123700 lr=done t=211s
+  ttt[1893/1893] bpb=1.123752 lr=done t=212s
+ttt_sliding:done loss=1.893751 bpb=1.121589 time=212s
+legal_ttt val_loss:1.8938 val_bpb:1.1216 eval_time:212564ms
+legal_ttt_exact val_loss:1.89375061 val_bpb:1.12158875

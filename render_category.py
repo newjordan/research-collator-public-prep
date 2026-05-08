@@ -84,6 +84,10 @@ ARCHITECTURE_MASTER_SHEET_URL = (
     "https://github.com/newjordan/research-collator/blob/"
     "art/palette-switcher/ARCHITECTURE_FAMILY_MASTER_SHEET.md"
 )
+ARCHITECTURE_RUN_FILE_INDEX_URL = (
+    "https://github.com/newjordan/research-collator/blob/"
+    "art/palette-switcher/ARCHITECTURE_RUN_FILE_DOWNLOADS.md"
+)
 LOCAL_TO_GIT_SOURCE = {
     "parameter-golf-lab": "git:parameter-golf-lab",
     "open_parameter_golf_junkyard": "git:parameter-golf-lab",
@@ -465,7 +469,9 @@ def public_source_buttons_html(point: dict[str, Any]) -> str:
     source = point.get("public_source") or {}
     buttons: list[str] = [
         f"<a class='category-action' href='{html.escape(ARCHITECTURE_MASTER_SHEET_URL, quote=True)}'>"
-        "architecture sheet</a>"
+        "architecture sheet</a>",
+        f"<a class='category-action' href='{html.escape(ARCHITECTURE_RUN_FILE_INDEX_URL, quote=True)}'>"
+        "run file index</a>",
     ]
     if source.get("blob_url"):
         buttons.insert(

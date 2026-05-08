@@ -1,0 +1,1786 @@
+{
+  "source_sheet": "ARCHITECTURE_FAMILY_MASTER_SHEET.md",
+  "entry_count": 43,
+  "copied_entry_count": 43,
+  "file_count": 147,
+  "entries": [
+    {
+      "number": 1,
+      "family": "A-Wing",
+      "type": "n-gram / mixer family",
+      "aliases": "AWING, A-WING RED/GREEN/PURPLE",
+      "slug": "01_a-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/01_a-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/01_a-wing",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/01_a-wing/README.md",
+          "size_bytes": 2047,
+          "sha256": "2fc3513cca9dfe083afc13ae2463f229459bc99956e8234280f77f5157bb334c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/01_a-wing/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/01_a-wing/README.md"
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "family": "AR Self-Gen GPTQ",
+      "type": "compression/eval family",
+      "aliases": "ValCalib GPTQ",
+      "slug": "02_ar-self-gen-gptq",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "submission.json",
+      "repo_folder": "public/architecture-run-files/files/02_ar-self-gen-gptq",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/02_ar-self-gen-gptq",
+      "files": [
+        {
+          "name": "submission.json",
+          "repo_path": "public/architecture-run-files/files/02_ar-self-gen-gptq/submission.json",
+          "size_bytes": 1931,
+          "sha256": "fb103d44bf771091637eafeb23fd92d532376bb61788bfd3c1abdbaa7edad1a0",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/02_ar-self-gen-gptq/submission.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/02_ar-self-gen-gptq/submission.json"
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "family": "B-Wing",
+      "type": "n-gram family",
+      "aliases": "BWING, B-WING FullPort",
+      "slug": "03_b-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "submission.json",
+      "repo_folder": "public/architecture-run-files/files/03_b-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/03_b-wing",
+      "files": [
+        {
+          "name": "submission.json",
+          "repo_path": "public/architecture-run-files/files/03_b-wing/submission.json",
+          "size_bytes": 1330,
+          "sha256": "40c8c8ecefd459ebaaa42a9c1fb756f3341abec97e29277fc3ef661d35eb11bb",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/03_b-wing/submission.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/03_b-wing/submission.json"
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "family": "Bandit",
+      "type": "crawler + n-gram family",
+      "aliases": "Bandit ClownCar X CubricNgram9",
+      "slug": "04_bandit",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/04_bandit",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/04_bandit",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/04_bandit/README.md",
+          "size_bytes": 2809,
+          "sha256": "69156f224d27dc50b925325ee29e97ec58d8ad04ec6e3b243b439feecbbc8fff",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/04_bandit/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/04_bandit/README.md"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "family": "Bandit Wagon",
+      "type": "crawler family",
+      "aliases": "BW, BWX, BW5, BW9, BWX 9F",
+      "slug": "05_bandit-wagon",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "CORPUS_CRAWLER.md",
+      "repo_folder": "public/architecture-run-files/files/05_bandit-wagon",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/05_bandit-wagon",
+      "files": [
+        {
+          "name": "CORPUS_CRAWLER.md",
+          "repo_path": "public/architecture-run-files/files/05_bandit-wagon/CORPUS_CRAWLER.md",
+          "size_bytes": 32677,
+          "sha256": "f5674f127af27fa7f1cbaf4841cb9674ca9c982e4fefd423322d439f66107ee6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/05_bandit-wagon/CORPUS_CRAWLER.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/05_bandit-wagon/CORPUS_CRAWLER.md"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "family": "Binary / Ternary U-Net",
+      "type": "quantized model family",
+      "aliases": "Binary Asymmetric U-Net, Ternary U-Net",
+      "slug": "06_binary-ternary-u-net",
+      "status": "copied",
+      "resolution": "basename-search",
+      "source_anchor_name": "submission_binary.json",
+      "repo_folder": "public/architecture-run-files/files/06_binary-ternary-u-net",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/06_binary-ternary-u-net",
+      "files": [
+        {
+          "name": "submission_binary.json",
+          "repo_path": "public/architecture-run-files/files/06_binary-ternary-u-net/submission_binary.json",
+          "size_bytes": 585,
+          "sha256": "1a3261cae29bcfe3df4a91db8601a0fdd0b9481b01e598486df6d062ef24ebfb",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/06_binary-ternary-u-net/submission_binary.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/06_binary-ternary-u-net/submission_binary.json"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "family": "ClownCar",
+      "type": "crawler family",
+      "aliases": "ClownCar Crawler",
+      "slug": "07_clowncar",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/07_clowncar",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/07_clowncar",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/07_clowncar/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/07_clowncar/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/07_clowncar/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "family": "Cobra",
+      "type": "ablation/test family",
+      "aliases": "Cobra A/B, Cobra base quality",
+      "slug": "08_cobra",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/08_cobra",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/08_cobra",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/08_cobra/README.md",
+          "size_bytes": 1900,
+          "sha256": "9c7b53c20c314a391b17b7e119befa1b9bd4a804777cc5c574a4185963a36caa",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/08_cobra/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/08_cobra/README.md"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "family": "DeltaNet Crawler",
+      "type": "mechanism family",
+      "aliases": "FLA DeltaNet, GDN, FX-Wing Delta DN",
+      "slug": "09_deltanet-crawler",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "submission.json",
+      "repo_folder": "public/architecture-run-files/files/09_deltanet-crawler",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/09_deltanet-crawler",
+      "files": [
+        {
+          "name": "submission.json",
+          "repo_path": "public/architecture-run-files/files/09_deltanet-crawler/submission.json",
+          "size_bytes": 1350,
+          "sha256": "d0207929dfb743b59fcd3b0b3efe0962c8b70a94040647e55bb08f28bfa76b51",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/09_deltanet-crawler/submission.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/09_deltanet-crawler/submission.json"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "family": "Donnie",
+      "type": "neural body family",
+      "aliases": "Donnie, Donnie_TTT, Donnie_12L",
+      "slug": "10_donnie",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
+      "repo_folder": "public/architecture-run-files/files/10_donnie",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/10_donnie",
+      "files": [
+        {
+          "name": "RESEARCH_REPORT_2026-04-27.md",
+          "repo_path": "public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md",
+          "size_bytes": 54741,
+          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md"
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "family": "F-Wing",
+      "type": "crawler family",
+      "aliases": "F_Wing Green/Purple/Red",
+      "slug": "11_f-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run.sh",
+      "repo_folder": "public/architecture-run-files/files/11_f-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/11_f-wing",
+      "files": [
+        {
+          "name": "run.sh",
+          "repo_path": "public/architecture-run-files/files/11_f-wing/run.sh",
+          "size_bytes": 3426,
+          "sha256": "fc229a5be912b31ff9080a8427be3d431f82fe1b291061b0f6ec0768ede97836",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/11_f-wing/run.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/11_f-wing/run.sh"
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "family": "FA-Wing",
+      "type": "hybrid crawler/n-gram family",
+      "aliases": "FA-Wing Green, FA-Wing GreenDN",
+      "slug": "12_fa-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run.sh",
+      "repo_folder": "public/architecture-run-files/files/12_fa-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/12_fa-wing",
+      "files": [
+        {
+          "name": "run.sh",
+          "repo_path": "public/architecture-run-files/files/12_fa-wing/run.sh",
+          "size_bytes": 3402,
+          "sha256": "45ca18997a0380e117116a46473efbeba5deb5a29486db89b55e0d279f9bb731",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/12_fa-wing/run.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/12_fa-wing/run.sh"
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "family": "Frugendorff",
+      "type": "recursive transformer family",
+      "aliases": "The Frugendorff, H-FRUG, Frugendorff Squared",
+      "slug": "13_frugendorff",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "CORPUS_CRAWLER.md",
+      "repo_folder": "public/architecture-run-files/files/13_frugendorff",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/13_frugendorff",
+      "files": [
+        {
+          "name": "CORPUS_CRAWLER.md",
+          "repo_path": "public/architecture-run-files/files/13_frugendorff/CORPUS_CRAWLER.md",
+          "size_bytes": 32677,
+          "sha256": "f5674f127af27fa7f1cbaf4841cb9674ca9c982e4fefd423322d439f66107ee6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/13_frugendorff/CORPUS_CRAWLER.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/13_frugendorff/CORPUS_CRAWLER.md"
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "family": "FX-Wing",
+      "type": "instructed recurrence family",
+      "aliases": "FX_Wing, FX_Wing_Delta, FX_Wing_Sigma",
+      "slug": "14_fx-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "HYPOTHESIS.md",
+      "repo_folder": "public/architecture-run-files/files/14_fx-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/14_fx-wing",
+      "files": [
+        {
+          "name": "HYPOTHESIS.md",
+          "repo_path": "public/architecture-run-files/files/14_fx-wing/HYPOTHESIS.md",
+          "size_bytes": 3777,
+          "sha256": "ffdd9bf02a2ebb26ebf07d5799d8a822fe6ab355c6f98fed48039c6802e1410b",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/14_fx-wing/HYPOTHESIS.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/14_fx-wing/HYPOTHESIS.md"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "family": "Gametriome",
+      "type": "bridge model family",
+      "aliases": "Gametriome Bridge",
+      "slug": "15_gametriome",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/15_gametriome",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/15_gametriome",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/15_gametriome/README.md",
+          "size_bytes": 2201,
+          "sha256": "b36483fd6600a2b91171426b8624640d58dba5114eee9f73ca323179674d2174",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/15_gametriome/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/15_gametriome/README.md"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "family": "GreenRod",
+      "type": "hybrid model family",
+      "aliases": "GreenRod_X_1",
+      "slug": "16_greenrod",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run.sh",
+      "repo_folder": "public/architecture-run-files/files/16_greenrod",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/16_greenrod",
+      "files": [
+        {
+          "name": "run.sh",
+          "repo_path": "public/architecture-run-files/files/16_greenrod/run.sh",
+          "size_bytes": 2638,
+          "sha256": "cb73acbfddab241525e245463bca67c564e9af6b656f1c3c1ca185c2a5e872b5",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/16_greenrod/run.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/16_greenrod/run.sh"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "family": "Helix",
+      "type": "crawler/model family",
+      "aliases": "Helix SplitHead, Helix_ab_3",
+      "slug": "17_helix",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "CORPUS_CRAWLER.md",
+      "repo_folder": "public/architecture-run-files/files/17_helix",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/17_helix",
+      "files": [
+        {
+          "name": "CORPUS_CRAWLER.md",
+          "repo_path": "public/architecture-run-files/files/17_helix/CORPUS_CRAWLER.md",
+          "size_bytes": 32677,
+          "sha256": "f5674f127af27fa7f1cbaf4841cb9674ca9c982e4fefd423322d439f66107ee6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/17_helix/CORPUS_CRAWLER.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/17_helix/CORPUS_CRAWLER.md"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "family": "Junkyard Rat",
+      "type": "model/kernel family",
+      "aliases": "JR-01, JR-02, Junkyard_Rat_MLP",
+      "slug": "18_junkyard-rat",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "HYPOTHESIS.md",
+      "repo_folder": "public/architecture-run-files/files/18_junkyard-rat",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/18_junkyard-rat",
+      "files": [
+        {
+          "name": "HYPOTHESIS.md",
+          "repo_path": "public/architecture-run-files/files/18_junkyard-rat/HYPOTHESIS.md",
+          "size_bytes": 9032,
+          "sha256": "2530134a0da826b616519c4fec09c39a5a4c0a580f35ec0aed12b1fbe4c4af20",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/18_junkyard-rat/HYPOTHESIS.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/18_junkyard-rat/HYPOTHESIS.md"
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "family": "Longworm",
+      "type": "long-context family",
+      "aliases": "Longworm RK, Longworm v1.5/v1.9",
+      "slug": "19_longworm",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "LONGWORM_V1_5_CONTEXT_MECH_WRITEUP.md",
+      "repo_folder": "public/architecture-run-files/files/19_longworm",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/19_longworm",
+      "files": [
+        {
+          "name": "LONGWORM_V1_5_CONTEXT_MECH_WRITEUP.md",
+          "repo_path": "public/architecture-run-files/files/19_longworm/LONGWORM_V1_5_CONTEXT_MECH_WRITEUP.md",
+          "size_bytes": 970,
+          "sha256": "3c4a25995d01c855726f50cf79db4706954bb8e4ae7e4b3c0b636ec1f6083315",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/19_longworm/LONGWORM_V1_5_CONTEXT_MECH_WRITEUP.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/19_longworm/LONGWORM_V1_5_CONTEXT_MECH_WRITEUP.md"
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "family": "Lucky",
+      "type": "neural body family",
+      "aliases": "Lucky II, Lucky III, Lucky IV, Lucky V",
+      "slug": "20_lucky",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/20_lucky",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/20_lucky",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/20_lucky/README.md",
+          "size_bytes": 795,
+          "sha256": "6b06c935ea3df79d62c10dad2aad238500acad9164b86e88a13e8c57ef6ed8a8",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/20_lucky/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/20_lucky/README.md"
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "family": "Medusa",
+      "type": "neural/crawler family",
+      "aliases": "Medusa FLA DeltaNet",
+      "slug": "21_medusa",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/21_medusa",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/21_medusa",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/21_medusa/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/21_medusa/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/21_medusa/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "family": "Mikey",
+      "type": "neural body family",
+      "aliases": "Mikey, Mikey II, Mikey III, Mikey v5, SP10240 Mikey",
+      "slug": "22_mikey",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "ACTIVE_DECISION_2026-04-29.md",
+      "repo_folder": "public/architecture-run-files/files/22_mikey",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/22_mikey",
+      "files": [
+        {
+          "name": "ACTIVE_DECISION_2026-04-29.md",
+          "repo_path": "public/architecture-run-files/files/22_mikey/ACTIVE_DECISION_2026-04-29.md",
+          "size_bytes": 3145,
+          "sha256": "73c2bcc2b3c06dc168540c4781d485bab866b13e45660923ce4630c24d2874ec",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/22_mikey/ACTIVE_DECISION_2026-04-29.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/22_mikey/ACTIVE_DECISION_2026-04-29.md"
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "family": "Midnight",
+      "type": "neural body family",
+      "aliases": "Midnight III, Midnight 12L, Midnight Rider/Special/Magnum/Express",
+      "slug": "23_midnight",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/23_midnight",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/23_midnight",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/23_midnight/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/23_midnight/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/23_midnight/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "family": "Mockingbird",
+      "type": "neural body/submission family",
+      "aliases": "SP10240 CaseOps, Mockingbird 8xH100",
+      "slug": "24_mockingbird",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/24_mockingbird",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/24_mockingbird",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/24_mockingbird/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/24_mockingbird/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/24_mockingbird/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "family": "Moonshot",
+      "type": "recurrence model family",
+      "aliases": "RWKV Moonshot, TON-E Moonshot",
+      "slug": "25_moonshot",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run_moonshot_8k.sh",
+      "repo_folder": "public/architecture-run-files/files/25_moonshot",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/25_moonshot",
+      "files": [
+        {
+          "name": "run_moonshot_8k.sh",
+          "repo_path": "public/architecture-run-files/files/25_moonshot/run_moonshot_8k.sh",
+          "size_bytes": 2422,
+          "sha256": "243fcd8a25068c18af745acae43a93cdeccaed72149485a6d165bf81ab7bad07",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/25_moonshot/run_moonshot_8k.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/25_moonshot/run_moonshot_8k.sh"
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "family": "Nightcrawler",
+      "type": "crawler family",
+      "aliases": "Shroud Nightcrawler, Nightcrawler base",
+      "slug": "26_nightcrawler",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/26_nightcrawler",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/26_nightcrawler",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/26_nightcrawler/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/26_nightcrawler/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/26_nightcrawler/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "family": "Nightcrawler Cubed",
+      "type": "crawler descendant",
+      "aliases": "NC3, Nightcrawler-Cubed sink/fused",
+      "slug": "27_nightcrawler-cubed",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/27_nightcrawler-cubed",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/27_nightcrawler-cubed",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/27_nightcrawler-cubed/README.md",
+          "size_bytes": 1203,
+          "sha256": "8c40b291d6c74d1762003f19c3ec726ae2c8bb36f8f3c025ca766540dbd66131",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/27_nightcrawler-cubed/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/27_nightcrawler-cubed/README.md"
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "family": "Ouroboros",
+      "type": "recurrence/crawler family",
+      "aliases": "Ouroboros III, ouroboros_4k",
+      "slug": "28_ouroboros",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/28_ouroboros",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/28_ouroboros",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/28_ouroboros/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/28_ouroboros/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/28_ouroboros/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "family": "Podracer",
+      "type": "eval/compression family",
+      "aliases": "Podracing, Podracing II, Podracer III Cubric Lite",
+      "slug": "29_podracer",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
+      "repo_folder": "public/architecture-run-files/files/29_podracer",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/29_podracer",
+      "files": [
+        {
+          "name": "RESEARCH_REPORT_2026-04-27.md",
+          "repo_path": "public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md",
+          "size_bytes": 54741,
+          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md"
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "family": "Raphe",
+      "type": "neural body family",
+      "aliases": "Raphe, Raphe 1.1, Raphe_TTT",
+      "slug": "30_raphe",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "AUDIT_Mikey_Raphe_2026-04-27.md",
+      "repo_folder": "public/architecture-run-files/files/30_raphe",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/30_raphe",
+      "files": [
+        {
+          "name": "AUDIT_Mikey_Raphe_2026-04-27.md",
+          "repo_path": "public/architecture-run-files/files/30_raphe/AUDIT_Mikey_Raphe_2026-04-27.md",
+          "size_bytes": 4743,
+          "sha256": "0c2429b0eb3b277353fcd3e9bc19c2d15388492ee0074df5a0ed540c1470aba1",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/30_raphe/AUDIT_Mikey_Raphe_2026-04-27.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/30_raphe/AUDIT_Mikey_Raphe_2026-04-27.md"
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "family": "Rascal",
+      "type": "neural body family",
+      "aliases": "Rascal II, Rascal III, Rascal IV",
+      "slug": "31_rascal",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/31_rascal",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/31_rascal",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/31_rascal/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/31_rascal/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/31_rascal/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "family": "Rascal SLOT",
+      "type": "neural ablation family",
+      "aliases": "SLOT, Rascal III SLOT",
+      "slug": "32_rascal-slot",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
+      "repo_folder": "public/architecture-run-files/files/32_rascal-slot",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot",
+      "files": [
+        {
+          "name": "RESEARCH_REPORT_2026-04-27.md",
+          "repo_path": "public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md",
+          "size_bytes": 54741,
+          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "family": "Rat Rod",
+      "type": "neural body family",
+      "aliases": "Rat Rod Green v1-v7, Purple, Synapse, Siphon",
+      "slug": "33_rat-rod",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "PROGRESS.md",
+      "repo_folder": "public/architecture-run-files/files/33_rat-rod",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/33_rat-rod",
+      "files": [
+        {
+          "name": "PROGRESS.md",
+          "repo_path": "public/architecture-run-files/files/33_rat-rod/PROGRESS.md",
+          "size_bytes": 7826,
+          "sha256": "7f9c9cbc8c8476e6428d6af009c2479d2381090f6deee4cdfa7321e35bc1f049",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/33_rat-rod/PROGRESS.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/33_rat-rod/PROGRESS.md"
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "family": "Shroud",
+      "type": "trace/visualization wrapper",
+      "aliases": "Shroud Nightcrawler, Shroud Midnight 12L, LoopViz",
+      "slug": "34_shroud",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run_spark.sh",
+      "repo_folder": "public/architecture-run-files/files/34_shroud",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/34_shroud",
+      "files": [
+        {
+          "name": "run_spark.sh",
+          "repo_path": "public/architecture-run-files/files/34_shroud/run_spark.sh",
+          "size_bytes": 4071,
+          "sha256": "898dd72d3e4991587eb291222bd16df674af3017454fe5fe11123559075275dc",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/34_shroud/run_spark.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/34_shroud/run_spark.sh"
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "family": "Smokestack",
+      "type": "crawler family",
+      "aliases": "Smokestack",
+      "slug": "35_smokestack",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "hypothesis.md",
+      "repo_folder": "public/architecture-run-files/files/35_smokestack",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/35_smokestack",
+      "files": [
+        {
+          "name": "hypothesis.md",
+          "repo_path": "public/architecture-run-files/files/35_smokestack/hypothesis.md",
+          "size_bytes": 1881,
+          "sha256": "c2dab136073028cc1878370e795987501e0a6fd76c6ad5416655465e51b13950",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/35_smokestack/hypothesis.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/35_smokestack/hypothesis.md"
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "family": "SOTA Crawler",
+      "type": "crawler family",
+      "aliases": "SOTA_CRAWLER_SAFE",
+      "slug": "36_sota-crawler",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/36_sota-crawler",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/36_sota-crawler",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/36_sota-crawler/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/36_sota-crawler/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/36_sota-crawler/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 37,
+      "family": "SOTA v2 TTT",
+      "type": "TTT/test family",
+      "aliases": "Exp-D TTT8, FarnsworthEngine v1/v2",
+      "slug": "37_sota-v2-ttt",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "logs",
+      "repo_folder": "public/architecture-run-files/files/37_sota-v2-ttt",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt",
+      "files": [
+        {
+          "name": "004b0cbe-9980-4ccf-90fe-84926363c766.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/004b0cbe-9980-4ccf-90fe-84926363c766.txt",
+          "size_bytes": 80032,
+          "sha256": "76c5a55c6281f169bf8fbc299ae3f739dbacc0468cc5a8d29498dba58c60ddef",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/004b0cbe-9980-4ccf-90fe-84926363c766.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/004b0cbe-9980-4ccf-90fe-84926363c766.txt"
+        },
+        {
+          "name": "05ee2d74-d9bd-417e-a3eb-e8f0a335f7ba.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/05ee2d74-d9bd-417e-a3eb-e8f0a335f7ba.txt",
+          "size_bytes": 82511,
+          "sha256": "215c106146851e6d430bf416daad093809fb91cc0de547b76cada8356963e207",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/05ee2d74-d9bd-417e-a3eb-e8f0a335f7ba.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/05ee2d74-d9bd-417e-a3eb-e8f0a335f7ba.txt"
+        },
+        {
+          "name": "0a50cdbe-40a7-48eb-a184-a4d5c00d671f.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/0a50cdbe-40a7-48eb-a184-a4d5c00d671f.txt",
+          "size_bytes": 39730,
+          "sha256": "0a451ecf590d6cf3beff90f474f853892ab977fef1ba29f0b4294a1bb667323f",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/0a50cdbe-40a7-48eb-a184-a4d5c00d671f.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/0a50cdbe-40a7-48eb-a184-a4d5c00d671f.txt"
+        },
+        {
+          "name": "0fbc77fc-73c6-497d-8064-30bdae463354.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/0fbc77fc-73c6-497d-8064-30bdae463354.txt",
+          "size_bytes": 78710,
+          "sha256": "5c8bc9ca75ab280b868ad9d20d26b9367f9343794745be1d04409244cd21e5c4",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/0fbc77fc-73c6-497d-8064-30bdae463354.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/0fbc77fc-73c6-497d-8064-30bdae463354.txt"
+        },
+        {
+          "name": "103c1524-9a41-4c1a-8b82-60ad7f1a611f.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/103c1524-9a41-4c1a-8b82-60ad7f1a611f.txt",
+          "size_bytes": 81996,
+          "sha256": "01391627a982287aebfd01e2da6207332e5be0653222b87419b6bef4c352d68c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/103c1524-9a41-4c1a-8b82-60ad7f1a611f.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/103c1524-9a41-4c1a-8b82-60ad7f1a611f.txt"
+        },
+        {
+          "name": "17724ec7-0c47-4fc1-8be4-1337d700eabb.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/17724ec7-0c47-4fc1-8be4-1337d700eabb.txt",
+          "size_bytes": 80943,
+          "sha256": "8b0984637b5631e015280fe2ce5cb27bac0f39c03dc4d88b245c1a29f98d1c63",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/17724ec7-0c47-4fc1-8be4-1337d700eabb.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/17724ec7-0c47-4fc1-8be4-1337d700eabb.txt"
+        },
+        {
+          "name": "22d6dc3a-8de2-4c8e-9a2e-ccbae5b23bf3.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/22d6dc3a-8de2-4c8e-9a2e-ccbae5b23bf3.txt",
+          "size_bytes": 39706,
+          "sha256": "c830db89809a34fdb3ffc8ab6c82b2b00c60d27353ca6d5f34246f3e8c30bb11",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/22d6dc3a-8de2-4c8e-9a2e-ccbae5b23bf3.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/22d6dc3a-8de2-4c8e-9a2e-ccbae5b23bf3.txt"
+        },
+        {
+          "name": "27f555ff-9890-48e2-b4ba-791271d11574.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/27f555ff-9890-48e2-b4ba-791271d11574.txt",
+          "size_bytes": 76829,
+          "sha256": "f1e20f211ceef6174b6ae6ec55d8b196001800392780d71724cea4219111a399",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/27f555ff-9890-48e2-b4ba-791271d11574.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/27f555ff-9890-48e2-b4ba-791271d11574.txt"
+        },
+        {
+          "name": "28f5846d-2faa-4933-b268-1dbea531a289.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/28f5846d-2faa-4933-b268-1dbea531a289.txt",
+          "size_bytes": 83898,
+          "sha256": "4f42e10e371c2276e5fedf0173ba7c94eb058cefa878803edcc28ea0cad47054",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/28f5846d-2faa-4933-b268-1dbea531a289.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/28f5846d-2faa-4933-b268-1dbea531a289.txt"
+        },
+        {
+          "name": "2a966947-86cd-4cf8-a26e-8d974672e73a.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/2a966947-86cd-4cf8-a26e-8d974672e73a.txt",
+          "size_bytes": 82514,
+          "sha256": "a6b6a45ebfc641e4266333bd89dc6b7efd30c2fe58d5137df8a3542698308721",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2a966947-86cd-4cf8-a26e-8d974672e73a.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2a966947-86cd-4cf8-a26e-8d974672e73a.txt"
+        },
+        {
+          "name": "2b77e3f0-d263-43af-902f-250971a7e7fe.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/2b77e3f0-d263-43af-902f-250971a7e7fe.txt",
+          "size_bytes": 78708,
+          "sha256": "ca66db87e25dc8a3a8801f9013606bd10383de842057bbe00ae8f3f491be1ab2",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2b77e3f0-d263-43af-902f-250971a7e7fe.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2b77e3f0-d263-43af-902f-250971a7e7fe.txt"
+        },
+        {
+          "name": "2ff6bfbb-ca4e-482a-862f-6aafbd55edb5.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/2ff6bfbb-ca4e-482a-862f-6aafbd55edb5.txt",
+          "size_bytes": 83628,
+          "sha256": "582fb2c07f2bab486728c8663350ce03671a4b9b422f9ff3b10503d501babef6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2ff6bfbb-ca4e-482a-862f-6aafbd55edb5.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/2ff6bfbb-ca4e-482a-862f-6aafbd55edb5.txt"
+        },
+        {
+          "name": "37af01bc-f69d-44d9-810d-eaa5ae5f0bfb.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/37af01bc-f69d-44d9-810d-eaa5ae5f0bfb.txt",
+          "size_bytes": 78710,
+          "sha256": "64ff697d66c2ace14661dbca3958218d33be86c76d3c1904b6f118725437cfaa",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/37af01bc-f69d-44d9-810d-eaa5ae5f0bfb.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/37af01bc-f69d-44d9-810d-eaa5ae5f0bfb.txt"
+        },
+        {
+          "name": "3a113a64-bf8b-4bb6-a386-10280f841433.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/3a113a64-bf8b-4bb6-a386-10280f841433.txt",
+          "size_bytes": 93208,
+          "sha256": "30ac2f004348778187cd703e73e251e9db1d61c632665e76971ab95e3c54852e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/3a113a64-bf8b-4bb6-a386-10280f841433.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/3a113a64-bf8b-4bb6-a386-10280f841433.txt"
+        },
+        {
+          "name": "3f1e9181-0923-481a-af65-5f8ce3092f2a.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/3f1e9181-0923-481a-af65-5f8ce3092f2a.txt",
+          "size_bytes": 78883,
+          "sha256": "fe0ccd6ba057226a7d57c501546c19945e7aa3dbd091d7ccef041c0b6a5a7032",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/3f1e9181-0923-481a-af65-5f8ce3092f2a.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/3f1e9181-0923-481a-af65-5f8ce3092f2a.txt"
+        },
+        {
+          "name": "40784c86-96c5-4135-bbba-b94800fecf45.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/40784c86-96c5-4135-bbba-b94800fecf45.txt",
+          "size_bytes": 30650,
+          "sha256": "a3df5a7994c3590520dff7e5827c80788685c9d1da988170d602a35c03168069",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/40784c86-96c5-4135-bbba-b94800fecf45.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/40784c86-96c5-4135-bbba-b94800fecf45.txt"
+        },
+        {
+          "name": "41d58d2a-24fc-4e8d-8738-26eac5cdae41.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/41d58d2a-24fc-4e8d-8738-26eac5cdae41.txt",
+          "size_bytes": 33284,
+          "sha256": "96aa9bc3a123becfa6f34eb485b2d09d854228dcfa92a7987b61aca5278be1a0",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/41d58d2a-24fc-4e8d-8738-26eac5cdae41.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/41d58d2a-24fc-4e8d-8738-26eac5cdae41.txt"
+        },
+        {
+          "name": "45abef9c-c0e1-4f8b-9684-3fa31f98c5dc.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/45abef9c-c0e1-4f8b-9684-3fa31f98c5dc.txt",
+          "size_bytes": 89151,
+          "sha256": "a9501345f8a7c37866c7651ba450a3d6ee599750c1170b1fb3e8c4df5b41b800",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/45abef9c-c0e1-4f8b-9684-3fa31f98c5dc.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/45abef9c-c0e1-4f8b-9684-3fa31f98c5dc.txt"
+        },
+        {
+          "name": "5cc4d1fd-deef-4d78-93fe-0f434c11f1d9.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/5cc4d1fd-deef-4d78-93fe-0f434c11f1d9.txt",
+          "size_bytes": 81995,
+          "sha256": "b3dd4f5cc5e75d67cf366c4dc1e95d00833201194aace17659a280e979c79526",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/5cc4d1fd-deef-4d78-93fe-0f434c11f1d9.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/5cc4d1fd-deef-4d78-93fe-0f434c11f1d9.txt"
+        },
+        {
+          "name": "67ec47b8-f8ab-461b-babd-856cf6910626.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/67ec47b8-f8ab-461b-babd-856cf6910626.txt",
+          "size_bytes": 30657,
+          "sha256": "59f37ff36248390b75ebf400f75f97e06f8a6c1acff587ef8ab636288784d6a4",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/67ec47b8-f8ab-461b-babd-856cf6910626.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/67ec47b8-f8ab-461b-babd-856cf6910626.txt"
+        },
+        {
+          "name": "6c1cb999-b743-4af3-946d-81ded0a80ef1.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/6c1cb999-b743-4af3-946d-81ded0a80ef1.txt",
+          "size_bytes": 78711,
+          "sha256": "7a3c1c154f49c164a60547cfd57955bbc4e9eea4e60353cd35c81ca75cdc086c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/6c1cb999-b743-4af3-946d-81ded0a80ef1.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/6c1cb999-b743-4af3-946d-81ded0a80ef1.txt"
+        },
+        {
+          "name": "781f0824-e727-4a3b-bab0-5d7ae3c61753.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/781f0824-e727-4a3b-bab0-5d7ae3c61753.txt",
+          "size_bytes": 93233,
+          "sha256": "94923c881d5c099d0d3bf43ff797a21d6ab8c6472c6f71e8a36aeb082fc04044",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/781f0824-e727-4a3b-bab0-5d7ae3c61753.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/781f0824-e727-4a3b-bab0-5d7ae3c61753.txt"
+        },
+        {
+          "name": "78d96258-05bf-4344-9c1c-a9fe21a4b3bc.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/78d96258-05bf-4344-9c1c-a9fe21a4b3bc.txt",
+          "size_bytes": 81751,
+          "sha256": "b9af3dc03c4af530fbe993009b46d7eebaa7fa44df5c1642b2752645afde986a",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/78d96258-05bf-4344-9c1c-a9fe21a4b3bc.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/78d96258-05bf-4344-9c1c-a9fe21a4b3bc.txt"
+        },
+        {
+          "name": "790d2d4e-d4b0-4f73-b064-46deb6eb5c41.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/790d2d4e-d4b0-4f73-b064-46deb6eb5c41.txt",
+          "size_bytes": 92017,
+          "sha256": "6596a232e19cae5fdc66f29041a49a7efa86f0e5a2da2614b05e7b35d7266ff4",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/790d2d4e-d4b0-4f73-b064-46deb6eb5c41.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/790d2d4e-d4b0-4f73-b064-46deb6eb5c41.txt"
+        },
+        {
+          "name": "7d9fc9a0-1d3e-4d52-ad53-15f96d767e66.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/7d9fc9a0-1d3e-4d52-ad53-15f96d767e66.txt",
+          "size_bytes": 83392,
+          "sha256": "07538015aef5acc41c7c6cd6810126c3846ab7d3e2efc0454214e429e327c145",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/7d9fc9a0-1d3e-4d52-ad53-15f96d767e66.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/7d9fc9a0-1d3e-4d52-ad53-15f96d767e66.txt"
+        },
+        {
+          "name": "8887fc3f-40bd-4fe7-b1ca-f619e0120a43.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/8887fc3f-40bd-4fe7-b1ca-f619e0120a43.txt",
+          "size_bytes": 81841,
+          "sha256": "014b5f4bb126fcb877bf43290c5852becc23af9599ce30bd3aeeef17ac823c24",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/8887fc3f-40bd-4fe7-b1ca-f619e0120a43.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/8887fc3f-40bd-4fe7-b1ca-f619e0120a43.txt"
+        },
+        {
+          "name": "8f4d17ba-66a1-4ed3-a3fd-583549520700.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/8f4d17ba-66a1-4ed3-a3fd-583549520700.txt",
+          "size_bytes": 79534,
+          "sha256": "983f5e51c5b1281e83d24bc49ad8e2e0cbae58247c78dfd703ce5c631fcb894a",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/8f4d17ba-66a1-4ed3-a3fd-583549520700.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/8f4d17ba-66a1-4ed3-a3fd-583549520700.txt"
+        },
+        {
+          "name": "904e579a-3b55-49bf-a5d8-35e7326b95b0.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/904e579a-3b55-49bf-a5d8-35e7326b95b0.txt",
+          "size_bytes": 82354,
+          "sha256": "0485ed42ed27d11f14117e14173d0fdc57c2aa006cbbc1ade767c4487dceb638",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/904e579a-3b55-49bf-a5d8-35e7326b95b0.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/904e579a-3b55-49bf-a5d8-35e7326b95b0.txt"
+        },
+        {
+          "name": "973944b0-0e47-4952-ab82-00b7b1b09816.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/973944b0-0e47-4952-ab82-00b7b1b09816.txt",
+          "size_bytes": 80171,
+          "sha256": "53e34f26d69b0ac04f96c9493878daa0449557b21b2303de0651c0198ea431e6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/973944b0-0e47-4952-ab82-00b7b1b09816.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/973944b0-0e47-4952-ab82-00b7b1b09816.txt"
+        },
+        {
+          "name": "9b2f7944-1966-4210-b6e4-5d3986fec802.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/9b2f7944-1966-4210-b6e4-5d3986fec802.txt",
+          "size_bytes": 83040,
+          "sha256": "36d46e6f242e2e9bc07566ab0fcb349b85472dc89e3a54a4fd56be66c37f996e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/9b2f7944-1966-4210-b6e4-5d3986fec802.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/9b2f7944-1966-4210-b6e4-5d3986fec802.txt"
+        },
+        {
+          "name": "a154f9eb-1b42-4ad4-9f45-e616b2c40a5f.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/a154f9eb-1b42-4ad4-9f45-e616b2c40a5f.txt",
+          "size_bytes": 89561,
+          "sha256": "d538a0b65b692c1e35f5f5c9f5da5b0bd3f60f38f005bf5e1ab8b3d74f7340ba",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a154f9eb-1b42-4ad4-9f45-e616b2c40a5f.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a154f9eb-1b42-4ad4-9f45-e616b2c40a5f.txt"
+        },
+        {
+          "name": "a4258ed0-4dbf-4079-a024-318a6fe87d2c.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/a4258ed0-4dbf-4079-a024-318a6fe87d2c.txt",
+          "size_bytes": 31762,
+          "sha256": "38e71f27c43b5c7abdde223300cb042a6fe7b0f17ae37f9b4f03ba8843182a3b",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4258ed0-4dbf-4079-a024-318a6fe87d2c.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4258ed0-4dbf-4079-a024-318a6fe87d2c.txt"
+        },
+        {
+          "name": "a4af2979-3da3-4c98-ad0c-3acd595baedd.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/a4af2979-3da3-4c98-ad0c-3acd595baedd.txt",
+          "size_bytes": 78655,
+          "sha256": "56e9c2f741628de42ec8b3c6a8dd4e7320a3018948df4ef1ffc2ffc6e8fd28c5",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4af2979-3da3-4c98-ad0c-3acd595baedd.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4af2979-3da3-4c98-ad0c-3acd595baedd.txt"
+        },
+        {
+          "name": "a4befa7e-1ba5-4ccc-ae35-792a2288002e.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/a4befa7e-1ba5-4ccc-ae35-792a2288002e.txt",
+          "size_bytes": 93093,
+          "sha256": "69c8e1d2f3a84c402b3ffdb5ab639618dfd19a1b06457c61916aaebc6dc19a30",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4befa7e-1ba5-4ccc-ae35-792a2288002e.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/a4befa7e-1ba5-4ccc-ae35-792a2288002e.txt"
+        },
+        {
+          "name": "aaf9b9a1-f492-432a-a19a-35aa7a5656bc.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/aaf9b9a1-f492-432a-a19a-35aa7a5656bc.txt",
+          "size_bytes": 81982,
+          "sha256": "fffb859fb227cdf0c96f3ee4d1c6ea09706e6e8f5d0cacd5cfd7e6edbab7c251",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/aaf9b9a1-f492-432a-a19a-35aa7a5656bc.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/aaf9b9a1-f492-432a-a19a-35aa7a5656bc.txt"
+        },
+        {
+          "name": "ace17b46-6130-47f9-809c-39292b1d4a57.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/ace17b46-6130-47f9-809c-39292b1d4a57.txt",
+          "size_bytes": 39335,
+          "sha256": "a70793f1092990929a108887bde36127e64e3a82339aa3f9e8d7414276fa573d",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ace17b46-6130-47f9-809c-39292b1d4a57.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ace17b46-6130-47f9-809c-39292b1d4a57.txt"
+        },
+        {
+          "name": "adamw_ttt.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/adamw_ttt.txt",
+          "size_bytes": 93092,
+          "sha256": "0c39890f8db3ca3a905f83794ebeb261a5d248bfa358ead1e4726ab259670ebf",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/adamw_ttt.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/adamw_ttt.txt"
+        },
+        {
+          "name": "b5eec31f-4a98-476b-8b0c-014509419061.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/b5eec31f-4a98-476b-8b0c-014509419061.txt",
+          "size_bytes": 88007,
+          "sha256": "08b0f8e0ea0b232864a005993f17fd01432df2e79728b898ffa431c754e1b023",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/b5eec31f-4a98-476b-8b0c-014509419061.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/b5eec31f-4a98-476b-8b0c-014509419061.txt"
+        },
+        {
+          "name": "b8da428f-1161-41e1-8b9a-1148c9998bfa.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/b8da428f-1161-41e1-8b9a-1148c9998bfa.txt",
+          "size_bytes": 93008,
+          "sha256": "0c5ce9804c2dfb3689290117dc0c6f4b835c5b91863a80b7426c576aabd9bc55",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/b8da428f-1161-41e1-8b9a-1148c9998bfa.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/b8da428f-1161-41e1-8b9a-1148c9998bfa.txt"
+        },
+        {
+          "name": "ba780105-fb8c-4231-8113-c4f3b6e8b63f.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/ba780105-fb8c-4231-8113-c4f3b6e8b63f.txt",
+          "size_bytes": 82511,
+          "sha256": "f7c61c848882cae5ac93355406964ed8c6c9765b5fe7b8f3ecd23d41a3c91d20",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ba780105-fb8c-4231-8113-c4f3b6e8b63f.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ba780105-fb8c-4231-8113-c4f3b6e8b63f.txt"
+        },
+        {
+          "name": "c1539c60-b928-4a45-a69b-aa7209f61ff4.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/c1539c60-b928-4a45-a69b-aa7209f61ff4.txt",
+          "size_bytes": 34413,
+          "sha256": "1226f3e92968a68527ad65e2062ef071641c3b4d7bb0e1d11a5c84c46c8454cb",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/c1539c60-b928-4a45-a69b-aa7209f61ff4.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/c1539c60-b928-4a45-a69b-aa7209f61ff4.txt"
+        },
+        {
+          "name": "c26c43c4-9a5b-4a47-98ef-a28cd22748cd.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/c26c43c4-9a5b-4a47-98ef-a28cd22748cd.txt",
+          "size_bytes": 40477,
+          "sha256": "aa3e5af34e14ccdadb1127d25b1ff48938d15c2ccb27a450bb3817bb1f9bbccf",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/c26c43c4-9a5b-4a47-98ef-a28cd22748cd.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/c26c43c4-9a5b-4a47-98ef-a28cd22748cd.txt"
+        },
+        {
+          "name": "cadence2_step1.tsv",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/cadence2_step1.tsv",
+          "size_bytes": 2141,
+          "sha256": "945301fcef907d27932106c60c7ee0773eda47f94a3213a0618dd95c2a12a600",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cadence2_step1.tsv",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cadence2_step1.tsv"
+        },
+        {
+          "name": "cba87174-f285-4d2b-8eef-7bc5afb80e66.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/cba87174-f285-4d2b-8eef-7bc5afb80e66.txt",
+          "size_bytes": 81996,
+          "sha256": "b9e2c5e785172957a83249bb1b74bff6fe4b9fe07e8bec8efc3fb2b49fe55eee",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cba87174-f285-4d2b-8eef-7bc5afb80e66.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cba87174-f285-4d2b-8eef-7bc5afb80e66.txt"
+        },
+        {
+          "name": "cfb01827-0548-4a4c-83cd-4d047c6c4698.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/cfb01827-0548-4a4c-83cd-4d047c6c4698.txt",
+          "size_bytes": 79040,
+          "sha256": "782f435ad7890369509c52aed5bdb58c16ed20a02587a99a410556380bef601f",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cfb01827-0548-4a4c-83cd-4d047c6c4698.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cfb01827-0548-4a4c-83cd-4d047c6c4698.txt"
+        },
+        {
+          "name": "cfc2ee6d-c15b-420d-8a1a-3d937045552e.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/cfc2ee6d-c15b-420d-8a1a-3d937045552e.txt",
+          "size_bytes": 83535,
+          "sha256": "3581932b30966308ca47c7751e8b055f4598f045dd4d2694972f9defd0c4ff54",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cfc2ee6d-c15b-420d-8a1a-3d937045552e.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/cfc2ee6d-c15b-420d-8a1a-3d937045552e.txt"
+        },
+        {
+          "name": "clean_always_fractal.tsv",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_always_fractal.tsv",
+          "size_bytes": 6664,
+          "sha256": "d10f2cd28bdba34740f806a9c9a1e54fa9e94a45e6371f6bf3aaa78e01068bba",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_always_fractal.tsv",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_always_fractal.tsv"
+        },
+        {
+          "name": "clean_cadence2.tsv",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_cadence2.tsv",
+          "size_bytes": 6614,
+          "sha256": "b949686c7e521aee9d991789a108db10014df208e93b5e31000a0712e1b19bbb",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_cadence2.tsv",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/clean_cadence2.tsv"
+        },
+        {
+          "name": "d31921e8-8344-417d-9a93-f54180d5a21d.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/d31921e8-8344-417d-9a93-f54180d5a21d.txt",
+          "size_bytes": 39750,
+          "sha256": "fc55d4a8dd9328d10a70f6315f401675976555c1f32054de47f9dc8c70ee64e4",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/d31921e8-8344-417d-9a93-f54180d5a21d.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/d31921e8-8344-417d-9a93-f54180d5a21d.txt"
+        },
+        {
+          "name": "e6bc18b0-0818-460e-9321-5a864a919e3e.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/e6bc18b0-0818-460e-9321-5a864a919e3e.txt",
+          "size_bytes": 39750,
+          "sha256": "8394a4cba624250552451266b4f5f1d91a4134d5a5ee04b5c4df6477c01ac5dc",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e6bc18b0-0818-460e-9321-5a864a919e3e.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e6bc18b0-0818-460e-9321-5a864a919e3e.txt"
+        },
+        {
+          "name": "e75ce9bb-be00-4735-966b-ce18aecb301e.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/e75ce9bb-be00-4735-966b-ce18aecb301e.txt",
+          "size_bytes": 85252,
+          "sha256": "988cf9e3f91c2676af8e28d7de2d7f360e427075cdf660318fb94d26e9601e1e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e75ce9bb-be00-4735-966b-ce18aecb301e.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e75ce9bb-be00-4735-966b-ce18aecb301e.txt"
+        },
+        {
+          "name": "e81d6f7b-ad48-45b8-9e85-e26a67bc0731.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/e81d6f7b-ad48-45b8-9e85-e26a67bc0731.txt",
+          "size_bytes": 93236,
+          "sha256": "f948ebe50e396e5955a220dfa81a5c1a627496293af759cd4e53d095a052fb80",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e81d6f7b-ad48-45b8-9e85-e26a67bc0731.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e81d6f7b-ad48-45b8-9e85-e26a67bc0731.txt"
+        },
+        {
+          "name": "e8cfe9b7-a921-4bf1-807d-26c000ac799a.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/e8cfe9b7-a921-4bf1-807d-26c000ac799a.txt",
+          "size_bytes": 87434,
+          "sha256": "3aecf10db4838d18db77ea2830f6d537627369d6e81e7e50df6484899c9870ee",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e8cfe9b7-a921-4bf1-807d-26c000ac799a.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/e8cfe9b7-a921-4bf1-807d-26c000ac799a.txt"
+        },
+        {
+          "name": "edb680e7-5a4c-4552-9c22-7b9886b6f7fa.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/edb680e7-5a4c-4552-9c22-7b9886b6f7fa.txt",
+          "size_bytes": 79113,
+          "sha256": "bc97774f396497f5025baa3e2a7db44ccc5a490b89e99fb63db6454e66fedab7",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/edb680e7-5a4c-4552-9c22-7b9886b6f7fa.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/edb680e7-5a4c-4552-9c22-7b9886b6f7fa.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_20260321_234614/run_s1337.log",
+          "size_bytes": 6079,
+          "sha256": "534682a53a56a4876e5f4af6bb2b767c06f931367a1a88e6d97e84315305bfdd",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_20260321_234614/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_20260321_234614/run_s1337.log"
+        },
+        {
+          "name": "exp_a_mtp_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_s1337.txt",
+          "size_bytes": 79532,
+          "sha256": "6a85f0106b1ebbfbbfad9ff58680651fede8fe8451a6306181ea294cfceda516",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_a_mtp_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_20260321_235941/run_s1337.log",
+          "size_bytes": 6195,
+          "sha256": "82a6f6b38fbef4d62afaab95acba713b0ecd7ae8d724d66d9e7b584b8e5b831c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_20260321_235941/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_20260321_235941/run_s1337.log"
+        },
+        {
+          "name": "exp_b_swiglu_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_s1337.txt",
+          "size_bytes": 79864,
+          "sha256": "c1d06566c8af717f9db9c9926d510fc4e264a6e875d91ef1409a5c2721b3519b",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_b_swiglu_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260321_231147/run_s1337.log",
+          "size_bytes": 5398,
+          "sha256": "4e3f42b2d20b473d57079caa4ff745487c9a85b04cd9e379d97451a79130f0d6",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260321_231147/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260321_231147/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260322_001914/run_s1337.log",
+          "size_bytes": 12630,
+          "sha256": "5c953392b9222cb8cd817f9eb442cffa49f4b0116be923d156013b242e4de722",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260322_001914/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_20260322_001914/run_s1337.log"
+        },
+        {
+          "name": "exp_c_vocab1536_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_s1337.txt",
+          "size_bytes": 74005,
+          "sha256": "e2df35bc4aeaa97c72ba5675abab62cd1d14655ef085f14d85d48716c825b5d2",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_c_vocab1536_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_20260322_022410/run_s1337.log",
+          "size_bytes": 6639,
+          "sha256": "4d45a4caffff25e6a8e8c22049891ae9d8c5519f0ee82b0bc721df33b23606c5",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_20260322_022410/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_20260322_022410/run_s1337.log"
+        },
+        {
+          "name": "exp_d_sam_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_s1337.txt",
+          "size_bytes": 82639,
+          "sha256": "f04a5322fad76316e158217473b55c1d1ccf73d22fd8044138b648f322cb7909",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_sam_s1337.txt"
+        },
+        {
+          "name": "exp_d_ttt8_stride32.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32.log",
+          "size_bytes": 44,
+          "sha256": "8fe1d41fabbc84297ea4d29df739cd54d692a30599336c25d2949908f48c1d79",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_011105/run_s1337.log",
+          "size_bytes": 6628,
+          "sha256": "057cd76b184302e6daf4c72476d645d42f8de0a96de7d9d311af1e0699345da2",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_011105/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_011105/run_s1337.log"
+        },
+        {
+          "name": "run_s42.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_012847/run_s42.log",
+          "size_bytes": 6623,
+          "sha256": "6e117a0e319125b4fda086d5e4c49d7075d2dba5c63b999c0c23c9c2ed770c1a",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_012847/run_s42.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_012847/run_s42.log"
+        },
+        {
+          "name": "run_s7.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_014853/run_s7.log",
+          "size_bytes": 6621,
+          "sha256": "a5e2a73fcaa25ac07870be6b7ab7e94d1b5f41992f24368b5abee091f60a681d",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_014853/run_s7.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_014853/run_s7.log"
+        },
+        {
+          "name": "run_s137.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_020557/run_s137.log",
+          "size_bytes": 6626,
+          "sha256": "f50dca660fe515ffb6d649608d7c030dc3770f1dde7686ae105be9e0010607f7",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_020557/run_s137.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_20260322_020557/run_s137.log"
+        },
+        {
+          "name": "exp_d_ttt8_stride32_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s1337.txt",
+          "size_bytes": 80145,
+          "sha256": "5a63dc9627ddd61a48b2edb56cfb7249124100aeceb870ca3bc955a3202bfc4b",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s1337.txt"
+        },
+        {
+          "name": "exp_d_ttt8_stride32_s137.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s137.txt",
+          "size_bytes": 80144,
+          "sha256": "b16908b549e39897a05c0e21a458eeacde4991bd6ece04a8827995c789026e40",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s137.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s137.txt"
+        },
+        {
+          "name": "exp_d_ttt8_stride32_s42.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s42.txt",
+          "size_bytes": 80142,
+          "sha256": "63fec443938babeceace6d81cf87f6de030a20a39eab90eba68586f3f70b9666",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s42.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s42.txt"
+        },
+        {
+          "name": "exp_d_ttt8_stride32_s7.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s7.txt",
+          "size_bytes": 80141,
+          "sha256": "235d4778d3032c314a01670088db1c417936f02682c5d0148880a9aadb55f528",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s7.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/exp_d_ttt8_stride32_s7.txt"
+        },
+        {
+          "name": "f902aa53-c6b0-4a42-a8b2-c15e79e8b564.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/f902aa53-c6b0-4a42-a8b2-c15e79e8b564.txt",
+          "size_bytes": 81691,
+          "sha256": "ce4b11f4b4245f2ff7614877699a34411762fb84c7e250495034152b1fbb5ef5",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/f902aa53-c6b0-4a42-a8b2-c15e79e8b564.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/f902aa53-c6b0-4a42-a8b2-c15e79e8b564.txt"
+        },
+        {
+          "name": "f93165ab-e4f4-4336-928c-c2dc6d60f8a2.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/f93165ab-e4f4-4336-928c-c2dc6d60f8a2.txt",
+          "size_bytes": 76236,
+          "sha256": "2b1483e077add2f50ab33b192dc5f112c48771abac453fd40ae37af436dbf9ee",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/f93165ab-e4f4-4336-928c-c2dc6d60f8a2.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/f93165ab-e4f4-4336-928c-c2dc6d60f8a2.txt"
+        },
+        {
+          "name": "fa168c83-cdfb-4c09-9032-2761810286fe.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/fa168c83-cdfb-4c09-9032-2761810286fe.txt",
+          "size_bytes": 33710,
+          "sha256": "44df98ee87bef04c6176b382b101c0d30d6ae9cdc85c3b01472407fb0e14b0e3",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/fa168c83-cdfb-4c09-9032-2761810286fe.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/fa168c83-cdfb-4c09-9032-2761810286fe.txt"
+        },
+        {
+          "name": "gptq_full_stack.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_full_stack.txt",
+          "size_bytes": 91500,
+          "sha256": "f0d3a2b6e39f18a210e706356b161c50dc1c414cddfbb142b5c08ae5a5702860",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_full_stack.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_full_stack.txt"
+        },
+        {
+          "name": "gptq_no_ttt.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_no_ttt.txt",
+          "size_bytes": 91384,
+          "sha256": "fbd47e959c50092b1d44b0ba6cf32cf05e601cf11003c5e918fb2fadf4b991c9",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_no_ttt.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_no_ttt.txt"
+        },
+        {
+          "name": "gptq_seed42.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed42.txt",
+          "size_bytes": 181027,
+          "sha256": "36153864e03d4b15a21a88f516a58b61b200dea919e31c0e43df2793e31ef319",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed42.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed42.txt"
+        },
+        {
+          "name": "gptq_seed7.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed7.txt",
+          "size_bytes": 91496,
+          "sha256": "e35b962ae883761c7524829d30afd94d7065d2e71bdb032f3d16e2b240e3df59",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed7.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/gptq_seed7.txt"
+        },
+        {
+          "name": "ortho_cadence2_long.tsv",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/ortho_cadence2_long.tsv",
+          "size_bytes": 90722,
+          "sha256": "9ef84c0eea5e28aa6dc8c364d72be4d4fa7f6af19a214f0877813c4b6e7febbb",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ortho_cadence2_long.tsv",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ortho_cadence2_long.tsv"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_024631/run_s1337.log",
+          "size_bytes": 6377,
+          "sha256": "f78519bf2b403453319a888cf6f66963a134971d1a39a1be5b4e531db36a126f",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_024631/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_024631/run_s1337.log"
+        },
+        {
+          "name": "run_s42.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_030552/run_s42.log",
+          "size_bytes": 4005,
+          "sha256": "05bc9bae32c79cf41eb58ded7a70d7b678d826c2a32eefe66c025f9829feb543",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_030552/run_s42.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_20260322_030552/run_s42.log"
+        },
+        {
+          "name": "pr315_ttt8_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s1337.txt",
+          "size_bytes": 83098,
+          "sha256": "3f6571d366579395c5ee6b556b9cb1541561cd23f6a7ae95887bb644beb05bb8",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s1337.txt"
+        },
+        {
+          "name": "pr315_ttt8_s42.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s42.txt",
+          "size_bytes": 80728,
+          "sha256": "660331eded1567acd6868585e8c078e866dfe9b4d7253f94018635f2b9517a78",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s42.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/pr315_ttt8_s42.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_20260321_220130/run_s1337.log",
+          "size_bytes": 6254,
+          "sha256": "913c422e1a5ee428ac04db50dbd9b21ee2afd9c7654b8ce794280e962f9eb0f5",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_20260321_220130/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_20260321_220130/run_s1337.log"
+        },
+        {
+          "name": "sota254_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_s1337.txt",
+          "size_bytes": 78505,
+          "sha256": "06bf7720888ae0680f22e8bbcc97d184de31183d54c6a0c88c0a2ac4509eb450",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_221909/run_s1337.log",
+          "size_bytes": 5304,
+          "sha256": "ede909d30195ca9d2b75a35737c0b582a34ca7fa441af416e22cd7aa6aff2995",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_221909/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_221909/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222527/run_s1337.log",
+          "size_bytes": 135157,
+          "sha256": "40994bcc6998ba5f3a460eae5eed3cd322b2b6c7a62961a86111ddcd8c257f92",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222527/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222527/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222706/run_s1337.log",
+          "size_bytes": 2453,
+          "sha256": "01dd347c5e4f426ee69064ab097a2681fa03bd36c32e6a4853c2e2d8c58d57c9",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222706/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_20260321_222706/run_s1337.log"
+        },
+        {
+          "name": "sota254_xsa_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_s1337.txt",
+          "size_bytes": 150303,
+          "sha256": "74bb2ea047a92a94eea1edc83e6a391bed5189db50987f38ced3f6a6f426211e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota254_xsa_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_ttt_noXSA_20260322_004943/run_s1337.log",
+          "size_bytes": 8547,
+          "sha256": "816c8c7b1e05dfcec512e30366df8a27ca76b6c3afcbaa2d95ab83af56968b55",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_ttt_noXSA_20260322_004943/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_ttt_noXSA_20260322_004943/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_231118/run_s1337.log",
+          "size_bytes": 5304,
+          "sha256": "2c699638721650981ee5183bec7eee96fbfb707f481d182e18b28a6b719400bc",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_231118/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_231118/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233634/run_s1337.log",
+          "size_bytes": 6896,
+          "sha256": "b42c02b6a79b243e9b27df9b6e64596d47a94b5020494c30d60b080acd41ce47",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233634/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233634/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233816/run_s1337.log",
+          "size_bytes": 3273,
+          "sha256": "0c4496d173c4fa59b4dc150d6f34f88b3e5a438095205d95c9cb0d80296bac3c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233816/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260321_233816/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_001556/run_s1337.log",
+          "size_bytes": 3068,
+          "sha256": "0cda6cd8760676e0026cb13c9160b7c1e4f8ab41de1cb39fe387c725037c3e8c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_001556/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_001556/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_002936/run_s1337.log",
+          "size_bytes": 3217,
+          "sha256": "ec3a556d75493f7413f729acb10e22b0c1597f0fdfdb764475aa817f2f66645f",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_002936/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_002936/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_003407/run_s1337.log",
+          "size_bytes": 6828,
+          "sha256": "fb531292fd7f512509b65fd15d63d4d5e9d635287b48deb8fed2bb6a07a9655c",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_003407/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/sota_v2_tttonly_20260322_003407/run_s1337.log"
+        },
+        {
+          "name": "swiglu_gptq_optrot.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/swiglu_gptq_optrot.txt",
+          "size_bytes": 81980,
+          "sha256": "658cd043ba3cda3719a9244fd546c72c7eec6159675f1e46fbe82f475e2be922",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/swiglu_gptq_optrot.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/swiglu_gptq_optrot.txt"
+        },
+        {
+          "name": "ttt_ema_full.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/ttt_ema_full.txt",
+          "size_bytes": 84428,
+          "sha256": "5ce5dfffa288ea118697e7bc843c8a700305a5c87038e55755b9add9c2600396",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ttt_ema_full.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/ttt_ema_full.txt"
+        },
+        {
+          "name": "v2_ttt_noXSA_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_ttt_noXSA_s1337.txt",
+          "size_bytes": 95773,
+          "sha256": "f6a0a4350f28fc368b33f9d7e955bc8a52e9e0919e09c175de6f0a38237617b3",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_ttt_noXSA_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_ttt_noXSA_s1337.txt"
+        },
+        {
+          "name": "v2_tttonly_s1337.txt",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_tttonly_s1337.txt",
+          "size_bytes": 365016,
+          "sha256": "fa050da515e69837fddf5e956757bd521c1a0dbc4452f08711032afaf61efca7",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_tttonly_s1337.txt",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v2_tttonly_s1337.txt"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_20260323_141930/run_s1337.log",
+          "size_bytes": 21600,
+          "sha256": "a535091812ed4311e719f37185cfbc41216a40b9a2c19994018e0244ab648dec",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_20260323_141930/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_20260323_141930/run_s1337.log"
+        },
+        {
+          "name": "v7_short_ttt_no_ema.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_no_ema.log",
+          "size_bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_no_ema.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_short_ttt_no_ema.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_smooth_20260323_145720/run_s1337.log",
+          "size_bytes": 21595,
+          "sha256": "05e02cf658833be2fb01325e93da6b7a0d08cd04bd69710535bd3c37212abf4e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_smooth_20260323_145720/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_smooth_20260323_145720/run_s1337.log"
+        },
+        {
+          "name": "run_s1337.log",
+          "repo_path": "public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_xsa11_short_ttt_20260323_143749/run_s1337.log",
+          "size_bytes": 21622,
+          "sha256": "f017d7bee9aa9126c0d0aa0d0e7c1c806e6c43523f117f6b0f840f42e2b8423e",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_xsa11_short_ttt_20260323_143749/run_s1337.log",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/37_sota-v2-ttt/logs/v7_xsa11_short_ttt_20260323_143749/run_s1337.log"
+        }
+      ]
+    },
+    {
+      "number": 38,
+      "family": "Staged Hybrid Bench",
+      "type": "kernel/performance family",
+      "aliases": "staged primary/fallback, hybridA/hybridB",
+      "slug": "38_staged-hybrid-bench",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/38_staged-hybrid-bench",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/38_staged-hybrid-bench",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/38_staged-hybrid-bench/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/38_staged-hybrid-bench/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/38_staged-hybrid-bench/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 39,
+      "family": "Tornado",
+      "type": "teacher/student family",
+      "aliases": "Tornado grid, EMA teacher/student",
+      "slug": "39_tornado",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "run.sh",
+      "repo_folder": "public/architecture-run-files/files/39_tornado",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/39_tornado",
+      "files": [
+        {
+          "name": "run.sh",
+          "repo_path": "public/architecture-run-files/files/39_tornado/run.sh",
+          "size_bytes": 2781,
+          "sha256": "273160300e70fddd6f1a23417433da5b254eeb24aeabfe66a8bbf3efb7af6ddc",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/39_tornado/run.sh",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/39_tornado/run.sh"
+        }
+      ]
+    },
+    {
+      "number": 40,
+      "family": "Trapper Keeper",
+      "type": "crawler family",
+      "aliases": "Nightcrawler Cubed, TK1, 7F+3C/8F+3C",
+      "slug": "40_trapper-keeper",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "hypothesis.md",
+      "repo_folder": "public/architecture-run-files/files/40_trapper-keeper",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/40_trapper-keeper",
+      "files": [
+        {
+          "name": "hypothesis.md",
+          "repo_path": "public/architecture-run-files/files/40_trapper-keeper/hypothesis.md",
+          "size_bytes": 996,
+          "sha256": "9e416e1aba5297e1c744b021c08437e5a5e026557718f06f71172f27a5fae641",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/40_trapper-keeper/hypothesis.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/40_trapper-keeper/hypothesis.md"
+        }
+      ]
+    },
+    {
+      "number": 41,
+      "family": "VortexHelix / Megahelix",
+      "type": "kernel/model family",
+      "aliases": "Vortex, Megahelix megakernel",
+      "slug": "41_vortexhelix-megahelix",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "MEGAHELIX_RESEARCH_ASSESSMENT.md",
+      "repo_folder": "public/architecture-run-files/files/41_vortexhelix-megahelix",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/41_vortexhelix-megahelix",
+      "files": [
+        {
+          "name": "MEGAHELIX_RESEARCH_ASSESSMENT.md",
+          "repo_path": "public/architecture-run-files/files/41_vortexhelix-megahelix/MEGAHELIX_RESEARCH_ASSESSMENT.md",
+          "size_bytes": 12802,
+          "sha256": "183c7f02f5d3d69630bf80484a30b3e176a1d31e5a11c4958afa6475b6c6d8f2",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/41_vortexhelix-megahelix/MEGAHELIX_RESEARCH_ASSESSMENT.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/41_vortexhelix-megahelix/MEGAHELIX_RESEARCH_ASSESSMENT.md"
+        }
+      ]
+    },
+    {
+      "number": 42,
+      "family": "Whale",
+      "type": "neural body/kernel family",
+      "aliases": "Whale donor, Whale kernel",
+      "slug": "42_whale",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "architecture_recipes.json",
+      "repo_folder": "public/architecture-run-files/files/42_whale",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/42_whale",
+      "files": [
+        {
+          "name": "architecture_recipes.json",
+          "repo_path": "public/architecture-run-files/files/42_whale/architecture_recipes.json",
+          "size_bytes": 10655,
+          "sha256": "e2c91ddaef2113493fb37fe06f145045f1e8b1e4ee5cecc9f13449dbc1236147",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/42_whale/architecture_recipes.json",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/42_whale/architecture_recipes.json"
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "family": "X-Wing",
+      "type": "n-gram/cubric family",
+      "aliases": "XWING, X-WING Yellow II/III, Cubric3D",
+      "slug": "43_x-wing",
+      "status": "copied",
+      "resolution": "exact",
+      "source_anchor_name": "README.md",
+      "repo_folder": "public/architecture-run-files/files/43_x-wing",
+      "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/43_x-wing",
+      "files": [
+        {
+          "name": "README.md",
+          "repo_path": "public/architecture-run-files/files/43_x-wing/README.md",
+          "size_bytes": 5933,
+          "sha256": "5606e49913927e942acb38564bdd04c16eaecbdd3edcd369bd479681035008f0",
+          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/43_x-wing/README.md",
+          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/43_x-wing/README.md"
+        }
+      ]
+    }
+  ]
+}
