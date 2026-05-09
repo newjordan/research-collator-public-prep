@@ -1007,6 +1007,7 @@ ARCH_FAMILIES = [
     ("Watch / Handoff",      r"\b(?:watch|handoff)(?:_daemon|_nohup|_logs|[\s_-]?\d{8})\b"),
     ("Spark Smoke Kit",      r"\b(?:SMK|spark[\s_-]?smoke)(?:[\s_-]\w*)?"),
     ("Cambrian Bio Seam",    r"\bcambrian\w*|\bbio[\s_-]+local\w*|\bmyelin\w*|\bcircadian\w*|\bastrocyte\w*|\bclonal[\s_-]+selection\w*"),
+    ("Junkyard Rat",         r"\bjunkyard[\s_-]+rat\w*|\bJR[\s_-]?\d+\w*"),
     ("Rat Rod",              r"\brat[\s_-]?rod\w*|\bjunkyard[\s_-]+rat\w*|\bgreen[\s_-]?v\d+\b|\bcomplement[\s_-]?alpha\b"),
     ("GreenRod",             r"\bgreen[\s_-]?rod\w*"),
     ("Crawler Ablation",     r"\bab[\s_-]+(?:rope\d*|vr[\s_-]+\w+|siphon[\s_-]+\w+)|\bbaseline(?:[\s_-]\w*)?"),
@@ -1034,9 +1035,12 @@ ARCH_FAMILIES = [
     ("Nitrust",              r"\bnitrust\w*"),
     ("Frugendorff",          r"\bfrugendorff\w*"),
     ("Mikey",                r"\bmikey\w*"),
+    ("FX-Wing",              r"\bfx[\s_-]?wing\w*|\bfxwdelta\w*"),
     ("X-Wing",               r"\b(?:[axfp][\s_-]?wing|fx[\s_-]?wing|fxwdelta|fawing)\w*"),
     ("Fartmagic",            r"\bfartmagic\w*"),
     ("Megakernel",           r"\bmegakernel\w*"),
+    ("Trapper Keeper",       r"\btrapper[\s_-]+keeper\w*|\bmulti[\s_-]+crawler[\s_-]+descendant\b"),
+    ("Smokestack",           r"\bsmokestack\w*"),
     # Note: avoid trailing `\b` — "y" followed by "_" has no word-boundary
     # because `_` counts as a word character in Python regex. End matches
     # with `\w*` instead (matches the rest of the slug).
@@ -1080,9 +1084,11 @@ PUBLIC_ARCH_FAMILY_LABELS = {
     "Exp-D TTT8 Stride32": "TTT8 stride-32 test family",
     "Fartmagic": "data/runtime workspace",
     "Frugendorff": "recursive weight-sharing transformer",
+    "FX-Wing": "flow-instruction crawler hybrid",
     "GPTQ": "post-training quantization calibration",
     "GreenRod": "hybrid GatedDeltaNet-attention body",
     "Helix": "split-head crawler scale gate",
+    "Junkyard Rat": "Triton/model co-design body",
     "Medusa": "loop-instructed DeltaNet crawler body",
     "Megahelix": "fused recurrence megakernel",
     "Mikey": "looped tokenizer body",
@@ -1099,12 +1105,14 @@ PUBLIC_ARCH_FAMILY_LABELS = {
     "SOTA Crawler": "crawler-safe train/eval surface",
     "SOTA v2 TTT": "TTT-only model test",
     "Staged Hybrid Bench": "staged attention-kernel bench",
+    "Smokestack": "crawler test body",
     "Megakernel": "fused kernel implementation",
     "Mixed Quant": "mixed-precision quantization variant",
     "Parallel Residuals": "parallel residual transformer variant",
     "Sliding Window": "sliding-window evaluation variant",
     "State-Space (TTT)": "state-space TTT variant",
     "Tornado / Theta": "regularization/control sweep",
+    "Trapper Keeper": "multi-crawler descendant",
     "Leaderboard Transformer Variants": "leaderboard transformer variants",
     "Progressive MLP / Fractal": "progressive MLP and fractal cadence tests",
     "SLOT Tuned Body": "SLOT-tuned transformer body",
@@ -1258,6 +1266,25 @@ def architecture_download_button_html(family: str) -> str:
     if family:
         _UNRESOLVED_ARCH_FAMILIES.add(family)
     return "<span class='bpb-download-missing'>—</span>"
+
+
+def architecture_hypothesis_path(family: str) -> Path | None:
+    entry = resolve_architecture_family(family)
+    if not entry:
+        return None
+    for file_entry in entry.get("files") or []:
+        if not isinstance(file_entry, dict):
+            continue
+        name = str(file_entry.get("name") or "").strip().lower()
+        if name != "hypothesis.md":
+            continue
+        repo_path = str(file_entry.get("repo_path") or "")
+        if not repo_path:
+            continue
+        local_path = Path(__file__).parent / repo_path
+        if local_path.exists():
+            return local_path
+    return None
 
 
 def _print_unresolved_arch_summary() -> None:
@@ -1418,6 +1445,17 @@ def detect_arch_families(test_rows: list[dict]) -> list[tuple[str, int]]:
     return sorted(counts.items(), key=lambda kv: -kv[1])
 
 
+def detect_arch_family(row: dict) -> str | None:
+    """Return the first matching architecture family for one row."""
+    title = row.get("title") or ""
+    path = row.get("abs_path") or ""
+    for text in (title, path):
+        for fam_name, pat in ARCH_FAMILIES:
+            if _arch_family_matches(pat, text):
+                return fam_name
+    return None
+
+
 def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
     if not families:
         return "—"
@@ -1569,6 +1607,29 @@ def _embedded_log_style() -> str:
         margin: 0 0 7px;
         overflow-wrap: anywhere;
     }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
     .log-text {
         max-height: 520px;
         overflow: auto;
@@ -2975,6 +3036,7 @@ def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: 
 _REVIEW_MD_INDEX_CACHE: dict[str, Path] | None = None
 _REVIEW_MD_FRAGMENT_HREF_CACHE: dict[Path, str] = {}
 _GIT_COMMITS_CACHE: list[dict] | None = None
+_HYPOTHESIS_NOTE_CACHE: dict[Path, dict[str, str]] = {}
 
 
 def _fetch_git_commits(conn: sqlite3.Connection) -> list[dict]:
@@ -3129,6 +3191,169 @@ def _review_md_fragment_href(date: str) -> str | None:
     return href
 
 
+def _plain_markdown_line(text: str) -> str:
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)
+    text = re.sub(r"\*([^*]+)\*", r"\1", text)
+    text = re.sub(r"^\s*[-*]\s+", "", text)
+    text = re.sub(r"^\s*\d+\.\s+", "", text)
+    text = text.replace("|", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+    return sanitize_public_text(text)
+
+
+def _truncate_sentence(text: str, max_chars: int) -> str:
+    text = _plain_markdown_line(text)
+    if len(text) <= max_chars:
+        return text
+    clipped = text[:max_chars].rsplit(" ", 1)[0].rstrip(" .,:;")
+    return clipped + "..."
+
+
+def _section_lines(markdown: str, headings: tuple[str, ...]) -> list[str]:
+    wanted = tuple(h.lower() for h in headings)
+
+    def _matches_heading(heading: str) -> bool:
+        for token in wanted:
+            pat = r"(^|[^a-z0-9])" + re.escape(token) + r"([^a-z0-9]|$)"
+            if re.search(pat, heading):
+                return True
+        return False
+
+    lines = markdown.splitlines()
+    collecting = False
+    out: list[str] = []
+    in_fence = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        if stripped.startswith("#"):
+            heading = stripped.lstrip("#").strip().lower()
+            collecting = _matches_heading(heading)
+            if collecting:
+                out = []
+            elif out:
+                break
+            continue
+        if collecting:
+            if not stripped:
+                if out:
+                    break
+                continue
+            if re.fullmatch(r"[-|:\s]+", stripped):
+                continue
+            out.append(stripped)
+    return out
+
+
+def _first_matching_line(markdown: str, patterns: tuple[str, ...]) -> str:
+    lines = markdown.splitlines()
+    for idx, raw in enumerate(lines):
+        line = raw.strip()
+        for pat in patterns:
+            m = re.search(pat, line, flags=re.IGNORECASE)
+            if m:
+                found = m.group(1).strip() if m.groups() else line
+                extra: list[str] = []
+                for nxt in lines[idx + 1: idx + 3]:
+                    nxt = nxt.strip()
+                    if not nxt or nxt.startswith("#") or nxt.startswith("---"):
+                        break
+                    extra.append(nxt)
+                if extra:
+                    found = " ".join([found] + extra)
+                return found
+    return ""
+
+
+def _hypothesis_note_from_markdown(path: Path) -> dict[str, str]:
+    if path in _HYPOTHESIS_NOTE_CACHE:
+        return _HYPOTHESIS_NOTE_CACHE[path]
+    try:
+        markdown = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        _HYPOTHESIS_NOTE_CACHE[path] = {}
+        return {}
+
+    hypothesis_lines: list[str] = []
+    for heading_group in (
+        ("core hypothesis", "thesis"),
+        ("mission", "concept"),
+        ("what changes", "why"),
+    ):
+        hypothesis_lines = _section_lines(markdown, heading_group)
+        if hypothesis_lines:
+            break
+    if not hypothesis_lines:
+        hypothesis_lines = [
+            line.strip()
+            for line in markdown.splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ][:2]
+    hypothesis = " ".join(hypothesis_lines[:3])
+
+    gate = _first_matching_line(markdown, (
+        r"\*\*Expected result:\*\*\s*(.+)",
+        r"^Expected result:\s*(.+)",
+    ))
+    if not gate:
+        gate_lines = _section_lines(
+            markdown,
+            ("gate target", "success condition", "decision criteria"),
+        )
+        gate = " ".join(gate_lines[:2])
+
+    note: dict[str, str] = {}
+    if hypothesis:
+        note["hypothesis"] = _truncate_sentence(hypothesis, 280)
+    if gate:
+        note["gate"] = _truncate_sentence(gate, 220)
+    _HYPOTHESIS_NOTE_CACHE[path] = note
+    return note
+
+
+def _row_hypothesis_note_html(row: dict) -> str:
+    family = detect_arch_family(row)
+    if not family:
+        return ""
+    row_text = f"{row.get('title') or ''} {row.get('abs_path') or ''}"
+    if re.search(r"\bnightcrawler[\s_-]+cubed\w*", row_text, flags=re.IGNORECASE):
+        # The public row family is the descendant body; the hypothesis file
+        # is archived under the source leg that defined that test plan.
+        family = "Trapper Keeper"
+    path = architecture_hypothesis_path(family)
+    if not path:
+        return ""
+    note = _hypothesis_note_from_markdown(path)
+    if not note:
+        return ""
+    rows: list[str] = []
+    if note.get("hypothesis"):
+        rows.append(
+            "<div class='hypothesis-note-row'>"
+            f"<strong>hypothesis</strong>: {html.escape(note['hypothesis'])}"
+            "</div>"
+        )
+    if note.get("gate"):
+        rows.append(
+            "<div class='hypothesis-note-row'>"
+            f"<strong>gate</strong>: {html.escape(note['gate'])}"
+            "</div>"
+        )
+    if not rows:
+        return ""
+    return (
+        "<div class='hypothesis-note'>"
+        "<div class='hypothesis-note-title'>test hypothesis</div>"
+        f"{''.join(rows)}"
+        "</div>"
+    )
+
+
 def _row_evidence_panel_html(row: dict, date: str = "") -> str:
     facts: list[tuple[str, str]] = [
         ("source", sanitize_public_text(row.get("source_label") or "unknown")),
@@ -3175,6 +3400,7 @@ def _row_evidence_panel_html(row: dict, date: str = "") -> str:
     return (
         "<div class='log-panel'>"
         "<div class='log-meta'><strong>row evidence</strong></div>"
+        f"{_row_hypothesis_note_html(row)}"
         f"{ablation_field}"
         f"{fact_html}"
         "</div>"
