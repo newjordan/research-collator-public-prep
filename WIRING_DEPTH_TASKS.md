@@ -71,7 +71,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ---
 
-### [ ] T1.3 — Per-day audit badge in header
+### [x] T1.3 — Per-day audit badge in header
 
 **Why**: `output/audit/daily_accuracy.json` carries per-day quality metadata. Surfacing it gives the report a verifiable spine and lets the user trust the headline numbers.
 

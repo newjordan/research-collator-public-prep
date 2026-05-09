@@ -41,6 +41,8 @@ ABLATION_LABELS_PATH = Path(os.environ.get(
     "ABLATION_LABELS_PATH",
     str(OUT_ROOT / "ablation_labels" / "approved.jsonl"),
 ))
+AUDIT_FINDINGS_PATH = OUT_ROOT / "audit" / "AUDIT_FINDINGS_2026-05-07.md"
+DAILY_ACCURACY_PATH = OUT_ROOT / "audit" / "daily_accuracy.json"
 LOCKED_TEMPLATE_HTML = Path(__file__).parent / "templates" / "daily_report_locked.html"
 ARCHITECTURE_RECIPES_PATH = Path(__file__).parent / "data" / "architecture_recipes.json"
 ARCHITECTURE_RUN_FILE_MANIFEST_PATH = (
@@ -1738,6 +1740,58 @@ def _embedded_log_style() -> str:
     .lazy-test-target {
         margin-top: 12px;
     }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
     """
 
 
@@ -2763,6 +2817,112 @@ def _row_evidence_panel_html(row: dict) -> str:
     )
 
 
+_DAILY_ACCURACY_CACHE: dict[str, dict] | None = None
+_AUDIT_FINDINGS_CACHE: str | None = None
+
+
+def _load_daily_accuracy() -> dict[str, dict]:
+    """Per-date dict of audit summaries from output/audit/daily_accuracy.json."""
+    global _DAILY_ACCURACY_CACHE
+    if _DAILY_ACCURACY_CACHE is not None:
+        return _DAILY_ACCURACY_CACHE
+    try:
+        raw = json.loads(DAILY_ACCURACY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        _DAILY_ACCURACY_CACHE = {}
+        return _DAILY_ACCURACY_CACHE
+    out: dict[str, dict] = {}
+    for entry in (raw.get("day_summaries") or []):
+        date = entry.get("date") if isinstance(entry, dict) else None
+        if date:
+            out[str(date)] = entry
+    _DAILY_ACCURACY_CACHE = out
+    return out
+
+
+def _audit_findings_text() -> str:
+    global _AUDIT_FINDINGS_CACHE
+    if _AUDIT_FINDINGS_CACHE is not None:
+        return _AUDIT_FINDINGS_CACHE
+    try:
+        _AUDIT_FINDINGS_CACHE = AUDIT_FINDINGS_PATH.read_text(encoding="utf-8")
+    except OSError:
+        _AUDIT_FINDINGS_CACHE = ""
+    return _AUDIT_FINDINGS_CACHE
+
+
+def _audit_findings_lines_for_date(date: str) -> list[str]:
+    """Pull lines mentioning this date out of AUDIT_FINDINGS as a per-date
+    narrative excerpt. The doc has no section heads keyed by date, so we
+    surface any matching line (table rows, '**date:**' markers, callouts)."""
+    text = _audit_findings_text()
+    if not text or not date:
+        return []
+    return [line for line in text.splitlines() if date in line]
+
+
+def audit_panel_html(date: str) -> str:
+    """Per-day audit chip (collapsed by default). Color: green when no
+    warnings, amber when warnings>0, red when fatal>0; 'audit pending' when
+    daily_accuracy.json has no entry for the date. Click expands to show
+    any AUDIT_FINDINGS lines mentioning the date plus the day's JSON entry."""
+    by_date = _load_daily_accuracy()
+    entry = by_date.get(date)
+    if not entry:
+        return (
+            "<div class='audit-badge audit-badge-pending'>"
+            "<span class='audit-chip audit-pending'>audit pending</span>"
+            "</div>"
+        )
+    fatal = int(entry.get("fatal") or 0)
+    warnings_n = int(entry.get("warnings") or 0)
+    headline = str(entry.get("headline_metric") or "—")
+    raw = int(entry.get("raw_records") or 0)
+    rendered = int(entry.get("render_records") or 0)
+    if fatal > 0:
+        chip_state = "audit-fatal"
+    elif warnings_n > 0:
+        chip_state = "audit-warn"
+    else:
+        chip_state = "audit-clean"
+    chip_label_parts = [
+        headline,
+        f"{rendered} of {raw}",
+        f"{warnings_n} warnings",
+    ]
+    if fatal > 0:
+        chip_label_parts.append(f"{fatal} fatal")
+    chip_label = " · ".join(chip_label_parts)
+
+    # Pandoc treats a raw HTML block as ending at the first blank line, so
+    # we have to keep <pre> contents on a single source line. Use &#10; for
+    # the visible newlines, mirroring _pre_text_one_line's strategy.
+    def _one_line_pre(text: str) -> str:
+        return html.escape(text).replace("\n", "&#10;")
+
+    matching_lines = _audit_findings_lines_for_date(date)
+    findings_html = ""
+    if matching_lines:
+        findings_html = (
+            "<div class='audit-section-label'>findings mentioning this date</div>"
+            "<pre class='audit-findings'>"
+            f"{_one_line_pre(chr(10).join(matching_lines))}"
+            "</pre>"
+        )
+    json_block = (
+        "<div class='audit-section-label'>audit summary</div>"
+        "<pre class='audit-json'>"
+        f"{_one_line_pre(json.dumps(entry, indent=2, sort_keys=True))}"
+        "</pre>"
+    )
+    return (
+        "<details class='audit-badge'>"
+        f"<summary class='audit-chip {chip_state}'>{html.escape(chip_label)}</summary>"
+        f"<div class='audit-body'>{findings_html}{json_block}</div>"
+        "</details>"
+    )
+
+
 def make_open_cell_html(row: dict) -> str:
     parts: list[str] = []
     logs = row.get("training_logs") or []
@@ -3166,6 +3326,8 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
 
     qmd_lines = [
         h1_html,
+        "",
+        audit_panel_html(date),
         "",
         report_header,
         "",
