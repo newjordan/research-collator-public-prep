@@ -410,7 +410,7 @@ def toc_extra_style() -> str:
       padding: 8px 10px;
       border: 2px solid var(--rule-hi);
       border-radius: 0;
-      background: var(--rule-hi);
+      background: transparent;
       color: var(--chrome-fg);
       cursor: pointer;
       font-size: 11px;
@@ -439,15 +439,15 @@ def toc_extra_style() -> str:
       gap: 9px;
       flex: 0 0 auto;
       padding-right: 14px;
-      background: var(--rule-hi);
-      color: var(--chrome-fg);
+      background: transparent;
+      color: var(--rule-hi);
     }}
     body.toc-page .toc-calibration .toc-calibration-label::before {{
       content: "";
       width: 10px;
       height: 10px;
       flex: 0 0 auto;
-      background: var(--chrome-fg);
+      background: var(--rule-hi);
     }}
     body.toc-page .toc-calibration .toc-calibration-stripes {{
       display: block;
@@ -466,8 +466,8 @@ def toc_extra_style() -> str:
     body.toc-page .toc-calibration > summary::after {{
       content: "expand rules";
       margin-left: auto;
-      color: var(--chrome-fg);
-      background: var(--rule-hi);
+      color: var(--rule-hi);
+      background: transparent;
       padding-left: 14px;
       font-size: 9.5px;
       font-weight: 800;
@@ -659,7 +659,7 @@ def make_layer_table(dates: list[str],
         "</tr></thead><tbody>"
     ]
     layers = [
-        ("ADDRESS TO THE READER", "1", "intro.html", "public intro letter and evidence starting points"),
+        ("ADDRESS TO THE READER", "1", "#address-to-reader", "public intro letter and evidence starting points"),
         ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, report calibration, and connected scroll"),
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
@@ -920,7 +920,7 @@ def make_webloader_cover_html() -> str:
 
 def make_webloader_intro_html() -> str:
     return (
-        '<section class="toc-webloader-intro" aria-label="Address to the Reader">'
+        '<section id="address-to-reader" class="toc-webloader-intro" aria-label="Address to the Reader">'
         '<iframe src="intro.html?embed=1&amp;nofilter=1" title="Address to the Reader" loading="eager"></iframe>'
         "</section>"
     )
@@ -1027,6 +1027,17 @@ def connected_reader_script() -> str:
     setTimeout(resetIfIdle, 250);
     setTimeout(resetIfIdle, 900);
   }
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(event) {
+      var target = document.querySelector(anchor.getAttribute('href'));
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    });
+  });
   function resizeFrame(frame) {
     try {
       var doc = frame.contentDocument;
