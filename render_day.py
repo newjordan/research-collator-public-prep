@@ -1792,6 +1792,33 @@ def _embedded_log_style() -> str:
         max-height: 320px;
         overflow: auto;
     }
+    /* Per-day decision trail panel: lazy-loaded slice of the conversation
+       architecture timeline that covers this date. */
+    .decision-trail-panel { margin: 0 0 14px; }
+    .decision-trail-teaser {
+        font-size: 10.5px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin-bottom: 6px;
+    }
+    .decision-trail-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .decision-trail-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .decision-trail-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .decision-trail-doc h4 { font-size: 11.5px; font-weight: 700; color: var(--ink-mute); margin: 10px 0 4px; text-transform: none; letter-spacing: 0; }
+    .decision-trail-doc h5 { font-size: 11px; font-weight: 700; color: var(--ink-mute); margin: 8px 0 4px; text-transform: none; letter-spacing: 0; }
+    .decision-trail-doc ul { margin: 6px 0 10px 18px; padding: 0; }
+    .decision-trail-doc li { margin: 3px 0; }
+    .decision-trail-doc code { background: transparent; padding: 0; font-weight: 600; }
     """
 
 
@@ -2819,6 +2846,8 @@ def _row_evidence_panel_html(row: dict) -> str:
 
 _DAILY_ACCURACY_CACHE: dict[str, dict] | None = None
 _AUDIT_FINDINGS_CACHE: str | None = None
+_CONV_ARCH_FILES_CACHE: list[tuple[str, str, Path]] | None = None
+_CONV_ARCH_TEXT_CACHE: dict[Path, str] = {}
 
 
 def _load_daily_accuracy() -> dict[str, dict]:
@@ -2920,6 +2949,234 @@ def audit_panel_html(date: str) -> str:
         f"<summary class='audit-chip {chip_state}'>{html.escape(chip_label)}</summary>"
         f"<div class='audit-body'>{findings_html}{json_block}</div>"
         "</details>"
+    )
+
+
+def _conversation_arch_dir() -> Path:
+    return OUT_ROOT / "conversation_architecture"
+
+
+def _conversation_arch_files() -> list[tuple[str, str, Path]]:
+    """Index of available timeline files as (start_date, end_date, path).
+    Skips the noisier _with_tool_results variants."""
+    global _CONV_ARCH_FILES_CACHE
+    if _CONV_ARCH_FILES_CACHE is not None:
+        return _CONV_ARCH_FILES_CACHE
+    out: list[tuple[str, str, Path]] = []
+    d = _conversation_arch_dir()
+    if d.exists():
+        for path in sorted(d.glob("*.timeline.md")):
+            stem = path.name[: -len(".timeline.md")]
+            if stem.endswith("_with_tool_results"):
+                continue
+            if "_to_" in stem:
+                start, end = stem.split("_to_", 1)
+            else:
+                start = end = stem
+            out.append((start, end, path))
+    _CONV_ARCH_FILES_CACHE = out
+    return out
+
+
+def _find_decision_trail_for_date(date: str) -> tuple[Path, str, str] | None:
+    """Prefer single-day timeline; otherwise smallest enclosing window."""
+    files = _conversation_arch_files()
+    for start, end, path in files:
+        if start == end == date:
+            return (path, start, end)
+
+    def _span_days(s: str, e: str) -> int:
+        try:
+            return (dt.date.fromisoformat(e) - dt.date.fromisoformat(s)).days
+        except ValueError:
+            return 99999
+
+    candidates = [
+        (start, end, path) for start, end, path in files
+        if start <= date <= end
+    ]
+    if not candidates:
+        return None
+    candidates.sort(key=lambda c: _span_days(c[0], c[1]))
+    start, end, path = candidates[0]
+    return (path, start, end)
+
+
+def _load_decision_summary(timeline_path: Path) -> dict:
+    summary_path = timeline_path.parent / (
+        timeline_path.name[: -len(".timeline.md")] + ".summary.json"
+    )
+    try:
+        return json.loads(summary_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _read_timeline_text(path: Path) -> str:
+    if path in _CONV_ARCH_TEXT_CACHE:
+        return _CONV_ARCH_TEXT_CACHE[path]
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        text = f"# (unable to read timeline: {type(exc).__name__}: {exc})"
+    _CONV_ARCH_TEXT_CACHE[path] = text
+    return text
+
+
+def _extract_day_from_timeline(md_text: str, date: str) -> str:
+    """Slice out the '## YYYY-MM-DD' section from a multi-day timeline.
+    Returns the section including its heading, ending at the next '## ' or
+    end of file. Empty string if no matching section."""
+    lines = md_text.splitlines()
+    out: list[str] = []
+    in_section = False
+    target_heading = f"## {date}"
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            if stripped == target_heading:
+                in_section = True
+                out.append(line)
+                continue
+            if in_section:
+                break
+        elif in_section:
+            out.append(line)
+    return "\n".join(out)
+
+
+def _md_to_html_minimal(md_text: str) -> str:
+    """Tiny markdown-to-HTML converter for lazy-loaded fragments. Handles
+    headings (#-####), bullet lists, inline backticks, blank-line paragraphs.
+    Not a full engine; sufficient for the timeline.md shape we ship."""
+    out: list[str] = []
+    in_ul = False
+
+    def _close_list() -> None:
+        nonlocal in_ul
+        if in_ul:
+            out.append("</ul>")
+            in_ul = False
+
+    def _inline(text: str) -> str:
+        escaped = html.escape(text)
+        return re.sub(r"`([^`]+)`", lambda m: f"<code>{m.group(1)}</code>", escaped)
+
+    for raw_line in md_text.splitlines():
+        line = raw_line.rstrip()
+        if line.startswith("# "):
+            _close_list()
+            out.append(f"<h2>{_inline(line[2:])}</h2>")
+        elif line.startswith("## "):
+            _close_list()
+            out.append(f"<h3>{_inline(line[3:])}</h3>")
+        elif line.startswith("### "):
+            _close_list()
+            out.append(f"<h4>{_inline(line[4:])}</h4>")
+        elif line.startswith("#### "):
+            _close_list()
+            out.append(f"<h5>{_inline(line[5:])}</h5>")
+        elif line.startswith("- "):
+            if not in_ul:
+                out.append("<ul>")
+                in_ul = True
+            out.append(f"<li>{_inline(line[2:])}</li>")
+        elif line.strip() == "":
+            _close_list()
+            out.append("")
+        else:
+            _close_list()
+            out.append(f"<p>{_inline(line)}</p>")
+    _close_list()
+    return "\n".join(out)
+
+
+DECISION_TRAIL_FRAGMENT_MAX_CHARS = 300_000
+
+
+def _write_decision_trail_fragment(date: str, timeline_path: Path, is_window: bool) -> str:
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    safe_date = re.sub(r"[^0-9-]+", "-", date or "unknown").strip("-") or "unknown"
+    fragment_path = FRAGMENTS_DIR / f"{safe_date}_decision_trail.html"
+    full = _read_timeline_text(timeline_path)
+    section = _extract_day_from_timeline(full, date) if is_window else full
+    if not section.strip():
+        section = (
+            f"## {date}\n\n"
+            "_no architecture-change events recorded for this date in the available timelines._"
+        )
+    truncated = False
+    if len(section) > DECISION_TRAIL_FRAGMENT_MAX_CHARS:
+        head = section[:DECISION_TRAIL_FRAGMENT_MAX_CHARS]
+        # Trim to the last complete event boundary so we don't end mid-line.
+        last_event = head.rfind("\n### ")
+        if last_event > DECISION_TRAIL_FRAGMENT_MAX_CHARS // 2:
+            head = head[:last_event]
+        section = head + (
+            f"\n\n_… additional events truncated; full source: `{timeline_path.name}`._\n"
+        )
+        truncated = True
+    fragment_path.write_text(
+        # No need for &#10; here — fragment is loaded via fetch + innerHTML,
+        # not parsed by Pandoc.
+        f"<div class='decision-trail-doc'>{_md_to_html_minimal(section)}</div>",
+        encoding="utf-8",
+    )
+    return f"fragments/{fragment_path.name}"
+
+
+def decision_trail_panel_html(date: str) -> str:
+    """Per-day decision-trail disclosure. Prefers a single-day timeline file
+    and falls back to a slice of the smallest enclosing multi-day window.
+    Omits the panel entirely when no timeline covers this date or when the
+    matching window has zero events for it."""
+    found = _find_decision_trail_for_date(date)
+    if not found:
+        return ""
+    timeline_path, start, end = found
+    is_window = (start != end)
+    summary = _load_decision_summary(timeline_path)
+    stats = summary.get("stats") if isinstance(summary, dict) else None
+    stats = stats if isinstance(stats, dict) else {}
+
+    if is_window:
+        events_for_day = (stats.get("events_by_date") or {}).get(date, 0)
+    else:
+        events_for_day = stats.get("events", 0) or 0
+    try:
+        events_for_day = int(events_for_day)
+    except (TypeError, ValueError):
+        events_for_day = 0
+    if events_for_day <= 0:
+        return ""
+
+    teaser_parts: list[str] = [f"{events_for_day} events on {date}"]
+    if is_window:
+        teaser_parts.append(f"window {start} → {end}")
+    by_source = stats.get("events_by_source") or {}
+    if isinstance(by_source, dict) and not is_window:
+        per_source = ", ".join(
+            f"{k}:{v}" for k, v in sorted(by_source.items()) if isinstance(v, int)
+        )
+        if per_source:
+            teaser_parts.append(per_source)
+    msg_total = stats.get("messages_scanned")
+    if isinstance(msg_total, int) and not is_window:
+        teaser_parts.append(f"{msg_total} msgs scanned")
+    teaser = " · ".join(teaser_parts)
+
+    fragment_href = _write_decision_trail_fragment(date, timeline_path, is_window)
+    target_id = f"decision-trail-{date}".replace("_", "-")
+    return (
+        "<div class='decision-trail-panel'>"
+        f"<div class='decision-trail-teaser'>{html.escape(teaser)}</div>"
+        f"<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='view decision trail' data-hide-label='hide decision trail' "
+        "data-loading-label='loading trail' data-error-label='trail load failed'>view decision trail</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        "</div>"
     )
 
 
@@ -3329,6 +3586,11 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
         "",
         audit_panel_html(date),
         "",
+    ]
+    decision_trail_block = decision_trail_panel_html(date)
+    if decision_trail_block:
+        qmd_lines += [decision_trail_block, ""]
+    qmd_lines += [
         report_header,
         "",
     ]

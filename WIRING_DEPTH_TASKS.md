@@ -91,7 +91,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ## Tier 2 — decision-trail surfacing
 
-### [ ] T2.1 — Decision trail panel per day
+### [x] T2.1 — Decision trail panel per day
 
 **Why**: `output/conversation_architecture/` holds the actual reasoning trail (per-day and multi-day timelines + summary stats). Daily report has zero "what was the thinking" affordance today.
 

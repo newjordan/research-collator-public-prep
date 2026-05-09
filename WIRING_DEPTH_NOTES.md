@@ -3,6 +3,10 @@
 Observations spotted during loop iterations that don't fit the current task.
 Add one-liners only; address in a follow-up plan.
 
+## From T2.1
+
+- Multi-day-window timeline slices for high-density days were 5–6 MB each before truncation. Capped to ~300KB source chars (the HTML expansion lands closer to ~340KB). 25 of 41 emitted panels truncate at the cap. Follow-up: serve the raw `.timeline.md` from a path under `output/preview/` so the truncation footer can carry a working "view full" link, or paginate the fragment.
+
 ## From T1.2
 
 - Inline preview shows the first 40 lines verbatim (per spec). On `train_seed*.log` files those leading lines are the training-script source code, not training metrics — visually less informative than expected. Follow-up: smarter preview slice (e.g., grep for the first `step:` line and show ±20 lines around it, or pair head + final-eval tail).
