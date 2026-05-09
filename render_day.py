@@ -1262,7 +1262,7 @@ def architecture_download_button_html(family: str) -> str:
             f"<a class='bpb-download-action' "
             f"href='{html.escape(archive_path, quote=True)}' download>download</a>"
         )
-    if family:
+    if family and entry.get("status") not in {"empty", "redacted"}:
         _UNRESOLVED_ARCH_FAMILIES.add(family)
     return "<span class='bpb-download-missing'>—</span>"
 

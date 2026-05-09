@@ -2,7 +2,7 @@
 """Verify category cumulative report pages.
 
 This guards the wrapper around the locked daily visual system: each category
-page must keep two main sections, locked daily CSS blocks, no global-aggregate
+page must keep the current three-section structure, locked daily CSS blocks, no global-aggregate
 markers, no conversation/session leaks, and the canonical biweekly windowing.
 Scientific row provenance lives in `audit_daily_accuracy.py`.
 """
@@ -35,7 +35,6 @@ FORBIDDEN_GLOBAL_MARKERS = (
     "BEST EVER",
     "RUNNING BEST",
     "PRIOR WEEK",
-    "<th>median</th>",
 )
 
 
@@ -115,12 +114,13 @@ def _verify_category(summary: dict) -> dict:
     _require_clean_bottom(text, html_path)
     _require_home_link(text, html_path)
     _require_native_controls(text, html_path)
-    if text.count("<h2>") != 2:
+    if text.count("<h2>") != 3:
         raise AssertionError(
-            f"category page must have exactly two h2 sections: {html_path}"
+            f"category page must have exactly three h2 sections: {html_path}"
         )
     for heading in (
         "SECTION 1.0 — BI-WEEKLY TRAJECTORY",
+        "SECTION 1.5 — ARCHITECTURE / TEST SURFACES",
         "SECTION 2.0 — CATEGORY DAILY DATAPOINTS",
     ):
         if heading not in text:

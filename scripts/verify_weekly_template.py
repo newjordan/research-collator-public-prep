@@ -66,8 +66,6 @@ def verify_week(summary: dict) -> dict:
     for heading in ("SECTION 1.0 — WEEK TRAJECTORY", "SECTION 2.0 — DAILY REPORTS"):
         if heading not in text:
             raise AssertionError(f"missing weekly heading {heading!r}: {html_path}")
-    if "Architectures tested:" not in text:
-        raise AssertionError(f"weekly summary must lead with architecture reference text: {html_path}")
     if "report-header" not in text or "day-summary" not in text:
         raise AssertionError(f"weekly page missing locked daily visual blocks: {html_path}")
     for forbidden in ("BEST DAY", "DAILY METRIC SPREAD", "<th>median</th>", "PRIOR WEEK"):

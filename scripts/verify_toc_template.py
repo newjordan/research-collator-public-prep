@@ -29,7 +29,10 @@ def _require_clean_bottom(text: str, html_path: Path) -> None:
 
 
 def _require_home_link(text: str, html_path: Path) -> None:
-    if 'class="h1-home" href="index.html" aria-label="Open landing page"' not in text:
+    if not re.search(
+        r'class="h1-home"[^>]*href="index\.html"[^>]*aria-label="Open landing page"',
+        text,
+    ):
         raise AssertionError(f"frostmark is not linked to landing page: {html_path}")
 
 
@@ -63,8 +66,8 @@ def verify_toc(html_path: Path) -> dict:
     if "body.toc-page" not in text or "background-image" not in text:
         raise AssertionError(f"TOC missing generated background styling: {html_path}")
     for href in (
-        "cover.html",
-        "cumulative.html",
+        "intro.html",
+        "report_144.html",
         "categories/index.html",
         "weeks/index.html",
         "2026-03-18.html",
@@ -90,21 +93,21 @@ def verify_toc(html_path: Path) -> dict:
         raise AssertionError(f"TOC must not recursively embed cover or itself: {html_path}")
     daily_links = text.count("open day")
     day_frames = [href for href, kind in frames if kind == "day"]
-    if len(day_frames) != daily_links:
+    day_rows = re.findall(r"<tr data-reader-href='(2026-[^']+\.html)'>", text)
+    if len(day_frames) + len(day_rows) != daily_links:
         raise AssertionError(
-            f"TOC day frame count mismatch: frames={len(day_frames)} open-day-links={daily_links}"
+            "TOC day reference count mismatch: "
+            f"frames={len(day_frames)} rows={len(day_rows)} open-day-links={daily_links}"
         )
+    linked_reader_targets = {href for href, _kind in frames} | set(day_rows)
     for required_frame in (
-        "cumulative.html",
         "categories/index.html",
         "weeks/index.html",
         "2026-03-18.html",
         "2026-05-01.html",
     ):
-        if required_frame not in {href for href, _kind in frames}:
+        if required_frame not in linked_reader_targets:
             raise AssertionError(f"TOC connected reader missing frame {required_frame}: {html_path}")
-    if "cover_sheet_final" in text:
-        raise AssertionError(f"TOC embeds or references the cover sheet asset: {html_path}")
     if "MONTHLY" in text.upper():
         raise AssertionError(f"TOC contains monthly marker: {html_path}")
     if LEAK_RE.search(text):

@@ -37,13 +37,21 @@ def verify_cover(html_path: Path) -> dict:
     }
 
 
-def verify_cover_isolated() -> None:
-    toc_path = render_toc.TOC_HTML_PATH
-    if not toc_path.exists():
-        raise AssertionError(f"missing TOC html for isolation check: {toc_path}")
-    toc_text = toc_path.read_text(encoding="utf-8", errors="replace")
-    if "cover_sheet_final" in toc_text:
-        raise AssertionError(f"TOC references cover sheet asset: {toc_path}")
+def verify_cover_asset_scope() -> None:
+    allowed = {
+        render_cover.COVER_HTML_PATH.resolve(),
+        render_cover.INDEX_HTML_PATH.resolve(),
+        render_toc.TOC_HTML_PATH.resolve(),
+    }
+    leaks = []
+    for html_path in render_cover.OUT_ROOT.rglob("*.html"):
+        if html_path.resolve() in allowed:
+            continue
+        text = html_path.read_text(encoding="utf-8", errors="replace")
+        if "cover_sheet_final" in text:
+            leaks.append(str(html_path))
+    if leaks:
+        raise AssertionError(f"cover sheet asset leaked outside allowed pages: {leaks}")
 
 
 def main() -> None:
@@ -63,7 +71,7 @@ def main() -> None:
     )
     checked = verify_cover(Path(summary["html_path"]))
     index_checked = verify_cover(Path(summary["index_path"]))
-    verify_cover_isolated()
+    verify_cover_asset_scope()
     result = {
         "template_standard": render_cover.COVER_TEMPLATE_STANDARD,
         "toc_template_standard": render_toc.TOC_TEMPLATE_STANDARD,

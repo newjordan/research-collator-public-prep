@@ -494,7 +494,6 @@ def make_layer_table(dates: list[str],
         "</tr></thead><tbody>"
     ]
     layers = [
-        ("PUBLICATION COVER", "1", "cover.html", "first page; cover image appears there only"),
         ("ADDRESS TO THE READER", "1", "intro.html", "public intro letter and evidence starting points"),
         ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, reading order, and connected scroll"),
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),

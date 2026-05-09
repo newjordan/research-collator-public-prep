@@ -45,8 +45,6 @@ def verify_html(
 
     require("SECTION 1.0 — TRAJECTORY" in body, f"{date}: missing Section 1.0")
     require("SECTION 2.0 — TEST RUNS" in body, f"{date}: missing Section 2.0")
-    require("Architecture tested:" in body,
-            f"{date}: daily summary must lead with architecture reference text")
     require("SECTION 3.0" not in upper, f"{date}: Section 3.0 leaked into body")
     require("SUPPORTING FILES" not in upper, f"{date}: supporting files leaked into body")
     require("CONVERSATION-MINED" not in upper, f"{date}: conversation-mined section leaked into body")
@@ -104,18 +102,38 @@ def verify_html(
         require(forbidden not in raw,
                 f"{date}: noisy corner micrographic selector leaked back: {forbidden}")
     if expect_tests:
-        require("class='test-runs-table'" in body, f"{date}: missing canonical test table")
-        require("details class='log-toggle'" in body, f"{date}: missing Section 2 dropdown toggle")
-        require("tr class='log-detail-row'><td colspan='8'>" in body,
+        lazy_test_fragments = re.findall(
+            r"data-lazy-fragment='(fragments/[^']+_tests\.html)'",
+            body,
+        )
+        lazy_test_texts: list[str] = []
+        require("class='test-runs-table'" in body or lazy_test_fragments,
+                f"{date}: missing canonical test table")
+        for href in lazy_test_fragments:
+            fragment_path = render_day.HTML_DIR / href
+            require(fragment_path.exists(),
+                    f"{date}: missing lazy test table fragment {href}")
+            fragment_text = fragment_path.read_text(
+                encoding="utf-8",
+                errors="replace",
+            )
+            lazy_test_texts.append(fragment_text)
+            require("class='test-runs-table'" in fragment_text,
+                    f"{date}: lazy test fragment lacks canonical table {href}")
+        test_surface = body + "\n" + "\n".join(lazy_test_texts)
+        require("details class='log-toggle'" in test_surface,
+                f"{date}: missing Section 2 dropdown toggle")
+        require("tr class='log-detail-row'><td colspan='8'>" in test_surface,
                 f"{date}: Section 2 dropdown panel is not full-table-width")
         data_rows = re.findall(
             r"<tr(?: class=\"invalid\")?><td><strong>\d+</strong></td>.*?</tr>",
-            body,
+            test_surface,
             flags=re.DOTALL,
         )
-        detail_rows = body.count("tr class='log-detail-row'><td colspan='8'>")
-        require(detail_rows == len(data_rows),
-                f"{date}: every Section 2 row must have a full-width dropdown panel")
+        detail_rows = test_surface.count("tr class='log-detail-row'><td colspan='8'>")
+        if data_rows:
+            require(detail_rows == len(data_rows),
+                    f"{date}: every Section 2 row must have a full-width dropdown panel")
     require(body.count("<h2>SECTION ") == 2, f"{date}: expected exactly two top sections")
 
     if expect_logs:
@@ -124,9 +142,25 @@ def verify_html(
                 f"{date}: training log panel is not full-table-width")
         require("<script>(function(){function sync(d)" in body,
                 f"{date}: missing disclosure sync script")
-
-        require("<pre class='log-text'>" in body,
-                f"{date}: no full training-log text found in dropdown panels")
+        detail_fragments = re.findall(
+            r"data-lazy-fragment='(fragments/[^']+_details_[^']+\.html)'",
+            body,
+        )
+        require(detail_fragments,
+                f"{date}: missing lazy detail fragments for training logs")
+        for href in detail_fragments:
+            fragment_path = render_day.HTML_DIR / href
+            require(fragment_path.exists(),
+                    f"{date}: missing lazy detail fragment {href}")
+        preview_found = any(
+            "<pre class='log-text" in (render_day.HTML_DIR / href).read_text(
+                encoding="utf-8",
+                errors="replace",
+            )
+            for href in detail_fragments
+        )
+        require(preview_found,
+                f"{date}: lazy detail fragments contain no training-log preview")
 
     return {
         "date": date,

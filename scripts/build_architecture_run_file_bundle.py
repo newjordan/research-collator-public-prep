@@ -43,6 +43,25 @@ SEARCH_ROOTS = [
     Path("/home/frosty40/llm_research"),
     Path("/home/frosty40"),
 ]
+EXCLUDED_DIR_NAMES = {
+    ".git",
+    ".claude",
+    ".codex",
+    ".agents",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+}
+EXCLUDED_FILE_NAMES = {
+    "AGENTS.md",
+    "CLAUDE.md",
+    "MEMORY.md",
+}
+EXCLUDED_FILE_PATTERNS = (
+    re.compile(r"^RESEARCH_REPORT_.*\.md$", re.IGNORECASE),
+    re.compile(r"^IM_CODEX.*\.md$", re.IGNORECASE),
+    re.compile(r".*SESSION.*\.md$", re.IGNORECASE),
+)
 
 
 def slugify(text: str) -> str:
@@ -115,8 +134,22 @@ def copy_file(src: Path, dst: Path) -> dict[str, Any]:
     }
 
 
+def is_public_bundle_file(path: Path, rel_parts: tuple[str, ...] | None = None) -> bool:
+    parts = rel_parts if rel_parts is not None else path.parts
+    if any(part in EXCLUDED_DIR_NAMES for part in parts):
+        return False
+    name = path.name
+    if name in EXCLUDED_FILE_NAMES:
+        return False
+    if any(pattern.match(name) for pattern in EXCLUDED_FILE_PATTERNS):
+        return False
+    return True
+
+
 def copy_anchor(src: Path, dst_dir: Path) -> list[dict[str, Any]]:
     if src.is_file():
+        if not is_public_bundle_file(src):
+            return []
         return [copy_file(src, dst_dir / src.name)]
 
     copied: list[dict[str, Any]] = []
@@ -124,7 +157,7 @@ def copy_anchor(src: Path, dst_dir: Path) -> list[dict[str, Any]]:
         if not item.is_file():
             continue
         rel_parts = item.relative_to(src).parts
-        if any(part in {".git", "__pycache__", ".pytest_cache", ".mypy_cache"} for part in rel_parts):
+        if not is_public_bundle_file(item, rel_parts):
             continue
         copied.append(copy_file(item, dst_dir / src.name / Path(*rel_parts)))
     return copied
@@ -210,7 +243,6 @@ def main() -> None:
         "files": files,
         "missing": [e["number"] for e in missing],
         "manifest": str(MANIFEST_JSON),
-        "markdown": str(MANIFEST_MD),
     })
 
 

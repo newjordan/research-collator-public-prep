@@ -1,7 +1,7 @@
 {
   "entry_count": 43,
-  "copied_entry_count": 43,
-  "file_count": 147,
+  "copied_entry_count": 40,
+  "file_count": 144,
   "entries": [
     {
       "number": 1,
@@ -270,28 +270,13 @@
       "type": "neural body family",
       "aliases": "Donnie, Donnie_TTT, Donnie_12L",
       "slug": "10_donnie",
-      "status": "copied",
+      "status": "redacted",
       "resolution": "exact",
       "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
       "repo_folder": "public/architecture-run-files/files/10_donnie",
       "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/10_donnie",
-      "archive": {
-        "repo_path": "public/architecture-run-files/archives/10_donnie.zip",
-        "size_bytes": 22030,
-        "sha256": "3dd4a55e05616b7228b20849d12f88d54edfe21bb6a497dd35313689244a8350",
-        "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/archives/10_donnie.zip",
-        "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/archives/10_donnie.zip"
-      },
-      "files": [
-        {
-          "name": "RESEARCH_REPORT_2026-04-27.md",
-          "repo_path": "public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md",
-          "size_bytes": 54741,
-          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
-          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md",
-          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/10_donnie/RESEARCH_REPORT_2026-04-27.md"
-        }
-      ]
+      "archive": {},
+      "files": []
     },
     {
       "number": 11,
@@ -821,28 +806,13 @@
       "type": "eval/compression family",
       "aliases": "Podracing, Podracing II, Podracer III Cubric Lite",
       "slug": "29_podracer",
-      "status": "copied",
+      "status": "redacted",
       "resolution": "exact",
       "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
       "repo_folder": "public/architecture-run-files/files/29_podracer",
       "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/29_podracer",
-      "archive": {
-        "repo_path": "public/architecture-run-files/archives/29_podracer.zip",
-        "size_bytes": 22034,
-        "sha256": "75e55d45a78bd94d0efe2dd0a5de77f5cf908f375f14be079bf5ebbaeed3e4ea",
-        "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/archives/29_podracer.zip",
-        "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/archives/29_podracer.zip"
-      },
-      "files": [
-        {
-          "name": "RESEARCH_REPORT_2026-04-27.md",
-          "repo_path": "public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md",
-          "size_bytes": 54741,
-          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
-          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md",
-          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/29_podracer/RESEARCH_REPORT_2026-04-27.md"
-        }
-      ]
+      "archive": {},
+      "files": []
     },
     {
       "number": 30,
@@ -908,28 +878,13 @@
       "type": "neural ablation family",
       "aliases": "SLOT, Rascal III SLOT",
       "slug": "32_rascal-slot",
-      "status": "copied",
+      "status": "redacted",
       "resolution": "exact",
       "source_anchor_name": "RESEARCH_REPORT_2026-04-27.md",
       "repo_folder": "public/architecture-run-files/files/32_rascal-slot",
       "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot",
-      "archive": {
-        "repo_path": "public/architecture-run-files/archives/32_rascal-slot.zip",
-        "size_bytes": 22040,
-        "sha256": "fe64b0bf0096f812fd7a33448e73fab54250a56274538ec2f64d61ebd657f9e3",
-        "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/archives/32_rascal-slot.zip",
-        "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/archives/32_rascal-slot.zip"
-      },
-      "files": [
-        {
-          "name": "RESEARCH_REPORT_2026-04-27.md",
-          "repo_path": "public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md",
-          "size_bytes": 54741,
-          "sha256": "7731e9092800ccc7427f9c6760a84d3d89dc22f16db9df49f078a9baf82dcb3d",
-          "download_url": "https://raw.githubusercontent.com/newjordan/research-collator/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md",
-          "view_url": "https://github.com/newjordan/research-collator/blob/art/palette-switcher/public/architecture-run-files/files/32_rascal-slot/RESEARCH_REPORT_2026-04-27.md"
-        }
-      ]
+      "archive": {},
+      "files": []
     },
     {
       "number": 33,

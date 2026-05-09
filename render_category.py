@@ -554,11 +554,6 @@ def public_source_buttons_html(point: dict[str, Any]) -> str:
             f"<a class='category-action' href='{html.escape(source['raw_url'], quote=True)}' download>"
             "download file</a>",
         )
-    if source.get("url"):
-        buttons.append(
-            f"<a class='category-action' href='{html.escape(source['url'], quote=True)}'>"
-            "commit</a>"
-        )
     if not buttons:
         return ""
     return (
