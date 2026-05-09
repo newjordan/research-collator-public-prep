@@ -133,6 +133,28 @@ def toc_extra_style() -> str:
       outline: 1px solid var(--chrome-rule);
       outline-offset: 2px;
     }}
+    body.toc-page .toc-latin-footer {{
+      position: fixed;
+      left: 32px;
+      bottom: 7px;
+      z-index: 10000;
+      color: var(--rule-hi);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: opacity 160ms linear, transform 160ms linear;
+    }}
+    body.toc-page .toc-latin-footer.is-decoded {{
+      opacity: 1;
+      transform: translateY(0);
+    }}
     body.toc-page .palette-label {{
       position: fixed;
       top: 8px;
@@ -275,7 +297,7 @@ def toc_extra_style() -> str:
       justify-content: space-between;
       gap: 14px;
       padding: 9px 12px;
-      background: var(--rule-hi);
+      background: transparent;
       color: var(--bg);
       font-size: 10.5px;
       line-height: 1.4;
@@ -332,6 +354,148 @@ def toc_extra_style() -> str:
       border-bottom-color: var(--rule-hi);
       outline: 1px solid var(--rule-hi);
       outline-offset: 2px;
+    }}
+    body.toc-page .toc-inline-action {{
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 20px;
+      margin: 0 3px;
+      padding: 3px 7px;
+      border: 1px solid var(--rule-hi);
+      border-radius: 0;
+      background: var(--bg);
+      color: var(--rule-hi);
+      font-size: 10px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: middle;
+    }}
+    body.toc-page .toc-inline-action::before {{
+      content: "";
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      background: var(--rule-hi);
+    }}
+    body.toc-page .toc-inline-action:hover,
+    body.toc-page .toc-inline-action:focus-visible {{
+      background: var(--rule-hi);
+      color: var(--bg);
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
+    }}
+    body.toc-page .toc-inline-action:hover::before,
+    body.toc-page .toc-inline-action:focus-visible::before {{
+      background: var(--bg);
+    }}
+    body.toc-page .toc-calibration {{
+      display: block;
+      margin: 14px 0 18px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }}
+    body.toc-page .toc-calibration > summary {{
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-height: 32px;
+      padding: 8px 10px;
+      border: 2px solid var(--rule-hi);
+      border-radius: 0;
+      background: var(--rule-hi);
+      color: var(--chrome-fg);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      list-style: none;
+      user-select: none;
+      box-shadow: inset 0 0 0 1px var(--chrome-fg);
+      overflow: hidden;
+      opacity: 1;
+    }}
+    body.toc-page .toc-calibration > summary::-webkit-details-marker {{
+      display: none;
+    }}
+    body.toc-page .toc-calibration > summary::marker {{
+      content: "";
+    }}
+    body.toc-page .toc-calibration > summary::before {{
+      display: none;
+    }}
+    body.toc-page .toc-calibration .toc-calibration-label {{
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      flex: 0 0 auto;
+      padding-right: 14px;
+      background: var(--rule-hi);
+      color: var(--chrome-fg);
+    }}
+    body.toc-page .toc-calibration .toc-calibration-label::before {{
+      content: "";
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      background: var(--chrome-fg);
+    }}
+    body.toc-page .toc-calibration .toc-calibration-stripes {{
+      display: block;
+      flex: 1 1 auto;
+      align-self: stretch;
+      min-width: 140px;
+      margin: -6px 14px;
+      border-left: 1px solid var(--chrome-fg);
+      border-right: 1px solid var(--chrome-fg);
+      background: repeating-linear-gradient(
+        135deg,
+        transparent 0 18px,
+        var(--rule-hi) 18px 36px
+      );
+    }}
+    body.toc-page .toc-calibration > summary::after {{
+      content: "expand rules";
+      margin-left: auto;
+      color: var(--chrome-fg);
+      background: var(--rule-hi);
+      padding-left: 14px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }}
+    body.toc-page .toc-calibration[open] > summary::after {{
+      content: "collapse rules";
+    }}
+    body.toc-page .toc-calibration > summary:hover,
+    body.toc-page .toc-calibration > summary:focus-visible {{
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
+    }}
+    body.toc-page .toc-calibration .ds-body {{
+      display: block;
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 12px 14px;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      color: var(--chrome-fg);
+    }}
+    body.toc-page .toc-calibration .ds-body p,
+    body.toc-page .toc-calibration .ds-body strong {{
+      color: var(--chrome-fg);
+    }}
+    body.toc-page .toc-calibration:not([open]) .ds-body {{
+      display: none;
     }}
     body.toc-page .toc-reader-actions {{
       display: inline-flex;
@@ -425,8 +589,9 @@ def toc_extra_style() -> str:
       outline-offset: 2px;
     }}
     body.toc-page.debug .toc-palette-hotspot {{
-      background: rgba(255, 0, 255, 0.12);
-      outline: 1px dashed magenta;
+      background: var(--chrome-fg);
+      opacity: 0.18;
+      outline: 1px dashed var(--chrome-rule);
     }}
     body.toc-page .wipe-overlay {{
       position: fixed;
@@ -495,7 +660,7 @@ def make_layer_table(dates: list[str],
     ]
     layers = [
         ("ADDRESS TO THE READER", "1", "intro.html", "public intro letter and evidence starting points"),
-        ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, reading order, and connected scroll"),
+        ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, report calibration, and connected scroll"),
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
         ("DAILY REPORTS", str(len(dates)), f"{dates[0]}.html", "one locked evidence page per campaign day"),
@@ -768,6 +933,30 @@ def connected_reader_script() -> str:
   if ('scrollRestoration' in window.history) {
     window.history.scrollRestoration = 'manual';
   }
+  var userInteracted = false;
+  ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function(type) {
+    window.addEventListener(type, function(){ userInteracted = true; }, {
+      capture: true,
+      passive: true
+    });
+  });
+  function isReloadNavigation() {
+    try {
+      if (window.performance && performance.getEntriesByType) {
+        var nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'reload') return true;
+      }
+      if (window.performance && performance.navigation && performance.navigation.type === 1) {
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  if (isReloadNavigation() && String(window.location.hash || '').match(/^#reader=(.+)$/)) {
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
   function decodeHashValue(value) {
     try { return decodeURIComponent(value); } catch (e) { return value; }
   }
@@ -820,12 +1009,23 @@ def connected_reader_script() -> str:
     setTimeout(function(){ scrollToReaderHref(href, false); }, 1200);
     return true;
   }
+  function tocStartTarget() {
+    return document.getElementById('toc-start') || document.getElementById('table-of-contents');
+  }
+  function scrollToTocStart() {
+    var target = tocStartTarget();
+    var top = target ? target.getBoundingClientRect().top + window.pageYOffset : 0;
+    window.scrollTo(0, Math.max(0, top));
+  }
   function resetReaderScrollIfNoHash() {
     if (String(window.location.hash || '').match(/^#reader=(.+)$/)) return;
-    window.scrollTo(0, 0);
-    requestAnimationFrame(function(){ window.scrollTo(0, 0); });
-    setTimeout(function(){ window.scrollTo(0, 0); }, 250);
-    setTimeout(function(){ window.scrollTo(0, 0); }, 900);
+    function resetIfIdle() {
+      if (!userInteracted) scrollToTocStart();
+    }
+    resetIfIdle();
+    requestAnimationFrame(resetIfIdle);
+    setTimeout(resetIfIdle, 250);
+    setTimeout(resetIfIdle, 900);
   }
   function resizeFrame(frame) {
     try {
@@ -912,6 +1112,9 @@ def back_to_top_html() -> str:
     return (
         '<button class="toc-back-top" type="button" '
         'aria-label="Back to table of contents">TOC</button>'
+        '<div class="toc-latin-footer" aria-hidden="true" '
+        'data-latin-message="DEUS EX MACHINA X SOMNIUM COMMUNE">'
+        'XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>'
     )
 
 
@@ -1014,10 +1217,43 @@ def back_to_top_script() -> str:
   if (!button) return;
   button.addEventListener('click', function(event) {
     event.preventDefault();
-    var target = document.getElementById('table-of-contents');
+    var target = document.getElementById('toc-start') || document.getElementById('table-of-contents');
     var top = target ? target.getBoundingClientRect().top + window.pageYOffset : 0;
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   });
+})();
+</script>
+"""
+
+
+def latin_footer_script() -> str:
+    return """
+<script>
+(function(){
+  var footer = document.querySelector('.toc-latin-footer');
+  if (!footer) return;
+  var decoded = footer.getAttribute('data-latin-message') || '';
+  var encoded = 'XXXX XX XXXXXXX X XXXXXXX XXXXXXX';
+  function isAtPageBottom() {
+    var root = document.documentElement;
+    var body = document.body;
+    var scrollHeight = Math.max(
+      root ? root.scrollHeight : 0,
+      body ? body.scrollHeight : 0
+    );
+    var scrollTop = window.pageYOffset || (root ? root.scrollTop : 0) || 0;
+    var viewport = window.innerHeight || (root ? root.clientHeight : 0) || 0;
+    return scrollHeight - (scrollTop + viewport) <= 24;
+  }
+  function syncLatinFooter() {
+    var atBottom = isAtPageBottom();
+    footer.textContent = atBottom ? decoded : encoded;
+    footer.classList.toggle('is-decoded', atBottom);
+  }
+  window.addEventListener('scroll', syncLatinFooter, { passive: true });
+  window.addEventListener('resize', syncLatinFooter);
+  window.addEventListener('load', syncLatinFooter);
+  syncLatinFooter();
 })();
 </script>
 """
@@ -1028,17 +1264,56 @@ def make_summary_html(dates: list[str],
                       category_summaries: list[dict[str, Any]],
                       campaign_summary: dict | None) -> str:
     body = (
-        f"<p>The report set spans <strong>{RESEARCH_START_DATE}</strong> through "
-        f"<strong>{RESEARCH_END_DATE}</strong>, ending with "
-        f"<strong>a 10k-vocabulary CaseOps loop-body submission</strong>.</p>"
-        f"<p>BPB validity convention: values below "
+        "<p><strong>Competition / task:</strong> OpenAI Parameter Golf: build "
+        "a compressed language-model submission under contest constraints and "
+        "minimize validation bits per byte.</p>"
+        "<p><strong>Public competition context:</strong> the competition and "
+        "pull requests were public "
+        "<a class='toc-inline-action' "
+        "href='https://github.com/openai/parameter-golf/pulls' "
+        "target='_blank' rel='noopener'>OpenAI Parameter Golf PRs</a>. "
+        "Adapting to public SOTA, comparing against public submissions, and "
+        "incorporating the best available techniques were part of the "
+        "competition. All work included in this report is mine, built within "
+        "that collaborative public field.</p>"
+        "<p><strong>Track calibration:</strong> the experimental branch was "
+        "the non-record unified transformer / recursion research lane. It "
+        "contains architecture probes and recurrence ideas tested for insight; "
+        "the neural branch is the competitive leaderboard-submission track.</p>"
+        "<p><strong>BPB:</strong> bits per byte. Lower is better; this report "
+        "separates BPB model scores from custom-kernel / FA3 timing ratios.</p>"
+        "<p><strong>Valid submission:</strong> a BPB submission counts only "
+        "when it follows the three-seed contest standard: artifact under the "
+        "16 MB cap, a 10-minute training run on 8xH100, a 10-minute maximum "
+        "evaluation period on 8xH100, and no test-data leakage.</p>"
+        f"<p><strong>Invalid scores:</strong> BPB values below "
         f"<strong>{INVALID_VAL_BPB_FLOOR:.2f}</strong> are treated as "
-        f"eval/loader-error readings and excluded from best-valid comparisons.</p>"
+        "TTT test-data leakage and excluded from valid competition "
+        "comparisons.</p>"
+        "<p><strong>Excluded / non-comparable:</strong> artifacts over 16 MB, "
+        "runs outside the 8xH100 / 10-minute train / 10-minute eval / "
+        "three-seed standard, crash rows, loader failures, and kernel ratio "
+        "measurements are not counted as valid BPB submissions.</p>"
+        "<p><strong>Best valid score:</strong>&nbsp;<strong>1.0620 VAL_BPB</strong>."
+        "</p>"
+        "<p><strong>Baseline:</strong> the tracked Naive Baseline reference was "
+        "<strong>1.2244 VAL_BPB</strong>; the best valid result is a "
+        "<strong>0.1624 BPB</strong> reduction, about <strong>13.3%</strong> "
+        "lower than that baseline.</p>"
+        "<p><strong>Improvement:</strong> the strongest line was a hybrid "
+        "neural submission using a larger 10k-vocabulary CaseOps tokenizer "
+        "with looped GQA transformer mechanics, per-group compression, "
+        "int7/int6 packaging, LQER, and phased LoRA TTT.</p>"
+        "<p><strong>Evidence:</strong> all files and logs provided for review "
+        "or reproduction.</p>"
     )
     return (
-        '<aside class="day-summary">'
-        '<div class="ds-key">READING ORDER</div>'
-        f'<div class="ds-body">{body}</div></aside>'
+        '<details class="day-summary toc-calibration">'
+        '<summary class="ds-key"><span class="toc-calibration-label">'
+        'READER CALIBRATION / RULES</span>'
+        '<span class="toc-calibration-stripes" aria-hidden="true"></span>'
+        '</summary>'
+        f'<div class="ds-body">{body}</div></details>'
     )
 
 
@@ -1062,6 +1337,10 @@ def render_toc_report(dates: list[str],
     h1_html = make_report_h1_html("TABLE OF CONTENTS", "CAMPAIGN").replace(
         'class="h1-home"',
         'class="h1-home" data-palette-cycle="true"',
+        1,
+    ).replace(
+        "<h1>",
+        '<h1 id="toc-start" tabindex="-1">',
         1,
     )
     report_header = make_report_header_html(header_fields)
@@ -1116,6 +1395,7 @@ def render_toc_report(dates: list[str],
         + _embedded_log_script()
         + page_scrollbar_script()
         + back_to_top_script()
+        + latin_footer_script()
         + palette_easter_egg_script(include_stamp=False, include_wipe=True)
         + "</body></html>"
     )

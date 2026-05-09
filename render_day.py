@@ -444,9 +444,10 @@ def pick_headline_metric(records: list[dict]) -> str | None:
 def best_before(conn: sqlite3.Connection, date: str, metric: str) -> float | None:
     """Best valid prior metric across records strictly before date.
 
-    For BPB-style metrics, below-floor values are known eval/loader errors and
-    crash-class values are not personal-best candidates. They still remain in
-    their daily report; they just cannot become the baseline-to-beat.
+    For BPB-style metrics, below-floor values are treated as TTT test-data
+    leakage readings and crash-class values are not personal-best candidates.
+    They still remain in their daily report; they just cannot become the
+    baseline-to-beat.
     """
     cur = conn.cursor()
     rows = cur.execute(
@@ -2670,16 +2671,17 @@ def make_daily_summary_html(date: str, day_index: int | None,
         )
 
     if is_bpb_metric(headline_metric):
+        leakage_word = "reading" if invalid_count == 1 else "readings"
         if date == RESEARCH_END_DATE:
             validity_phrase = (
                 f"with <strong>{valid_count} valid</strong> landings above the "
                 f"{INVALID_VAL_BPB_FLOOR:.2f} BPB validity floor and "
-                f"<strong>{invalid_count} eval/loader-error</strong> readings excluded"
+                f"<strong>{invalid_count} TTT leakage</strong> {leakage_word} excluded"
             )
         else:
             validity_phrase = (
                 f"with <strong>{valid_count} valid</strong> rows and "
-                f"<strong>{invalid_count} eval/loader-error</strong> readings excluded"
+                f"<strong>{invalid_count} TTT leakage</strong> {leakage_word} excluded"
             )
     elif is_kernel_metric(headline_metric):
         validity_phrase = (
@@ -2736,7 +2738,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
                        f"No prior baseline to compare against.")
     else:
         if is_bpb_metric(headline_metric):
-            pb_line = "<strong>No valid runs.</strong> Every measurement was excluded as an eval/loader-error reading."
+            pb_line = "<strong>No valid runs.</strong> Every measurement was excluded as a TTT test-data leakage reading."
         else:
             pb_line = "<strong>No measured rows.</strong> No finite metric values were available."
 
@@ -3938,7 +3940,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     # inside the LAST (CLASSIFICATION) row as a 30px allocation bar.
     arch_families = detect_arch_families(test_rows)
     if is_bpb_metric(headline_metric):
-        test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} below floor)"
+        test_count_text = f"{len(test_rows)} unique  ({valid_count} valid / {invalid_count} TTT leakage)"
     elif is_kernel_metric(headline_metric):
         test_count_text = f"{len(test_rows)} kernel benchmarks"
     else:

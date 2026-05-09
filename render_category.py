@@ -644,7 +644,7 @@ def make_category_summary_html(category: str,
             body += (
                 f"<p>Neural BPB validity convention: values below "
                 f"<strong>{render_day.INVALID_VAL_BPB_FLOOR:.2f}</strong> "
-                f"are treated as eval/loader-error readings.</p>"
+                f"are treated as TTT test-data leakage readings.</p>"
             )
     return (
         '<aside class="day-summary">'
