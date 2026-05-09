@@ -14,6 +14,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import atexit
 import datetime as dt
 import hashlib
 import html
@@ -45,7 +46,7 @@ ARCHITECTURE_RECIPES_PATH = Path(__file__).parent / "data" / "architecture_recip
 ARCHITECTURE_RUN_FILE_MANIFEST_PATH = (
     Path(__file__).parent / "public" / "architecture-run-files" / "manifest.json"
 )
-LOCKED_TEMPLATE_STYLE_SHA256 = "9b3664f58ccfc369e10c135199e27d306feb0b79ded51beb7123fdb2f2dd09ec"
+LOCKED_TEMPLATE_STYLE_SHA256 = "d7e5221bc1da151d6ae918a5fb5cab8653274d6336f638c7d051202b5284abdf"
 DAILY_TEMPLATE_STANDARD = "daily-report-v2.6-architecture-recipes"
 RESEARCH_START_DATE = "2026-03-18"
 RESEARCH_END_DATE = "2026-05-01"
@@ -1116,6 +1117,8 @@ ARCH_RUN_FILE_FAMILY_ALIASES = {
     "DeltaNet": "DeltaNet Crawler",
     "Megahelix": "VortexHelix / Megahelix",
     "Exp-D TTT8 Stride32": "SOTA v2 TTT",
+    "Tornado / Theta": "Tornado",
+    "GPTQ": "AR Self-Gen GPTQ",
 }
 
 
@@ -1146,34 +1149,147 @@ def load_architecture_run_file_manifest() -> dict[str, dict]:
     return out
 
 
-def architecture_run_file_href(family: str) -> str:
+_ARCH_FAMILY_INDEX_CACHE: dict[str, dict] | None = None
+_UNRESOLVED_ARCH_FAMILIES: set[str] = set()
+
+
+def _normalize_family_key(name: str) -> str:
+    """Normalized lookup key: lowercase, strip, collapse runs of -/_/whitespace
+    into a single space. Lets 'A-Wing', 'a wing', 'AWING' all resolve together."""
+    s = (name or "").strip().lower()
+    out: list[str] = []
+    last_sep = False
+    for ch in s:
+        if ch in "-_ \t\n/":
+            if not last_sep:
+                out.append(" ")
+                last_sep = True
+        else:
+            out.append(ch)
+            last_sep = False
+    return "".join(out).strip()
+
+
+def _build_architecture_family_index() -> dict[str, dict]:
+    """Build a normalized-key -> manifest entry index for resolve_architecture_family.
+    Folds in: each manifest entry's 'family', 'slug', 'slug-without-NN_-prefix',
+    and comma-split 'aliases' field; the existing ARCH_RUN_FILE_FAMILY_ALIASES
+    overrides; and any extra recipe keys from data/architecture_recipes.json."""
+    global _ARCH_FAMILY_INDEX_CACHE
+    if _ARCH_FAMILY_INDEX_CACHE is not None:
+        return _ARCH_FAMILY_INDEX_CACHE
     manifest = load_architecture_run_file_manifest()
-    key = ARCH_RUN_FILE_FAMILY_ALIASES.get(family, family)
-    entry = manifest.get(key)
-    if not entry:
-        return ""
-    archive = entry.get("archive") or {}
-    repo_path = archive.get("repo_path") or ""
-    if not repo_path:
-        files = entry.get("files") or []
-        if files and isinstance(files[0], dict):
-            repo_path = files[0].get("repo_path") or ""
-    if not repo_path:
-        return ""
-    if repo_path.startswith("public/"):
-        repo_path = repo_path[len("public/"):]
-    return repo_path
+    index: dict[str, dict] = {}
+
+    def _add(key: str, entry: dict) -> None:
+        if not key or not entry:
+            return
+        norm = _normalize_family_key(key)
+        if norm:
+            index.setdefault(norm, entry)
+
+    for fam, entry in manifest.items():
+        _add(fam, entry)
+        slug = str(entry.get("slug") or "")
+        if slug:
+            _add(slug, entry)
+            if "_" in slug:
+                # Slug like "01_a-wing" -> also index under "a-wing".
+                _add(slug.split("_", 1)[1], entry)
+        aliases_field = entry.get("aliases")
+        if isinstance(aliases_field, str):
+            for alias in aliases_field.split(","):
+                _add(alias, entry)
+        elif isinstance(aliases_field, (list, tuple)):
+            for alias in aliases_field:
+                _add(str(alias), entry)
+
+    # Hand-curated overrides take precedence for known mismatches.
+    for src, dest in ARCH_RUN_FILE_FAMILY_ALIASES.items():
+        target = manifest.get(dest)
+        if target:
+            _add(src, target)
+
+    # Recipe keys may carry display names that match a manifest entry only by
+    # normalized form; index them too where they resolve.
+    try:
+        recipes_raw = json.loads(ARCHITECTURE_RECIPES_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        recipes_raw = {}
+    for recipe_name in (recipes_raw.get("recipes") or {}).keys():
+        target = index.get(_normalize_family_key(recipe_name))
+        if target:
+            _add(recipe_name, target)
+
+    _ARCH_FAMILY_INDEX_CACHE = index
+    return index
+
+
+def resolve_architecture_family(family: str) -> dict | None:
+    """Resolve a row's family string to a manifest entry, or None.
+    Order: exact / alias / slug / recipe-keyed match after normalization
+    (lowercase, '-'/'_'/space equivalence). Misses are tracked for the
+    end-of-run summary printed via atexit."""
+    if not family:
+        return None
+    index = _build_architecture_family_index()
+    return index.get(_normalize_family_key(family))
+
+
+def _strip_public_prefix(p: str) -> str:
+    return p[len("public/"):] if p.startswith("public/") else p
 
 
 def architecture_download_button_html(family: str) -> str:
-    href = architecture_run_file_href(family)
-    if not href:
+    entry = resolve_architecture_family(family)
+    if not entry:
+        if family:
+            _UNRESOLVED_ARCH_FAMILIES.add(family)
         return "<span class='bpb-download-missing'>—</span>"
-    label = "download"
-    return (
-        f"<a class='bpb-download-action' href='{html.escape(href, quote=True)}' download>"
-        f"{html.escape(label)}</a>"
+    parts: list[str] = []
+    archive = entry.get("archive") or {}
+    archive_path = _strip_public_prefix(str(archive.get("repo_path") or ""))
+    if archive_path:
+        parts.append(
+            f"<a class='bpb-download-action' "
+            f"href='{html.escape(archive_path, quote=True)}' download>download</a>"
+        )
+    repo_folder = _strip_public_prefix(str(entry.get("repo_folder") or ""))
+    if not repo_folder:
+        files = entry.get("files") or []
+        if files and isinstance(files[0], dict):
+            first = _strip_public_prefix(str(files[0].get("repo_path") or ""))
+            if first:
+                repo_folder = first
+    if repo_folder:
+        if not repo_folder.endswith("/") and "." not in repo_folder.rsplit("/", 1)[-1]:
+            repo_folder = repo_folder + "/"
+        parts.append(
+            f"<a class='bpb-download-action' "
+            f"href='{html.escape(repo_folder, quote=True)}'>source</a>"
+        )
+    if not parts:
+        if family:
+            _UNRESOLVED_ARCH_FAMILIES.add(family)
+        return "<span class='bpb-download-missing'>—</span>"
+    return "".join(parts)
+
+
+def _print_unresolved_arch_summary() -> None:
+    """End-of-run console summary listing family strings the resolver
+    couldn't map to a manifest entry. Printed via atexit so it surfaces
+    after the full corpus render completes regardless of entry point."""
+    if not _UNRESOLVED_ARCH_FAMILIES:
+        return
+    print(
+        f"[architecture] unresolved families ({len(_UNRESOLVED_ARCH_FAMILIES)}):",
+        file=sys.stderr,
     )
+    for fam in sorted(_UNRESOLVED_ARCH_FAMILIES):
+        print(f"  - {fam!r}", file=sys.stderr)
+
+
+atexit.register(_print_unresolved_arch_summary)
 
 
 PUBLIC_TEXT_REPLACEMENTS = [
@@ -3001,7 +3117,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     h1_html = make_report_h1_html(
         "DAILY RESEARCH REPORT",
         date,
-        master_href=f"toc.html#reader={date}.html",
+        master_href=f"report_144.html#reader={date}.html",
     )
 
     # Daily summary callout (between SECTION 1.0 and the chart)
@@ -3176,6 +3292,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     )
     full_html = (
         f"<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{date} — Research Day</title>"
         f"<style>{style}</style></head><body>"
         + body_html

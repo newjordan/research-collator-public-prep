@@ -32,7 +32,7 @@ task has files to touch, acceptance criteria, and verification steps.
 
 ## Tier 1 — high impact, low risk
 
-### [ ] T1.1 — Fix the architecture-run-files family join
+### [x] T1.1 — Fix the architecture-run-files family join
 
 **Why**: 43/43 architecture archives exist on disk; only families whose row name exact-matches `PUBLIC_ARCH_FAMILY_LABELS` get a download button. The rest show `—` next to a real archive. Manifest carries `aliases` already; `data/architecture_recipes.json` carries canonical mappings — never joined.
 
