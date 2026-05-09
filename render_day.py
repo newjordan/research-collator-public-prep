@@ -2755,8 +2755,6 @@ def make_lazy_kernel_test_table_md(date: str, rows: list[dict], metric: str,
         "<div class='lazy-test-card'>"
         "<p><strong>KERNEL TEST RUNS</strong></p>"
         f"{_kernel_lazy_summary_html(rows, metric)}"
-        "<p class='muted'>Full kernel benchmark rows are kept out of the main page for scan speed. "
-        "Load them only when inspecting the kernel test list.</p>"
         f"<button class='lazy-test-load' type='button' "
         f"data-lazy-fragment='fragments/{html.escape(fragment_name, quote=True)}' "
         f"data-target='{html.escape(target_id, quote=True)}' "

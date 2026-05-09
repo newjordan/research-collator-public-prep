@@ -841,8 +841,6 @@ def make_lazy_full_table_html(category: str,
     target_id = f"category-{category}-full-table"
     return (
         "<div class='lazy-test-shell'>"
-        f"<p class='muted'>Full {html.escape(CATEGORY_LABEL[category].lower())} "
-        "daily datapoint rows are loaded on demand for scan speed.</p>"
         "<button class='lazy-test-load' type='button' "
         f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
         f"data-target='{html.escape(target_id, quote=True)}' "
