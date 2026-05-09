@@ -352,11 +352,13 @@ def toc_extra_style() -> str:
       outline-offset: 2px;
     }}
     body.toc-page .test-runs-table th:last-child,
-    body.toc-page .test-runs-table td:last-child {{
+    body.toc-page .test-runs-table td:last-child,
+    body.toc-page .test-runs-table .toc-action-cell {{
       text-align: right;
       white-space: nowrap;
     }}
-    body.toc-page .test-runs-table td:last-child .toc-action {{
+    body.toc-page .test-runs-table td:last-child .toc-action,
+    body.toc-page .test-runs-table .toc-action-cell .toc-action {{
       justify-content: flex-start;
     }}
     body.toc-page .toc-inline-action {{
@@ -660,7 +662,7 @@ def make_layer_table(dates: list[str],
                      campaign_summary: dict | None) -> str:
     rows = [
         "<table class='test-runs-table'><thead><tr>"
-        "<th>LAYER</th><th>COUNT</th><th>OPEN</th><th>FUNCTION</th>"
+        "<th>LAYER</th><th>COUNT</th><th>FUNCTION</th><th class='toc-action-cell'>OPEN</th>"
         "</tr></thead><tbody>"
     ]
     layers = [
@@ -675,8 +677,8 @@ def make_layer_table(dates: list[str],
             "<tr>"
             f"<td><strong>{html.escape(label)}</strong></td>"
             f"<td>{html.escape(str(count))}</td>"
-            f"<td><a class='toc-action' href='{html.escape(href)}'>open</a></td>"
             f"<td>{html.escape(function)}</td>"
+            f"<td class='toc-action-cell'><a class='toc-action' href='{html.escape(href)}'>open</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -1138,7 +1140,7 @@ def back_to_top_html() -> str:
         '<button class="toc-back-top" type="button" '
         'aria-label="Back to table of contents">TOC</button>'
         '<div class="toc-latin-footer" aria-hidden="true" '
-        'data-latin-message="Deus ex machina; machina ex corde populorum amantium; cor sapientiae.">'
+        'data-latin-message="Deus ex machina; machina ex corde amante populorum; cor populorum ex sapientia.">'
         'XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>'
     )
 
