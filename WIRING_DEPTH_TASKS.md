@@ -170,7 +170,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ---
 
-### [ ] T4.2 — Per-chart CSV download
+### [x] T4.2 — Per-chart CSV download
 
 **Why**: Charts embedded as `<img>` with no source-data link. Verifying numbers requires going to disk.
 

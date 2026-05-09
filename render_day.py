@@ -1924,6 +1924,26 @@ def _embedded_log_style() -> str:
         margin-right: 4px;
     }
     .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
     """
 
 
@@ -2939,6 +2959,34 @@ def _fetch_git_commits(conn: sqlite3.Connection) -> list[dict]:
     return out
 
 
+def write_test_rows_csv(date: str, test_rows: list[dict]) -> str:
+    """Emit a CSV under output/preview/csv/<date>_test_rows.csv carrying the
+    underlying data behind the day's chart panels (one CSV per day; every
+    panel on the day shares it). Returns the relative href used by md_to_html
+    to attach a 'csv data' caption beneath each <figure>. Returns '' when
+    there are no rows to emit."""
+    if not test_rows:
+        return ""
+    import csv as csv_mod
+    csv_dir = HTML_DIR / "csv"
+    csv_dir.mkdir(parents=True, exist_ok=True)
+    safe_date = re.sub(r"[^0-9-]+", "-", date or "unknown").strip("-") or "unknown"
+    csv_path = csv_dir / f"{safe_date}_test_rows.csv"
+    cols = [
+        "n", "title", "display_ablation", "family", "camp",
+        "time_iso", "hardware", "wallclock_seconds",
+        "val_bpb", "val_bpb_source",
+        "kernel_fb_ratio", "kernel_fb_ratio_source",
+        "n_runs", "source_label",
+    ]
+    with open(csv_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv_mod.DictWriter(f, fieldnames=cols, extrasaction="ignore")
+        writer.writeheader()
+        for r in test_rows:
+            writer.writerow({c: r.get(c, "") for c in cols})
+    return f"csv/{csv_path.name}"
+
+
 def commits_panel_html(conn: sqlite3.Connection, date: str) -> str:
     """Per-day disclosure listing git_commit artifacts whose best_date
     matches the page date. Empty days omit the panel entirely. Author info
@@ -3949,6 +3997,8 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     html_path = HTML_DIR / f"{date}.html"
 
+    chart_csv_href = write_test_rows_csv(date, test_rows)
+
     def md_to_html(md_text: str) -> str:
         out = []
         in_ul = False
@@ -4008,9 +4058,19 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
                     full = (QMD_DIR / img_path).resolve()
                     img_src = preview_chart_src(full)
                     if img_src:
+                        # Append a small CSV download caption when the day's
+                        # chart-data CSV exists; the same CSV backs every
+                        # panel on the day.
+                        caption_html = ""
+                        if chart_csv_href:
+                            caption_html = (
+                                "<figcaption class='chart-csv-link'>"
+                                f"<a href='{html.escape(chart_csv_href, quote=True)}' download>csv data</a>"
+                                "</figcaption>"
+                            )
                         out.append(
                             f"<figure><img src='{html.escape(img_src, quote=True)}' "
-                            f"alt='{html.escape(alt)}'/></figure>"
+                            f"alt='{html.escape(alt)}'/>{caption_html}</figure>"
                         )
                     else:
                         out.append(f"<p class='muted'>[missing image: {html.escape(img_path)}]</p>")

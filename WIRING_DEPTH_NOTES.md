@@ -3,6 +3,11 @@
 Observations spotted during loop iterations that don't fit the current task.
 Add one-liners only; address in a follow-up plan.
 
+## From T4.2
+
+- Spec asked to resolve the chart's CSV via SQLite (`csv_row_count > 0 AND date + camp match`). The 740 CSV artifacts in `index.sqlite` are mostly sidelane `summary.tsv` files from `parameter-golf-lab/neural/test_lab/...` — they're not the chart's source data. Implementation deviates: emits the chart's actual underlying `test_rows` as a fresh per-day CSV under `output/preview/csv/<date>_test_rows.csv` (15 columns: n, title, display_ablation, family, camp, time_iso, hardware, wallclock_seconds, val_bpb + source, kernel_fb_ratio + source, n_runs, source_label). Single CSV per day backs every chart panel on that day.
+- Follow-up: a separate "associated artifacts" panel could surface the SQLite `csv_row_count > 0` artifacts (sidelane summaries etc.) for the day, since they're useful but not the chart source.
+
 ## From T3.1
 
 - Spec asked for subject lines to link to GitHub commit URLs "using repo URL from manifest.json", but `manifest.json` only carries the URL of the research-collator repo (where architecture run files live), not the multiple source repos that produced the commits in `index.sqlite` (`git:dotagents_mono`, `git:parameter-golf-lab`, `git:sota_crawler`, `git:sota_rascal`, `git:sota_nueral`, etc.). Subjects render as plain text. Follow-up: a small per-source-label → GitHub URL map (probably 5–8 entries) would unlock the links.
