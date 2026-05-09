@@ -131,7 +131,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ## Tier 3 — code/commits provenance
 
-### [ ] T3.1 — "Commits this day" panel
+### [x] T3.1 — "Commits this day" panel
 
 **Why**: 4,294 `git_commit` artifacts indexed in SQLite, currently excluded from row evidence as noise (`SUPPORTING_EXCLUDED_KINDS`). They belong on the day, not on the row.
 

@@ -3,6 +3,12 @@
 Observations spotted during loop iterations that don't fit the current task.
 Add one-liners only; address in a follow-up plan.
 
+## From T3.1
+
+- Spec asked for subject lines to link to GitHub commit URLs "using repo URL from manifest.json", but `manifest.json` only carries the URL of the research-collator repo (where architecture run files live), not the multiple source repos that produced the commits in `index.sqlite` (`git:dotagents_mono`, `git:parameter-golf-lab`, `git:sota_crawler`, `git:sota_rascal`, `git:sota_nueral`, etc.). Subjects render as plain text. Follow-up: a small per-source-label → GitHub URL map (probably 5–8 entries) would unlock the links.
+- The `artifacts` schema doesn't extract a commit author column, so the panel shows hash · time · repo · subject (no author). Adding author would require either a schema extension during indexing or a per-row Python git lookup at render time (slow).
+- Commit-count discrepancies between `date(mtime_iso)` and `best_date()`: `date(mtime_iso)` is UTC, `best_date()` applies a CDT/local conversion. 2026-03-22 had 552 commits by raw UTC date, 479 by best_date — both correct, just different definitions. The panel uses best_date to match how the rest of the page is dated.
+
 ## From T2.1
 
 - Multi-day-window timeline slices for high-density days were 5–6 MB each before truncation. Capped to ~300KB source chars (the HTML expansion lands closer to ~340KB). 25 of 41 emitted panels truncate at the cap. Follow-up: serve the raw `.timeline.md` from a path under `output/preview/` so the truncation footer can carry a working "view full" link, or paginate the fragment.

@@ -1877,6 +1877,53 @@ def _embedded_log_style() -> str:
         white-space: pre;
         overflow: auto;
     }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
     """
 
 
@@ -2872,6 +2919,66 @@ def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: 
 
 _REVIEW_MD_INDEX_CACHE: dict[str, Path] | None = None
 _REVIEW_MD_FRAGMENT_HREF_CACHE: dict[Path, str] = {}
+_GIT_COMMITS_CACHE: list[dict] | None = None
+
+
+def _fetch_git_commits(conn: sqlite3.Connection) -> list[dict]:
+    """Pull all git_commit artifacts once. Used by commits_panel_html.
+    Separate query path; does not relax SUPPORTING_EXCLUDED_KINDS."""
+    global _GIT_COMMITS_CACHE
+    if _GIT_COMMITS_CACHE is not None:
+        return _GIT_COMMITS_CACHE
+    rows = conn.execute(
+        "SELECT rel_path, source_label, mtime_iso, title, summary, abs_path, "
+        "       file_kind, metrics_json "
+        "FROM artifacts WHERE file_kind='git_commit' "
+        "ORDER BY mtime_iso"
+    ).fetchall()
+    out = [dict(r) for r in rows]
+    _GIT_COMMITS_CACHE = out
+    return out
+
+
+def commits_panel_html(conn: sqlite3.Connection, date: str) -> str:
+    """Per-day disclosure listing git_commit artifacts whose best_date
+    matches the page date. Empty days omit the panel entirely. Author info
+    isn't extracted into the schema, so each item shows short_hash · time ·
+    repo · subject. No GitHub link is emitted because the index spans
+    multiple repos and we have no per-source URL mapping (logged as a
+    follow-up note)."""
+    commits = _fetch_git_commits(conn)
+    matching = [c for c in commits if best_date(c) == date]
+    if not matching:
+        return ""
+    matching.sort(key=lambda c: c.get("mtime_iso") or "")
+
+    items: list[str] = []
+    for c in matching:
+        rel_path = str(c.get("rel_path") or "")
+        short_hash = rel_path[:8] if rel_path else "?"
+        ts_iso = str(c.get("mtime_iso") or "")
+        ts = ts_iso[11:19] if len(ts_iso) >= 19 else ts_iso  # HH:MM:SS
+        source_label = str(c.get("source_label") or "")
+        if source_label.startswith("git:"):
+            source_label = source_label[4:]
+        title = sanitize_public_text(c.get("title") or "(no subject)")
+        if len(title) > 160:
+            title = title[:157] + "…"
+        items.append(
+            "<li class='commit-item'>"
+            f"<span class='commit-hash'>{html.escape(short_hash)}</span> "
+            f"<span class='commit-time'>{html.escape(ts)}</span> "
+            f"<span class='commit-repo'>{html.escape(source_label)}</span> "
+            f"<span class='commit-subject'>{html.escape(title)}</span>"
+            "</li>"
+        )
+    teaser = f"{len(matching)} commits on {date}"
+    return (
+        "<details class='commits-panel'>"
+        f"<summary class='commits-summary'>{html.escape(teaser)}</summary>"
+        f"<ol class='commits-list'>{''.join(items)}</ol>"
+        "</details>"
+    )
 
 
 def _build_review_md_index() -> dict[str, Path]:
@@ -3785,6 +3892,9 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
     decision_trail_block = decision_trail_panel_html(date)
     if decision_trail_block:
         qmd_lines += [decision_trail_block, ""]
+    commits_block = commits_panel_html(conn, date)
+    if commits_block:
+        qmd_lines += [commits_block, ""]
     qmd_lines += [
         report_header,
         "",
