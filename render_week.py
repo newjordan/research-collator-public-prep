@@ -203,8 +203,12 @@ def weekly_action_style() -> str:
     }
     .test-runs-table td a.weekly-action,
     .log-panel a.weekly-action {
-      color: #8b3702 !important;
-      border-bottom: 1px solid #8b3702;
+      color: #050505 !important;
+      border-color: #050505;
+      border-bottom: 1px solid #050505;
+    }
+    .log-panel a.weekly-action::before {
+      color: #050505;
     }
     .test-runs-table td a.weekly-action:hover,
     .test-runs-table td a.weekly-action:focus-visible,

@@ -35,7 +35,7 @@ Competitive architectures aimed at the highest level of the contest using bpb / 
 Kernel
 Custom-kernel and FA3-related performance work focused on GPU behavior, hardware-specific results, performance constraints, and submission viability.
 
-The record includes accessible run files, test results, and decision trails showing what was tried, what failed, what was preserved, and why.
+The record includes accessible run files and test results showing what was tried, what failed, what was preserved, and why.
 
 The claim is that this kind of research engineering can be repeated and expanded upon in novel directions: operating inside an underdefined problem, under deadline pressure, while producing results that survive inspection.
 

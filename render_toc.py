@@ -101,22 +101,27 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .toc-back-top {{
       position: fixed;
-      left: 14px;
-      bottom: 14px;
+      left: 0;
+      bottom: 22px;
       z-index: 10000;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 38px;
-      height: 34px;
+      width: 25px;
+      min-height: 76px;
+      padding: 8px 3px;
       border: 1px solid var(--chrome-rule);
+      border-left: 0;
       border-radius: 0;
       background: var(--chrome-bg);
       color: var(--chrome-fg);
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 950;
       line-height: 1;
+      letter-spacing: 0.08em;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
       text-decoration: none;
       cursor: pointer;
       user-select: none;
