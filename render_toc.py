@@ -309,8 +309,7 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .toc-action,
     body.toc-page .test-runs-table td a,
-    body.toc-page .toc-reader-toggle,
-    body.toc-page .toc-reader-open {{
+    body.toc-page .toc-reader-toggle {{
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -333,8 +332,7 @@ def toc_extra_style() -> str:
     }}
     body.toc-page .toc-action::before,
     body.toc-page .test-runs-table td a::before,
-    body.toc-page .toc-reader-toggle::before,
-    body.toc-page .toc-reader-open::before {{
+    body.toc-page .toc-reader-toggle::before {{
       content: "";
       width: 8px;
       height: 8px;
@@ -346,9 +344,7 @@ def toc_extra_style() -> str:
     body.toc-page .test-runs-table td a:hover,
     body.toc-page .test-runs-table td a:focus-visible,
     body.toc-page .toc-reader-toggle:hover,
-    body.toc-page .toc-reader-toggle:focus-visible,
-    body.toc-page .toc-reader-open:hover,
-    body.toc-page .toc-reader-open:focus-visible {{
+    body.toc-page .toc-reader-toggle:focus-visible {{
       background: var(--rule-hi);
       color: var(--bg);
       border-bottom-color: var(--rule-hi);
@@ -510,6 +506,7 @@ def toc_extra_style() -> str:
       align-items: center;
       gap: 8px;
       flex: 0 0 auto;
+      justify-content: flex-end;
     }}
     body.toc-page .toc-reader-frame {{
       display: block;
@@ -844,7 +841,6 @@ def make_connected_reader_html(dates: list[str],
             f'<strong>{idx:02d} / {label}</strong>'
             f'<span class="toc-reader-actions">'
             f'<button class="toc-reader-toggle" type="button" aria-expanded="{expanded_attr}">{toggle_label}</button>'
-            f'<a class="toc-reader-open toc-action" href="{href}">open standalone</a>'
             f'</span>'
             f'</div>'
             f'<iframe class="toc-reader-frame" src="{href}" title="{label}" '
@@ -878,7 +874,6 @@ def make_connected_reader_html(dates: list[str],
             f'<strong>{idx:02d} / DAILY REPORTS · {len(day_items)} DAYS</strong>'
             '<span class="toc-reader-actions">'
             '<button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button>'
-            '<a class="toc-reader-open toc-action" href="2026-03-18.html">open first day</a>'
             '</span>'
             '</div>'
             '<div class="toc-reader-day-list">'
@@ -1143,7 +1138,7 @@ def back_to_top_html() -> str:
         '<button class="toc-back-top" type="button" '
         'aria-label="Back to table of contents">TOC</button>'
         '<div class="toc-latin-footer" aria-hidden="true" '
-        'data-latin-message="DEUS EX MACHINA X SOMNIUM COMMUNE">'
+        'data-latin-message="Deus ex machina; machina ex corde populorum amantium; cor sapientiae.">'
         'XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>'
     )
 
