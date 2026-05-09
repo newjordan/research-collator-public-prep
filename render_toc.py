@@ -30,7 +30,8 @@ from render_day import (
 
 TOC_TEMPLATE_STANDARD = "toc-v1.3-palette-sync"
 TOC_QMD_DIR = OUT_ROOT / "toc"
-TOC_HTML_PATH = HTML_DIR / "toc.html"
+TOC_HTML_PATH = HTML_DIR / "report_144.html"
+TOC_COMPAT_HTML_PATH = HTML_DIR / "toc.html"
 TOC_BACKGROUND_PATH = Path("assets/toc_background_generated.png")
 TOC_WEBLOADER_COVER_PATH = Path("assets/cover_sheet_final.jpeg")
 TOC_WEBLOADER_PAGE2_PATH = Path("assets/page_2_above_toc.jpeg")
@@ -106,14 +107,14 @@ def toc_extra_style() -> str:
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
+      width: 38px;
       height: 34px;
       border: 1px solid var(--chrome-rule);
       border-radius: 0;
       background: var(--chrome-bg);
       color: var(--chrome-fg);
       font-family: var(--mono);
-      font-size: 18px;
+      font-size: 12px;
       font-weight: 950;
       line-height: 1;
       text-decoration: none;
@@ -454,17 +455,25 @@ def toc_extra_style() -> str:
         align-items: flex-start;
         flex-direction: column;
       }}
+      body.toc-page .toc-reader-actions {{
+        flex-wrap: wrap;
+        width: 100%;
+      }}
       body.toc-page .toc-reader-frame {{
         min-height: 560px;
       }}
+      body.toc-page .toc-webloader-intro iframe,
+      body.toc-page .toc-image-stage {{
+        width: calc(100vw - 2px);
+      }}
       body.toc-page .toc-webloader-page2 {{
-        min-height: 100vh;
+        min-height: auto;
       }}
       body.toc-page .toc-webloader-cover {{
-        min-height: 100vh;
+        min-height: auto;
       }}
       body.toc-page .toc-webloader-intro {{
-        min-height: 100vh;
+        min-height: auto;
       }}
     }}
     """
@@ -482,11 +491,10 @@ def make_layer_table(dates: list[str],
     layers = [
         ("PUBLICATION COVER", "1", "cover.html", "first page; cover image appears there only"),
         ("ADDRESS TO THE READER", "1", "intro.html", "public intro letter and evidence starting points"),
-        ("TABLE OF CONTENTS", "1", "toc.html", "navigation, reading order, and connected scroll"),
+        ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, reading order, and connected scroll"),
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
         ("DAILY REPORTS", str(len(dates)), f"{dates[0]}.html", "one locked evidence page per campaign day"),
-        ("FINAL SUBMISSION", "10K CASEOPS", f"{RESEARCH_END_DATE}.html", "final campaign day and submitted 10k-vocabulary CaseOps evidence"),
     ]
     for label, count, href, function in layers:
         rows.append(
@@ -576,6 +584,14 @@ def make_lazy_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) 
     fragment_path = FRAGMENTS_DIR / "toc_daily_reports.html"
     fragment_path.write_text(make_daily_table(dates, days_summary), encoding="utf-8")
     return (
+        '<section class="toc-reader-entry is-collapsed" data-reader-kind="daily-index">'
+        '<div class="toc-reader-topline">'
+        f'<strong>DAILY REPORTS · {len(dates)} DAYS</strong>'
+        '<span class="toc-reader-actions">'
+        '<button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button>'
+        '</span>'
+        '</div>'
+        '<div class="toc-reader-day-list">'
         "<div class='lazy-test-card'>"
         "<p><strong>DAILY REPORTS</strong></p>"
         "<button class='lazy-test-load' type='button' "
@@ -586,6 +602,8 @@ def make_lazy_daily_table(dates: list[str], days_summary: list[dict[str, Any]]) 
         "load daily reports</button>"
         "<div id='toc-daily-reports-table' class='lazy-test-target' hidden></div>"
         "</div>"
+        "</div>"
+        "</section>"
     )
 
 
@@ -628,7 +646,7 @@ def connected_reader_items(dates: list[str],
 def make_connected_reader_html(dates: list[str],
                                week_summaries: list[dict[str, Any]],
                                category_summaries: list[dict[str, Any]]) -> str:
-    parts = ["<div class=\"toc-reader\" data-connected-reader=\"true\">"]
+    parts = ["<div id=\"table-of-contents\" class=\"toc-reader\" data-connected-reader=\"true\">"]
     idx = 1
     day_items: list[dict[str, str]] = []
     for item in connected_reader_items(dates, week_summaries, category_summaries):
@@ -638,20 +656,9 @@ def make_connected_reader_html(dates: list[str],
         kind = html.escape(item["kind"], quote=True)
         label = html.escape(item["label"])
         href = html.escape(item["href"], quote=True)
-        starts_collapsed = (
-            item["kind"] == "day"
-            or (
-                item["kind"] == "category"
-                and item["href"] in {
-                    "categories/experimental.html",
-                    "categories/neural.html",
-                    "categories/kernel.html",
-                }
-            )
-        )
-        collapsed_class = " is-collapsed" if starts_collapsed else ""
-        expanded_attr = "false" if starts_collapsed else "true"
-        toggle_label = "expand" if starts_collapsed else "collapse"
+        collapsed_class = " is-collapsed"
+        expanded_attr = "false"
+        toggle_label = "expand"
         parts.append(
             f'<section class="toc-reader-entry{collapsed_class}" data-reader-kind="{kind}">'
             f'<div class="toc-reader-topline">'
@@ -827,7 +834,7 @@ def connected_reader_script() -> str:
           var a = event.target && event.target.closest ? event.target.closest('a') : null;
           if (!a || !a.classList || !a.classList.contains('h1-master')) return;
           var href = a.getAttribute('href') || '';
-          if (href.indexOf('toc.html') === -1) return;
+          if (href.indexOf('report_144.html') === -1) return;
           event.preventDefault();
           scrollToReaderHref(frame.getAttribute('data-reader-href'), true);
         }, true);
@@ -898,7 +905,10 @@ def footer_background_html() -> str:
 
 
 def back_to_top_html() -> str:
-    return '<button class="toc-back-top" type="button" aria-label="Back to top">↑</button>'
+    return (
+        '<button class="toc-back-top" type="button" '
+        'aria-label="Back to table of contents">TOC</button>'
+    )
 
 
 def page_scrollbar_script() -> str:
@@ -1000,7 +1010,9 @@ def back_to_top_script() -> str:
   if (!button) return;
   button.addEventListener('click', function(event) {
     event.preventDefault();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var target = document.getElementById('table-of-contents');
+    var top = target ? target.getBoundingClientRect().top + window.pageYOffset : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
   });
 })();
 </script>
@@ -1092,6 +1104,7 @@ def render_toc_report(dates: list[str],
 
     full_html = (
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Table of Contents</title>"
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
         + "\n".join(body_parts)
@@ -1103,6 +1116,14 @@ def render_toc_report(dates: list[str],
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")
+    TOC_COMPAT_HTML_PATH.write_text(
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
+        "<meta http-equiv='refresh' content='0; url=report_144.html'>"
+        "<title>Report 144</title></head>"
+        "<body><a href='report_144.html'>open report 144</a></body></html>",
+        encoding="utf-8",
+    )
 
     qmd_lines = [
         webloader_cover,

@@ -58,7 +58,8 @@ def verify_html(
             f"{date}: removed footer or bottom treatment leaked back into page")
     require('class="h1-home" href="index.html" aria-label="Open landing page"' in body,
             f"{date}: frostmark is not linked to landing page")
-    require('class="h1-master" href="toc.html"' in body and "BACK TO MASTER SHEET" in body,
+    require(re.search(r'class="h1-master" href="report_144\.html(?:#reader=[^"]+)?"', body)
+            and "BACK TO MASTER SHEET" in body,
             f"{date}: missing daily back link to master sheet")
     recipe_match = re.search(
         r'<section class="architecture-recipe".*?</section>',

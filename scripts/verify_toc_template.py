@@ -86,7 +86,7 @@ def verify_toc(html_path: Path) -> dict:
         raise AssertionError(f"TOC reader frames must not expose default iframe scrollbars: {html_path}")
     if "doc.documentElement.style.overflow = 'hidden'" not in text:
         raise AssertionError(f"TOC reader script must hide iframe viewport overflow: {html_path}")
-    if 'src="cover.html"' in text or 'src="toc.html"' in text:
+    if 'src="cover.html"' in text or 'src="report_144.html"' in text:
         raise AssertionError(f"TOC must not recursively embed cover or itself: {html_path}")
     daily_links = text.count("open day")
     day_frames = [href for href, kind in frames if kind == "day"]

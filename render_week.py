@@ -399,7 +399,7 @@ def render_week(week_dates: list[str],
             "WEEKLY RESEARCH REPORT",
             f"WEEK {week_number:02d}",
             home_href="../index.html",
-            master_href=f"../toc.html#reader=weeks/{slug}.html",
+            master_href=f"../report_144.html#reader=weeks/{slug}.html",
         )
         summary = make_week_summary_html(
             week_number, week_dates, days, primary_metric, by_camp
@@ -461,6 +461,7 @@ def render_week(week_dates: list[str],
         html_path = WEEK_HTML_DIR / f"{slug}.html"
         full_html = (
             "<!doctype html><html><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width, initial-scale=1'>"
             f"<title>Week {week_number:02d} - Research Weekly</title>"
             f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
             + "\n".join(body_parts)
@@ -498,7 +499,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
         "WEEKLY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
-        master_href="../toc.html#reader=weeks/index.html",
+        master_href="../report_144.html#reader=weeks/index.html",
     )
     rows = [
         "<table class='test-runs-table'><thead><tr>"
@@ -538,6 +539,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
     html_path = WEEK_HTML_DIR / "index.html"
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Weekly Research Reports</title>"
         f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
         + body

@@ -22,7 +22,7 @@ INTRO_COPY = """From 2026-03-18 to 2026-05-01, this fifty-day record documents a
 
 During this period, the work produced both original experimental architecture ideas and competitive neural submissions. The neural track reached the top of the competition multiple times during the campaign, while the broader research process earned $1,000 in research funding in recognition of performance and daily work quality.
 
-Some ideas and approaches were quickly mirrored by other competitors, which was useful external validation that the work was operating in the right part of the search space.
+Some ideas and approaches were quickly mirrored by other competitors, which was useful external validation that the work was operating in the right part of the search space. In the end, my best submission was a hybrid variant where my main contribution was a larger vocabulary. My goal was knowledge and progress through daily work.
 
 The work was organized into three categories:
 
@@ -665,7 +665,7 @@ def render_intro_page() -> dict:
     }}
     @media (max-width: 720px) {{
       body {{ padding: 0; place-items: start center; }}
-      .intro-shell {{ width: 100vw; min-width: 360px; }}
+      .intro-shell {{ width: 100vw; min-width: 0; }}
       .intro-scroll {{
         padding: 14px 16px;
       }}
@@ -698,7 +698,7 @@ def render_intro_page() -> dict:
         <div class="intro-scrollbar-thumb"></div>
       </div>
       <nav class="intro-nav" aria-label="Intro navigation">
-        <a href="toc.html">Enter Report</a>
+        <a href="report_144.html">Enter Report</a>
       </nav>
     </div>
     <button class="stamp-btn" type="button" aria-label="Cycle palette via smooth brain stamp"></button>

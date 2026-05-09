@@ -4,7 +4,7 @@
   output/preview/index.html             — publication cover page alias
   output/preview/cover.html             — publication cover page
   output/preview/journey.html           — legacy journey chart + day list
-  output/preview/toc.html               — table of contents
+  output/preview/report_144.html        — table of contents
   output/preview/<DATE>.html            — one page per day
   output/preview/weeks/<WEEK>.html      — one page per 7-day research week
   output/preview/weeks/index.html       — weekly report index
@@ -182,7 +182,8 @@ def render_index(dates_with_results: list[dict],
     code { background: rgba(5,6,5,0.10); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
     """
     lines = [
-        "<!doctype html><html><head><meta charset='utf-8'>",
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>",
         "<title>Research — Daily Reports</title>",
         f"<style>{style}</style>",
         "</head><body>",
@@ -223,7 +224,7 @@ def render_index(dates_with_results: list[dict],
                 f"<td>{int(toc_summary.get('n_days') or 0)}</td>"
                 f"<td>{int(toc_summary.get('n_weeks') or 0)}</td>"
                 f"<td>{int(toc_summary.get('n_categories') or 0)}</td>"
-                "<td><a href='toc.html'>open TOC</a></td></tr>"
+                "<td><a href='report_144.html'>open report 144</a></td></tr>"
             )
             lines.append("</tbody></table>")
 
@@ -401,7 +402,7 @@ def main():
         dates, days_summary, week_summaries, category_summaries,
         campaign_summary,
     )
-    print(f"      toc page: {toc_summary.get('html_path')}")
+    print(f"      report 144 page: {toc_summary.get('html_path')}")
 
     print("[8/9] computing per-day bests for journey chart...")
     # Pick the metric with broadest coverage across the corpus.
@@ -453,7 +454,7 @@ def main():
         f"{len(category_summaries)} category pages, "
         f"1 campaign cumulative page, "
         f"1 cover page, "
-        f"1 toc page, "
+        f"1 report 144 page, "
         f"{len(per_day)} on journey arc."
     )
     print(f"front page: {HTML_DIR / 'cover.html'}")

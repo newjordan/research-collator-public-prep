@@ -911,7 +911,7 @@ def render_category(conn: sqlite3.Connection,
         f"{CATEGORY_LABEL[category]} RESEARCH REPORT",
         "CAMPAIGN",
         home_href="../index.html",
-        master_href=f"../toc.html#reader=categories/{category}.html",
+        master_href=f"../report_144.html#reader=categories/{category}.html",
     )
 
     # ----- HTML body -----
@@ -954,6 +954,7 @@ def render_category(conn: sqlite3.Connection,
 
     full_html = (
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{CATEGORY_LABEL[category].title()} Research Report</title>"
         f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + "\n".join(body_parts)
@@ -1070,7 +1071,7 @@ def render_category_index(summaries: list[dict[str, Any]],
         "CATEGORY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
-        master_href="../toc.html#reader=categories/index.html",
+        master_href="../report_144.html#reader=categories/index.html",
     )
     header_fields = [
         ("CATEGORIES", str(len(summaries))),
@@ -1094,6 +1095,7 @@ def render_category_index(summaries: list[dict[str, Any]],
     html_path = CATEGORY_HTML_DIR / "index.html"
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Category Research Reports</title>"
         f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + body

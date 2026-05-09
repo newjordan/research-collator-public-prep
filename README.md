@@ -65,7 +65,7 @@ from BPB/loss panels.
 The publication cover uses `cover-v1.0-first-page` and is the intended site
 entry point at `output/preview/cover.html` and `output/preview/index.html`.
 The table of contents uses `toc-v1.2-page2-webloader` at
-`output/preview/toc.html`; it starts with `assets/page_2_above_toc.jpeg` as
+`output/preview/report_144.html`; it starts with `assets/page_2_above_toc.jpeg` as
 the page above the TOC in the long loader, uses a generated background asset,
 keeps the cover sheet out of TOC, and lazy-loads the connected report reader.
 
@@ -146,7 +146,7 @@ index at `output/preview/weeks/index.html`. Category reports land in
 `output/preview/categories/`. The campaign cumulative report lands at
 `output/preview/cumulative.html`. The cover lands at
 `output/preview/cover.html` and `output/preview/index.html`. The long-loader
-table of contents lands at `output/preview/toc.html`.
+table of contents lands at `output/preview/report_144.html`.
 
 Optional local chat extraction, no paid API:
 
