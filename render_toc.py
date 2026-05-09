@@ -297,7 +297,7 @@ def toc_extra_style() -> str:
       justify-content: space-between;
       gap: 14px;
       padding: 9px 12px;
-      background: transparent;
+      background: var(--rule-hi);
       color: var(--bg);
       font-size: 10.5px;
       line-height: 1.4;
@@ -354,6 +354,14 @@ def toc_extra_style() -> str:
       border-bottom-color: var(--rule-hi);
       outline: 1px solid var(--rule-hi);
       outline-offset: 2px;
+    }}
+    body.toc-page .test-runs-table th:last-child,
+    body.toc-page .test-runs-table td:last-child {{
+      text-align: right;
+      white-space: nowrap;
+    }}
+    body.toc-page .test-runs-table td:last-child .toc-action {{
+      justify-content: flex-start;
     }}
     body.toc-page .toc-inline-action {{
       display: inline-flex;
@@ -660,7 +668,7 @@ def make_layer_table(dates: list[str],
     ]
     layers = [
         ("ADDRESS TO THE READER", "1", "#address-to-reader", "public intro letter and evidence starting points"),
-        ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, report calibration, and connected scroll"),
+        ("TABLE OF CONTENTS", "1", "report_144.html", "navigation, report calibration, and report reader"),
         ("CATEGORY REPORTS", str(len(category_summaries)), "categories/index.html", "experimental, neural, and kernel drilldowns"),
         ("WEEKLY REPORTS", str(len(week_summaries)), "weeks/index.html", "7-day daily-report rollups"),
         ("DAILY REPORTS", str(len(dates)), f"{dates[0]}.html", "one locked evidence page per campaign day"),
@@ -703,12 +711,13 @@ def make_week_table(week_summaries: list[dict[str, Any]]) -> str:
 
 def make_category_table(category_summaries: list[dict[str, Any]]) -> str:
     rows = [
-        "<table class='test-runs-table'><thead><tr>"
+        "<table class='test-runs-table toc-category-index'><thead><tr>"
         "<th>CATEGORY</th><th>ACTIVE DAYS</th><th>DATAPOINTS</th>"
         "<th>WINDOWS</th><th>CHART PANELS</th><th>OPEN</th>"
         "</tr></thead><tbody>"
     ]
     for category in category_summaries:
+        href = f"categories/{Path(category['html_path']).name}"
         rows.append(
             "<tr>"
             f"<td><strong>{html.escape(category['label'])}</strong></td>"
@@ -716,7 +725,8 @@ def make_category_table(category_summaries: list[dict[str, Any]]) -> str:
             f"<td>{int(category.get('n_points') or 0)}</td>"
             f"<td>{int(category.get('windows_active') or 0)} / {int(category.get('windows_total') or 0)}</td>"
             f"<td>{int(category.get('chart_panels') or 0)}</td>"
-            f"<td><a class='toc-action' href='categories/{html.escape(Path(category['html_path']).name)}'>open category</a></td>"
+            f"<td><a class='toc-action toc-reader-jump' href='{html.escape(href)}' "
+            f"data-reader-jump='true' data-reader-href='{html.escape(href)}'>open</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -1027,6 +1037,15 @@ def connected_reader_script() -> str:
     setTimeout(resetIfIdle, 250);
     setTimeout(resetIfIdle, 900);
   }
+  document.querySelectorAll('[data-reader-jump="true"]').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      var href = link.getAttribute('data-reader-href') || link.getAttribute('href');
+      if (!href) return;
+      if (scrollToReaderHref(href, true)) {
+        event.preventDefault();
+      }
+    });
+  });
   document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
     anchor.addEventListener('click', function(event) {
       var target = document.querySelector(anchor.getAttribute('href'));
@@ -1359,6 +1378,7 @@ def render_toc_report(dates: list[str],
         dates, week_summaries, category_summaries, campaign_summary
     )
     layer_table = make_layer_table(dates, week_summaries, category_summaries, campaign_summary)
+    category_table = make_category_table(category_summaries)
     week_table = make_week_table(week_summaries)
     daily_table = make_lazy_daily_table(dates, days_summary)
     connected_reader = make_connected_reader_html(
@@ -1386,11 +1406,13 @@ def render_toc_report(dates: list[str],
     body_parts.extend([
         layer_table,
         "<h2>SECTION 2.0 — REPORT INDEX</h2>",
+        "<h3>CATEGORY INDEX</h3>",
+        category_table,
         "<h3>WEEKLY REPORTS</h3>",
         week_table,
         "<h3>DAILY REPORTS</h3>",
         daily_table,
-        "<h3>CONNECTED SCROLL</h3>",
+        "<h3>REPORT READER</h3>",
         connected_reader,
         "</div>",
         '<div class="wipe-overlay" aria-hidden="true"></div>',
@@ -1439,6 +1461,10 @@ def render_toc_report(dates: list[str],
         "",
         "## SECTION 2.0 — REPORT INDEX",
         "",
+        "### CATEGORY INDEX",
+        "",
+        category_table,
+        "",
         "### WEEKLY REPORTS",
         "",
         week_table,
@@ -1447,7 +1473,7 @@ def render_toc_report(dates: list[str],
         "",
         daily_table,
         "",
-        "### CONNECTED SCROLL",
+        "### REPORT READER",
         "",
         connected_reader,
         "",

@@ -55,6 +55,16 @@ def verify_toc(html_path: Path) -> dict:
     for marker in ("report-header", "day-summary", "test-runs-table"):
         if marker not in text:
             raise AssertionError(f"TOC missing locked visual block {marker!r}: {html_path}")
+    category_index_pos = text.find("<h3>CATEGORY INDEX</h3>")
+    weekly_reports_pos = text.find("<h3>WEEKLY REPORTS</h3>")
+    if category_index_pos == -1:
+        raise AssertionError(f"TOC missing category index section: {html_path}")
+    if weekly_reports_pos == -1:
+        raise AssertionError(f"TOC missing weekly reports section: {html_path}")
+    if category_index_pos > weekly_reports_pos:
+        raise AssertionError(f"TOC category index must appear before weekly reports: {html_path}")
+    if len(re.findall(r"data-reader-jump=['\"]true['\"]", text)) < 3:
+        raise AssertionError(f"TOC category index must jump into report reader: {html_path}")
     if 'class="toc-webloader-page2"' not in text:
         raise AssertionError(f"TOC missing page 2 image above the long loader: {html_path}")
     if "Research corpus page above the table of contents" not in text:
@@ -81,8 +91,8 @@ def verify_toc(html_path: Path) -> dict:
     )
     if not frames:
         raise AssertionError(f"TOC missing connected endless-scroll frames: {html_path}")
-    if 'data-connected-reader="true"' not in text or "CONNECTED SCROLL" not in text:
-        raise AssertionError(f"TOC missing connected scroll section: {html_path}")
+    if 'data-connected-reader="true"' not in text or "REPORT READER" not in text:
+        raise AssertionError(f"TOC missing report reader section: {html_path}")
     if text.count('loading="lazy"') != len(frames):
         raise AssertionError(f"TOC reader frames must all be lazy-loaded: {html_path}")
     if text.count('scrolling="no"') != len(frames):
