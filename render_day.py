@@ -1248,33 +1248,16 @@ def architecture_download_button_html(family: str) -> str:
         if family:
             _UNRESOLVED_ARCH_FAMILIES.add(family)
         return "<span class='bpb-download-missing'>—</span>"
-    parts: list[str] = []
     archive = entry.get("archive") or {}
     archive_path = _strip_public_prefix(str(archive.get("repo_path") or ""))
     if archive_path:
-        parts.append(
+        return (
             f"<a class='bpb-download-action' "
             f"href='{html.escape(archive_path, quote=True)}' download>download</a>"
         )
-    repo_folder = _strip_public_prefix(str(entry.get("repo_folder") or ""))
-    if not repo_folder:
-        files = entry.get("files") or []
-        if files and isinstance(files[0], dict):
-            first = _strip_public_prefix(str(files[0].get("repo_path") or ""))
-            if first:
-                repo_folder = first
-    if repo_folder:
-        if not repo_folder.endswith("/") and "." not in repo_folder.rsplit("/", 1)[-1]:
-            repo_folder = repo_folder + "/"
-        parts.append(
-            f"<a class='bpb-download-action' "
-            f"href='{html.escape(repo_folder, quote=True)}'>source</a>"
-        )
-    if not parts:
-        if family:
-            _UNRESOLVED_ARCH_FAMILIES.add(family)
-        return "<span class='bpb-download-missing'>—</span>"
-    return "".join(parts)
+    if family:
+        _UNRESOLVED_ARCH_FAMILIES.add(family)
+    return "<span class='bpb-download-missing'>—</span>"
 
 
 def _print_unresolved_arch_summary() -> None:
@@ -2340,6 +2323,54 @@ def architecture_reference_fragments(families: list[tuple[str, int]],
     return fragments
 
 
+def architecture_summary_paragraphs_by_camp(
+    families_by_camp: dict[str, list[tuple[str, int]]],
+    fallback_families: list[tuple[str, int]],
+    max_families: int,
+    max_specs: int,
+) -> str:
+    labels = {
+        "experimental": "Experimental work",
+        "neural": "Neural work",
+        KERNEL_CAMP: "Kernel work",
+    }
+    ordered_camps = [camp for camp in (KERNEL_CAMP, "experimental", "neural") if families_by_camp.get(camp)]
+    if not ordered_camps:
+        refs = architecture_reference_fragments(
+            fallback_families,
+            max_families=max_families,
+            max_specs=max_specs,
+        )
+        if refs:
+            body = " ".join(f"<span>{html.escape(fragment)}</span>" for fragment in refs)
+        else:
+            body = (
+                "Measured rows did not match a named architecture recipe; exact "
+                "architecture flags are preserved in the run table."
+            )
+        return f"<p><strong>Architecture tested:</strong> {body}</p>"
+
+    paragraphs: list[str] = []
+    for camp in ordered_camps:
+        refs = architecture_reference_fragments(
+            families_by_camp[camp],
+            max_families=max_families,
+            max_specs=max_specs,
+        )
+        if not refs:
+            continue
+        body = " ".join(f"<span>{html.escape(fragment)}</span>" for fragment in refs)
+        paragraphs.append(f"<p><strong>{labels[camp]}:</strong> {body}</p>")
+    if paragraphs:
+        return "".join(paragraphs)
+    return architecture_summary_paragraphs_by_camp(
+        {},
+        fallback_families,
+        max_families=max_families,
+        max_specs=max_specs,
+    )
+
+
 def architecture_technique_terms(families: list[tuple[str, int]],
                                  max_terms: int = 10) -> list[str]:
     """Technique vocabulary for summaries, sourced from recipe section items."""
@@ -2572,28 +2603,33 @@ def make_daily_summary_html(date: str, day_index: int | None,
         max_families=3,
         max_specs=6,
     )
+    arch_families_by_camp = {
+        camp: detect_arch_families([
+            row for row in test_rows
+            if row.get("camp", "experimental") == camp
+        ])
+        for camp in (KERNEL_CAMP, "experimental", "neural")
+    }
     technique_terms = architecture_technique_terms(arch_families, max_terms=8)
-    if architecture_refs:
-        architecture_text = " ".join(
-            f"<span>{html.escape(fragment)}</span>"
-            for fragment in architecture_refs
-        )
-    else:
-        architecture_text = (
-            "Measured rows did not match a named architecture recipe; exact "
-            "architecture flags are preserved in the run table."
-        )
+    architecture_paragraphs = architecture_summary_paragraphs_by_camp(
+        arch_families_by_camp,
+        arch_families,
+        max_families=3,
+        max_specs=6,
+    )
 
     # Zero measured validation rows: report the absence of metrics and keep any
     # architecture note tied to deterministic family/recipe data.
     if n_tests == 0:
         if not architecture_refs:
-            architecture_text = "No measured architecture/test rows were captured on this date."
+            architecture_paragraphs = (
+                "<p><strong>Architecture tested:</strong> "
+                "No measured architecture/test rows were captured on this date.</p>"
+            )
         return (
             '<aside class="day-summary">'
               '<div class="ds-key">DAILY SUMMARY</div>'
-              f'<div class="ds-body"><p><strong>Architecture tested:</strong> '
-              f'{architecture_text}</p>'
+              f'<div class="ds-body">{architecture_paragraphs}'
               f'<p>{day_ref} — '
               f'<strong>no explicit validation metric</strong> was captured '
               'on this date.</p></div>'
@@ -2688,8 +2724,7 @@ def make_daily_summary_html(date: str, day_index: int | None,
     return (
         '<aside class="day-summary">'
           '<div class="ds-key">DAILY SUMMARY</div>'
-          f'<div class="ds-body"><p><strong>Architecture tested:</strong> '
-          f'{architecture_text}</p><p>{para1}</p><p>{pb_line}</p></div>'
+          f'<div class="ds-body">{architecture_paragraphs}<p>{para1}</p><p>{pb_line}</p></div>'
         '</aside>'
     )
 
@@ -4157,6 +4192,16 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
             {"name": name, "count": count}
             for name, count in arch_families
         ],
+        "arch_families_by_camp": {
+            camp: [
+                {"name": name, "count": count}
+                for name, count in detect_arch_families([
+                    row for row in test_rows
+                    if row.get("camp", "experimental") == camp
+                ])
+            ]
+            for camp in (KERNEL_CAMP, "experimental", "neural")
+        },
         "arch_families_display": format_arch_families(arch_families),
         "architecture_recipes_rendered": rendered_architecture_recipes,
         "chart_n_points": chart_n,

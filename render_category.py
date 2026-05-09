@@ -549,11 +549,6 @@ def category_action_style() -> str:
 def public_source_buttons_html(point: dict[str, Any]) -> str:
     source = point.get("public_source") or {}
     buttons: list[str] = []
-    if source.get("blob_url"):
-        buttons.append(
-            f"<a class='category-action' href='{html.escape(source['blob_url'], quote=True)}'>"
-            "view source</a>",
-        )
     if source.get("raw_url"):
         buttons.append(
             f"<a class='category-action' href='{html.escape(source['raw_url'], quote=True)}' download>"

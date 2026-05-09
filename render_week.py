@@ -32,6 +32,7 @@ from render_day import (
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
     DAILY_TEMPLATE_STANDARD,
+    KERNEL_CAMP,
     compute_day_index,
     fetch_day,
     format_arch_families,
@@ -45,6 +46,7 @@ from render_day import (
     _daily_template_style,
     _embedded_log_script,
     architecture_reference_fragments,
+    architecture_summary_paragraphs_by_camp,
     architecture_technique_terms,
     make_alloc_bar_html,
     make_report_h1_html,
@@ -236,6 +238,33 @@ def weekly_arch_families(days: list[dict[str, Any]]) -> list[tuple[str, int]]:
     )
 
 
+def weekly_arch_families_by_camp(days: list[dict[str, Any]]) -> dict[str, list[tuple[str, int]]]:
+    out: dict[str, list[tuple[str, int]]] = {}
+    for camp in (KERNEL_CAMP, "experimental", "neural"):
+        counts: Counter[str] = Counter()
+        first_seen: dict[str, str] = {}
+        for day in days:
+            date = str(day.get("date") or "")
+            by_camp = day.get("arch_families_by_camp") or {}
+            items = by_camp.get(camp) or []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                name = str(item.get("name") or "").strip()
+                if not name:
+                    continue
+                count = int(item.get("count") or 0)
+                if count <= 0:
+                    continue
+                counts[name] += count
+                first_seen.setdefault(name, date)
+        out[camp] = sorted(
+            counts.items(),
+            key=lambda kv: (-kv[1], first_seen.get(kv[0], ""), kv[0]),
+        )
+    return out
+
+
 def make_week_summary_html(week_number: int,
                            week_dates: list[str],
                            days: list[dict[str, Any]],
@@ -249,15 +278,17 @@ def make_week_summary_html(week_number: int,
         max_families=4,
         max_specs=5,
     )
+    architecture_paragraphs = architecture_summary_paragraphs_by_camp(
+        weekly_arch_families_by_camp(days),
+        arch_families,
+        max_families=4,
+        max_specs=5,
+    )
     technique_terms = architecture_technique_terms(arch_families, max_terms=10)
-    if architecture_refs:
-        architecture_text = " ".join(
-            f"<span>{html.escape(fragment)}</span>"
-            for fragment in architecture_refs
-        )
-    else:
-        architecture_text = (
-            "No named architecture recipe was detected across the rendered daily rows."
+    if not architecture_refs:
+        architecture_paragraphs = (
+            "<p><strong>Architectures tested:</strong> "
+            "No named architecture recipe was detected across the rendered daily rows.</p>"
         )
     technique_text = ""
     if technique_terms:
@@ -269,7 +300,7 @@ def make_week_summary_html(week_number: int,
         '<aside class="day-summary">'
         '<div class="ds-key">WEEK SUMMARY</div>'
         '<div class="ds-body">'
-        f"<p><strong>Architectures tested:</strong> {architecture_text}</p>"
+        f"{architecture_paragraphs}"
         f"<p>Week {week_number:02d} covers "
         f"<strong>{len(days)} daily reports</strong> "
         f"from <strong>{html.escape(week_dates[0])}</strong> through "
