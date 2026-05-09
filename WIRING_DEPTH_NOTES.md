@@ -3,6 +3,10 @@
 Observations spotted during loop iterations that don't fit the current task.
 Add one-liners only; address in a follow-up plan.
 
+## From T1.2
+
+- Inline preview shows the first 40 lines verbatim (per spec). On `train_seed*.log` files those leading lines are the training-script source code, not training metrics — visually less informative than expected. Follow-up: smarter preview slice (e.g., grep for the first `step:` line and show ±20 lines around it, or pair head + final-eval tail).
+
 ## From T1.1
 
 - 13 unresolved family strings in row data are **categorical / aggregation labels** with no architecture run-file bundle by design: `Compact Transformer Recipe`, `Compression Packaging`, `Crawler Ablation`, `Cubric Racing Variant`, `Leaderboard Transformer Variants`, `Mixed Quant`, `Other`, `Parallel Residuals`, `Progressive MLP / Fractal`, `SLOT Tuned Body`, `Sliding Window`, `State-Space (TTT)`, `XSA`. Either (a) accept `—` as correct for these, or (b) author umbrella manifest entries that point to a category index page rather than a single archive.

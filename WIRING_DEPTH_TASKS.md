@@ -53,7 +53,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ---
 
-### [ ] T1.2 — Inline log preview in row-detail fragment
+### [x] T1.2 — Inline log preview in row-detail fragment
 
 **Why**: Row-detail fragment currently shows only metadata + a `load log` button — two clicks deep before substantive content. The "hollow" feeling lives here.
 

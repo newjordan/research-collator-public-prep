@@ -2679,6 +2679,9 @@ def _write_training_log_fragment(date: str, row_n: int, ref: dict, idx: int) -> 
     return f"fragments/{fragment_path.name}"
 
 
+TRAINING_LOG_PREVIEW_LINES = 40
+
+
 def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: int) -> str:
     abs_path = ref.get("abs_path") or ""
     basename = sanitize_public_text(ref.get("basename") or "training_log")
@@ -2687,17 +2690,43 @@ def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: 
     if size:
         meta_parts.append(html.escape(size))
     meta = " · ".join(meta_parts)
-    fragment_href = _write_training_log_fragment(date, row_n, ref, idx)
-    target_id = f"log-text-{date}-{row_n}-{idx}".replace("_", "-")
+
+    # Inline the head of the log so the user sees real signal on the first
+    # disclosure instead of a second "load" button. The full body stays in
+    # a lazy-loaded fragment, and we omit the fragment button entirely when
+    # the preview already covers the whole log.
+    full_text = _read_training_log_text(abs_path)
+    lines = full_text.split("\n")
+    preview_lines = lines[:TRAINING_LOG_PREVIEW_LINES]
+    has_more = len(lines) > TRAINING_LOG_PREVIEW_LINES
+    preview_text = "\n".join(preview_lines)
+    if has_more:
+        preview_text = preview_text + f"\n… ({len(lines) - TRAINING_LOG_PREVIEW_LINES} more lines)"
+    preview_html = (
+        "<pre class='log-text log-text-preview'>"
+        f"{_pre_text_one_line(preview_text)}"
+        "</pre>"
+    )
+
+    if has_more:
+        fragment_href = _write_training_log_fragment(date, row_n, ref, idx)
+        target_id = f"log-text-{date}-{row_n}-{idx}".replace("_", "-")
+        full_button_html = (
+            f"<button class='lazy-test-load' type='button' "
+            f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+            f"data-target='{html.escape(target_id, quote=True)}' "
+            "data-load-label='view full log' data-hide-label='hide full log' "
+            "data-loading-label='loading log' data-error-label='log load failed'>view full log</button>"
+            f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        )
+    else:
+        full_button_html = ""
+
     return (
         "<div class='log-panel'>"
         f"<div class='log-meta'>{meta}</div>"
-        f"<button class='lazy-test-load' type='button' "
-        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
-        f"data-target='{html.escape(target_id, quote=True)}' "
-        "data-load-label='load log' data-hide-label='hide log' "
-        "data-loading-label='loading log' data-error-label='log load failed'>load log</button>"
-        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        f"{preview_html}"
+        f"{full_button_html}"
         "</div>"
     )
 
