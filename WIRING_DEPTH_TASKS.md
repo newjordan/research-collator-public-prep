@@ -112,7 +112,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 
 ---
 
-### [ ] T2.2 — Ablation rationale click-through
+### [x] T2.2 — Ablation rationale click-through
 
 **Why**: `apply_approved_ablation_labels` injects a label string into row evidence; the matching `.review.md` is on disk but never linked.
 

@@ -1819,6 +1819,64 @@ def _embedded_log_style() -> str:
     .decision-trail-doc ul { margin: 6px 0 10px 18px; padding: 0; }
     .decision-trail-doc li { margin: 3px 0; }
     .decision-trail-doc code { background: transparent; padding: 0; font-weight: 600; }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
     """
 
 
@@ -2812,7 +2870,76 @@ def _training_log_panel_html(ref: dict, idx: int, total: int, date: str, row_n: 
     )
 
 
-def _row_evidence_panel_html(row: dict) -> str:
+_REVIEW_MD_INDEX_CACHE: dict[str, Path] | None = None
+_REVIEW_MD_FRAGMENT_HREF_CACHE: dict[Path, str] = {}
+
+
+def _build_review_md_index() -> dict[str, Path]:
+    """date -> most recent .review.md (by mtime) whose .manifest.json's
+    `dates` array covers that date. Lets a row's ablation label resolve to
+    the labeling pass's rationale doc."""
+    global _REVIEW_MD_INDEX_CACHE
+    if _REVIEW_MD_INDEX_CACHE is not None:
+        return _REVIEW_MD_INDEX_CACHE
+    out: dict[str, list[tuple[float, Path]]] = defaultdict(list)
+    labels_dir = OUT_ROOT / "ablation_labels"
+    if not labels_dir.exists():
+        _REVIEW_MD_INDEX_CACHE = {}
+        return _REVIEW_MD_INDEX_CACHE
+    for manifest_path in labels_dir.glob("*.manifest.json"):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        dates = manifest.get("dates")
+        if not isinstance(dates, list):
+            continue
+        run_label = manifest_path.name[: -len(".manifest.json")]
+        review_path = labels_dir / f"{run_label}.review.md"
+        if not review_path.exists():
+            continue
+        try:
+            mtime = review_path.stat().st_mtime
+        except OSError:
+            continue
+        for d in dates:
+            if isinstance(d, str):
+                out[d].append((mtime, review_path))
+    index: dict[str, Path] = {}
+    for d, candidates in out.items():
+        candidates.sort(reverse=True)
+        index[d] = candidates[0][1]
+    _REVIEW_MD_INDEX_CACHE = index
+    return index
+
+
+def _review_md_fragment_href(date: str) -> str | None:
+    """Return the relative href of a fragment showing the review.md that
+    covers `date`, or None if no review file applies. One fragment per
+    review.md, shared across all rows on dates the manifest covers."""
+    index = _build_review_md_index()
+    review_path = index.get(date)
+    if not review_path:
+        return None
+    if review_path in _REVIEW_MD_FRAGMENT_HREF_CACHE:
+        return _REVIEW_MD_FRAGMENT_HREF_CACHE[review_path]
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    safe_label = re.sub(r"[^0-9a-zA-Z_-]+", "-", review_path.stem)
+    fragment_path = FRAGMENTS_DIR / f"ablation_review_{safe_label}.html"
+    try:
+        md_text = review_path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        md_text = f"# (unable to read review: {type(exc).__name__}: {exc})"
+    fragment_path.write_text(
+        f"<div class='ablation-review-doc'>{_md_to_html_minimal(md_text)}</div>",
+        encoding="utf-8",
+    )
+    href = f"fragments/{fragment_path.name}"
+    _REVIEW_MD_FRAGMENT_HREF_CACHE[review_path] = href
+    return href
+
+
+def _row_evidence_panel_html(row: dict, date: str = "") -> str:
     facts: list[tuple[str, str]] = [
         ("source", sanitize_public_text(row.get("source_label") or "unknown")),
         ("classification", CAMP_DISPLAY_LABEL.get(row.get("camp"), str(row.get("camp") or "unknown"))),
@@ -2834,11 +2961,31 @@ def _row_evidence_panel_html(row: dict) -> str:
         "</div>"
         for k, v in facts
     )
-    title = html.escape(sanitize_public_text(row.get("title") or "(untitled)"))
+    raw_title = sanitize_public_text(row.get("title") or "(untitled)")
+    label_text = sanitize_public_text(row.get("display_ablation") or raw_title)
+    review_href = _review_md_fragment_href(date) if date else None
+    has_label = bool(row.get("display_ablation"))
+    if review_href and has_label:
+        target_id = f"ablation-rationale-{date}-{row.get('n', 0)}".replace("_", "-")
+        ablation_field = (
+            "<div class='log-meta'><strong>ablation</strong>: "
+            f"<button class='lazy-test-load lazy-ablation-label' type='button' "
+            f"data-lazy-fragment='{html.escape(review_href, quote=True)}' "
+            f"data-target='{html.escape(target_id, quote=True)}' "
+            f"data-load-label='{html.escape(label_text)}' "
+            f"data-hide-label='hide review' data-loading-label='loading review' "
+            f"data-error-label='review load failed'>{html.escape(label_text)}</button>"
+            f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+            "</div>"
+        )
+    else:
+        ablation_field = (
+            f"<div class='log-meta'><strong>ablation</strong>: {html.escape(label_text)}</div>"
+        )
     return (
         "<div class='log-panel'>"
         "<div class='log-meta'><strong>row evidence</strong></div>"
-        f"<div class='log-meta'><strong>ablation</strong>: {title}</div>"
+        f"{ablation_field}"
         f"{fact_html}"
         "</div>"
     )
@@ -3047,10 +3194,13 @@ def _extract_day_from_timeline(md_text: str, date: str) -> str:
 
 def _md_to_html_minimal(md_text: str) -> str:
     """Tiny markdown-to-HTML converter for lazy-loaded fragments. Handles
-    headings (#-####), bullet lists, inline backticks, blank-line paragraphs.
-    Not a full engine; sufficient for the timeline.md shape we ship."""
+    headings (#-####), bullet lists, markdown tables, inline backticks,
+    fenced code blocks, blank-line paragraphs. Not a full engine; sufficient
+    for the timeline.md and review.md shapes we ship."""
     out: list[str] = []
     in_ul = False
+    in_table: str | bool = False  # False, "header", or True (in body)
+    in_code = False
 
     def _close_list() -> None:
         nonlocal in_ul
@@ -3058,12 +3208,54 @@ def _md_to_html_minimal(md_text: str) -> str:
             out.append("</ul>")
             in_ul = False
 
+    def _close_table() -> None:
+        nonlocal in_table
+        if in_table:
+            out.append("</tbody></table>")
+            in_table = False
+
     def _inline(text: str) -> str:
         escaped = html.escape(text)
         return re.sub(r"`([^`]+)`", lambda m: f"<code>{m.group(1)}</code>", escaped)
 
     for raw_line in md_text.splitlines():
         line = raw_line.rstrip()
+        # Fenced code block toggle.
+        if line.startswith("```"):
+            _close_list(); _close_table()
+            if in_code:
+                out.append("</pre>")
+                in_code = False
+            else:
+                out.append("<pre class='codeblock'>")
+                in_code = True
+            continue
+        if in_code:
+            out.append(html.escape(raw_line))
+            continue
+        # Markdown table row.
+        if line.startswith("|") and line.endswith("|"):
+            _close_list()
+            cells = [c.strip() for c in line.strip("|").split("|")]
+            if not in_table:
+                out.append(
+                    "<table class='md-table'><thead><tr>"
+                    + "".join(f"<th>{_inline(c)}</th>" for c in cells)
+                    + "</tr></thead><tbody>"
+                )
+                in_table = "header"
+            elif in_table == "header" and all(set(c) <= set("-: ") for c in cells):
+                pass  # alignment separator
+            else:
+                in_table = True
+                out.append(
+                    "<tr>"
+                    + "".join(f"<td>{_inline(c)}</td>" for c in cells)
+                    + "</tr>"
+                )
+            continue
+        elif in_table:
+            _close_table()
         if line.startswith("# "):
             _close_list()
             out.append(f"<h2>{_inline(line[2:])}</h2>")
@@ -3088,6 +3280,9 @@ def _md_to_html_minimal(md_text: str) -> str:
             _close_list()
             out.append(f"<p>{_inline(line)}</p>")
     _close_list()
+    _close_table()
+    if in_code:
+        out.append("</pre>")
     return "\n".join(out)
 
 
@@ -3198,7 +3393,7 @@ def make_log_detail_row_html(row: dict, date: str) -> str:
         _training_log_panel_html(ref, idx, len(logs), date, row_n)
         for idx, ref in enumerate(logs, start=1)
     )
-    panels += _row_evidence_panel_html(row)
+    panels += _row_evidence_panel_html(row, date)
     FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
     fragment_path = _row_detail_fragment_path(date, row)
     fragment_path.write_text(panels, encoding="utf-8")
