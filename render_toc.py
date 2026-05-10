@@ -408,6 +408,12 @@ def toc_extra_style() -> str:
       background: transparent;
       box-shadow: none;
     }}
+    body.toc-page .report-header + .toc-calibration {{
+      margin-top: 0;
+    }}
+    body.toc-page .report-header:has(+ .toc-calibration) {{
+      margin-bottom: 0;
+    }}
     body.toc-page .toc-calibration > summary {{
       display: flex;
       align-items: center;
@@ -1075,9 +1081,12 @@ def connected_reader_script() -> str:
       var size = function() {
         var body = doc.body;
         var root = doc.documentElement;
+        // Prefer body.scrollHeight (auto-height body reflects true content size).
+        // Avoid root.scrollHeight: with overflow:hidden on root, it stays at
+        // the iframe's allocated viewport height even after content shrinks,
+        // leaving a blank area below collapsed content.
         var height = Math.max(
-          body ? body.scrollHeight : 0,
-          root ? root.scrollHeight : 0,
+          body ? body.scrollHeight : (root ? root.scrollHeight : 0),
           560
         );
         frame.style.height = (height + 8) + 'px';
@@ -1397,8 +1406,8 @@ def render_toc_report(dates: list[str],
         h1_html,
         "<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>",
         report_header,
-        "<h2>SECTION 1.0 — PUBLICATION MAP</h2>",
         summary_html,
+        "<h2>SECTION 1.0 — PUBLICATION MAP</h2>",
     ]
     body_parts.extend([
         layer_table,

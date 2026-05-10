@@ -908,13 +908,6 @@ def render_category(conn: sqlite3.Connection,
     body_parts = [h1_html, report_header,
                   "<h2>SECTION 1.0 — BI-WEEKLY TRAJECTORY</h2>",
                   summary_html]
-    if family_rows:
-        body_parts.extend([
-            "<h2>SECTION 1.5 — ARCHITECTURE / TEST SURFACES</h2>",
-            make_category_family_table_html(family_rows, family_metric),
-        ])
-        if architecture_recipe_html:
-            body_parts.append(architecture_recipe_html)
     if not window_sections:
         body_parts.append(
             f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
@@ -936,6 +929,14 @@ def render_category(conn: sqlite3.Connection,
                 "</figure>"
             )
         body_parts.append(section["table_html"])
+
+    if family_rows:
+        body_parts.extend([
+            "<h2>SECTION 1.5 — ARCHITECTURE / TEST SURFACES</h2>",
+            make_category_family_table_html(family_rows, family_metric),
+        ])
+        if architecture_recipe_html:
+            body_parts.append(architecture_recipe_html)
 
     body_parts.extend([
         "<h2>SECTION 2.0 — CATEGORY DAILY DATAPOINTS</h2>",
@@ -965,15 +966,6 @@ def render_category(conn: sqlite3.Connection,
         summary_html,
         "",
     ]
-    if family_rows:
-        qmd_lines += [
-            "## SECTION 1.5 — ARCHITECTURE / TEST SURFACES",
-            "",
-            make_category_family_table_html(family_rows, family_metric),
-            "",
-        ]
-        if architecture_recipe_html:
-            qmd_lines += [architecture_recipe_html, ""]
     if not window_sections:
         qmd_lines.append(
             f"<p class='muted'>NO {CATEGORY_LABEL[category]} DATAPOINTS "
@@ -995,6 +987,15 @@ def render_category(conn: sqlite3.Connection,
             qmd_lines.append("")
         qmd_lines.append(section["table_html"])
         qmd_lines.append("")
+    if family_rows:
+        qmd_lines += [
+            "## SECTION 1.5 — ARCHITECTURE / TEST SURFACES",
+            "",
+            make_category_family_table_html(family_rows, family_metric),
+            "",
+        ]
+        if architecture_recipe_html:
+            qmd_lines += [architecture_recipe_html, ""]
     qmd_lines += [
         "## SECTION 2.0 — CATEGORY DAILY DATAPOINTS",
         "",
