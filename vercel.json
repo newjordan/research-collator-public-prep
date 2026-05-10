@@ -1,7 +1,5 @@
 {
-  "buildCommand": "python3 render_all.py",
   "outputDirectory": "output/preview",
-  "installCommand": "",
   "rewrites": [
     {
       "source": "/",
