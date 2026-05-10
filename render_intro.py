@@ -27,23 +27,21 @@ Some ideas and approaches were quickly mirrored by other competitors, which was 
 The work was organized into three categories:
 
 Experimental
-Novel architecture experiments intended to explore concepts, generate insight, or test unusual ideas. These included recursive layered transformer concepts, wildcards, megakernel-style ideas, and other theoretical or unconventional designs. Not every experiment was expected to match SOTA; the goal was to test whether the idea exposed something useful.
+Novel architecture experiments intended to explore concepts, generate insight, or test unusual ideas. These included recursive layered transformer concepts, wildcards, megakernel-style ideas, and other theoretical or unconventional designs. Not every experiment was expected to match SOTA; the goal was to test whether the idea exposed something useful. I used this lane to explore concepts relating to my own research and exploration, doing so through rapid testing of new ideas.
 
 Neural
 Competitive architectures aimed at the highest level of the contest using bpb / score-based evaluation. This track performed strongly, including several jumps into first place during a fast-moving leaderboard environment where competitors were constantly leapfrogging each other.
 
 Kernel
-Custom-kernel and FA3-related performance work focused on GPU behavior, hardware-specific results, performance constraints, and submission viability.
+Custom-kernel and FA3-related performance work focused on GPU behavior, hardware-specific results, performance constraints, and novel interactions.
 
 The record includes accessible run files and test results showing what was tried, what failed, what was preserved, and why.
 
 The claim is that this kind of research engineering can be repeated and expanded upon in novel directions: operating inside an underdefined problem, under deadline pressure, while producing results that survive inspection.
 
-This work is a signal for people building toward deeper systems: world models, novel architectures, simulation, compression, visual reasoning, and new forms of intelligence that can perceive, model, and generate richer realities. The long-term interest is not limited to solving narrow benchmarks, but to pushing the edge of what computational systems can become — especially where research, engineering, art, and world-building begin to converge.
+A twenty-year background in 2D/3D game development also informs the work: systems thinking, optimization, geometry, simulations, visual reasoning, tooling, debugging, and building complex interactive systems under constraints. As AI systems become more capable and more multimodal, that background becomes increasingly relevant.
 
-A twenty-year background in 2D/3D game development also informs the work: systems thinking, optimization, geometry, sculpting, visual reasoning, tooling, debugging, and building complex interactive systems under constraints. As AI systems become more capable and more multimodal, that background becomes increasingly relevant.
-
-The goal is simple: to find like-minded humans to collaborate, dream, and build together."""
+This work is a signal for people building toward deeper systems: world models, novel architectures, simulation, compression, visual reasoning, and new forms of intelligence that can perceive, model, and generate richer realities. The long-term interest is not limited to solving narrow benchmarks, but to pushing the edge of what computational systems can become — especially where art, world building, and philosophy begin to converge."""
 
 
 def intro_copy_html(text: str) -> str:

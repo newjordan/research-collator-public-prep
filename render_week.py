@@ -201,7 +201,12 @@ def weekly_action_style() -> str:
     .weekly-action:focus-visible::before {
       color: #050505;
     }
-    .test-runs-table td a.weekly-action,
+    /* In test-runs-table cells the button sits on dark page chrome, so the
+       base weekly-action styling (dark bg + orange fg) is correct — no
+       override needed. */
+    /* In log-panel, .log-panel a wins over .weekly-action and flips the
+       button bg to var(--bg) (orange), so the text needs to flip dark to
+       stay readable. */
     .log-panel a.weekly-action {
       color: #050505 !important;
       border-color: #050505;
@@ -210,8 +215,6 @@ def weekly_action_style() -> str:
     .log-panel a.weekly-action::before {
       color: #050505;
     }
-    .test-runs-table td a.weekly-action:hover,
-    .test-runs-table td a.weekly-action:focus-visible,
     .log-panel a.weekly-action:hover,
     .log-panel a.weekly-action:focus-visible {
       color: #050505 !important;
