@@ -1,0 +1,10 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,"Add int5-MLP mixed quant, zstd compression, magnitude pruning, and seq ramp",,,experimental,2026-03-20T00:04:49+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+2,"Upgrade TTT: SGD 3 epochs with momentum, freeze first 2 blocks",,,neural,2026-03-20T01:31:33+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+3,Record V2 results: 1.1877 BPB but 20.7MB artifact (4.7MB over limit),,,experimental,2026-03-20T01:48:14+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+4,"Record killer v1 results (1.1725 BPB, 15.58MB) + bump MLP to 1472 for v2",,,experimental,2026-03-20T07:09:02Z,,,,commit_message,,,2,git:parameter-golf-lab
+5,Record killer v2 results: 1.1686 BPB but 16.42MB (over limit),,,experimental,2026-03-20T07:33:12Z,,,,commit_message,,,2,git:parameter-golf-lab
+6,"The Stinky Frost Recipe — 1.1725 BPB, 15.58MB",,,experimental,2026-03-20T07:49:42Z,,,,commit_message,,,2,git:parameter-golf-lab
+7,"Record fractal breathing results: 1.2373 BPB, too slow for 10-min cap",,,neural,2026-03-20T08:05:39Z,,,,commit_message,,,2,git:parameter-golf-lab
+8,"Record fractal progressive results: 1.2438 BPB, 9086 steps",,,experimental,2026-03-20T08:40:59Z,,,,commit_message,,,2,git:parameter-golf-lab
+9,Add multi-seed validation script for Stinky Frost Recipe,,,experimental,2026-03-20T21:44:22Z,,,,commit_message,,,2,git:parameter-golf-lab

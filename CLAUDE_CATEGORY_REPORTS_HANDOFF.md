@@ -1,7 +1,7 @@
 # Claude Handoff - Category Cumulative Reports
 
 Date: 2026-05-07
-Repo: `/home/frosty40/research_collator`
+Repo: `~/research_collator`
 
 ## Assignment
 
@@ -268,15 +268,15 @@ Both scans should return no matches.
 After rendering, return direct links:
 
 - weekly index:
-  `http://dgx-spark:8765/research_collator/output/preview/weeks/index.html`
+  `http://rig-host:8765/research_collator/output/preview/weeks/index.html`
 - category index:
-  `http://dgx-spark:8765/research_collator/output/preview/categories/index.html`
+  `http://rig-host:8765/research_collator/output/preview/categories/index.html`
 - experimental:
-  `http://dgx-spark:8765/research_collator/output/preview/categories/experimental.html`
+  `http://rig-host:8765/research_collator/output/preview/categories/experimental.html`
 - neural:
-  `http://dgx-spark:8765/research_collator/output/preview/categories/neural.html`
+  `http://rig-host:8765/research_collator/output/preview/categories/neural.html`
 - kernel:
-  `http://dgx-spark:8765/research_collator/output/preview/categories/kernel.html`
+  `http://rig-host:8765/research_collator/output/preview/categories/kernel.html`
 
 Keep the final response evidence-first: files changed, generated page counts,
 verifier exits, and links.

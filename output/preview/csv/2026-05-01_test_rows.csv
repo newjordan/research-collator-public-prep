@@ -1,0 +1,5 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,train_seed0.log,,,neural,2026-05-01T12:41:29Z,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+2,train_seed42.log,,,neural,2026-05-01T12:41:29Z,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+3,train_seed1.log,,,neural,2026-05-01T12:41:29Z,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+4,Mockingbird,,,neural,2026-05-01T12:41:29Z,,,,json_top_level,,,1,parameter-golf-lab

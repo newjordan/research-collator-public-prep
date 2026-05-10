@@ -40,12 +40,12 @@ See `ablation_matrix.tsv` and arm files:
 From `.../neural`:
 
 ```bash
-TOKENIZER_PATH=/home/frosty40/parameter-golf-lab/data/tokenizers/fineweb_1024_bpe.model DATA_PATH=/home/frosty40/parameter-golf-lab/data/datasets/fineweb10B_sp1024 NPROC_PER_NODE=8 bash test_lab/PR_sidelane_8x_linked/run_gametriome_bridge.sh
+TOKENIZER_PATH=~/parameter-golf-lab/data/tokenizers/fineweb_1024_bpe.model DATA_PATH=~/parameter-golf-lab/data/datasets/fineweb10B_sp1024 NPROC_PER_NODE=8 bash test_lab/PR_sidelane_8x_linked/run_gametriome_bridge.sh
 ```
 
 Single-arm:
 
 ```bash
-ARM_ONLY=47_v1_10_bridge_full_stack_l10_d480_h12_kv4_non_ngram_brotli TOKENIZER_PATH=/home/frosty40/parameter-golf-lab/data/tokenizers/fineweb_1024_bpe.model DATA_PATH=/home/frosty40/parameter-golf-lab/data/datasets/fineweb10B_sp1024 NPROC_PER_NODE=8 bash test_lab/PR_sidelane_8x_linked/run_gametriome_bridge.sh
+ARM_ONLY=47_v1_10_bridge_full_stack_l10_d480_h12_kv4_non_ngram_brotli TOKENIZER_PATH=~/parameter-golf-lab/data/tokenizers/fineweb_1024_bpe.model DATA_PATH=~/parameter-golf-lab/data/datasets/fineweb10B_sp1024 NPROC_PER_NODE=8 bash test_lab/PR_sidelane_8x_linked/run_gametriome_bridge.sh
 ```
 

@@ -1,0 +1,814 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-03-31 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-03-31.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-03-31</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 425 of 643 · 3 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-03-31 | 3 | 4 |</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-03-31&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 643,&#10;  &quot;render_records&quot;: 425,&#10;  &quot;test_rows&quot;: 4,&#10;  &quot;warnings&quot;: 3&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>374 commits on 2026-03-31</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>ffa8b17b</span> <span class='commit-time'>05:05:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Enforce FA3 preflight and CUDA runtime path in final 11L GQA U-Net body launcher</span></li><li class='commit-item'><span class='commit-hash'>ffa8b17b</span> <span class='commit-time'>05:05:46</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Enforce FA3 preflight and CUDA runtime path in final 11L GQA U-Net body launcher</span></li><li class='commit-item'><span class='commit-hash'>ffa8b17b</span> <span class='commit-time'>05:05:46</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Enforce FA3 preflight and CUDA runtime path in final 11L GQA U-Net body launcher</span></li><li class='commit-item'><span class='commit-hash'>361114af</span> <span class='commit-time'>05:29:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWCD results: 9,1,1+pyramid wins at -0.01193 vs pyramid alone</span></li><li class='commit-item'><span class='commit-hash'>361114af</span> <span class='commit-time'>05:29:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWCD results: 9,1,1+pyramid wins at -0.01193 vs pyramid alone</span></li><li class='commit-item'><span class='commit-hash'>361114af</span> <span class='commit-time'>05:29:59</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWCD results: 9,1,1+pyramid wins at -0.01193 vs pyramid alone</span></li><li class='commit-item'><span class='commit-hash'>3d229bcc</span> <span class='commit-time'>05:32:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWCD complete: BWCD-03 (9,3,9) final — quant_gap +0.0062, worst of group</span></li><li class='commit-item'><span class='commit-hash'>3d229bcc</span> <span class='commit-time'>05:32:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWCD complete: BWCD-03 (9,3,9) final — quant_gap +0.0062, worst of group</span></li><li class='commit-item'><span class='commit-hash'>3d229bcc</span> <span class='commit-time'>05:32:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWCD complete: BWCD-03 (9,3,9) final — quant_gap +0.0062, worst of group</span></li><li class='commit-item'><span class='commit-hash'>b8f371bb</span> <span class='commit-time'>05:39:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flat+crawler tap-off body: pyramid-512 + 9,1,1 battery production runner</span></li><li class='commit-item'><span class='commit-hash'>b8f371bb</span> <span class='commit-time'>05:39:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flat+crawler tap-off body: pyramid-512 + 9,1,1 battery production runner</span></li><li class='commit-item'><span class='commit-hash'>b8f371bb</span> <span class='commit-time'>05:39:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flat+crawler tap-off body: pyramid-512 + 9,1,1 battery production runner</span></li><li class='commit-item'><span class='commit-hash'>46fb4bd0</span> <span class='commit-time'>05:50:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: record 2026-03-31 TTT sweep regression (seed 444)</span></li><li class='commit-item'><span class='commit-hash'>46fb4bd0</span> <span class='commit-time'>05:50:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: record 2026-03-31 TTT sweep regression (seed 444)</span></li><li class='commit-item'><span class='commit-hash'>46fb4bd0</span> <span class='commit-time'>05:50:02</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: record 2026-03-31 TTT sweep regression (seed 444)</span></li><li class='commit-item'><span class='commit-hash'>f962265a</span> <span class='commit-time'>05:54:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flat+crawler tap-off body (BWE): per-loop output calibration ablation</span></li><li class='commit-item'><span class='commit-hash'>f962265a</span> <span class='commit-time'>05:54:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flat+crawler tap-off body (BWE): per-loop output calibration ablation</span></li><li class='commit-item'><span class='commit-hash'>f962265a</span> <span class='commit-time'>05:54:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flat+crawler tap-off body (BWE): per-loop output calibration ablation</span></li><li class='commit-item'><span class='commit-hash'>f3cacec7</span> <span class='commit-time'>05:55:20</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log Run C results: 1-shard pod with different val data — not directly comparable</span></li><li class='commit-item'><span class='commit-hash'>f3cacec7</span> <span class='commit-time'>05:55:20</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log Run C results: 1-shard pod with different val data — not directly comparable</span></li><li class='commit-item'><span class='commit-hash'>f3cacec7</span> <span class='commit-time'>05:55:20</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log Run C results: 1-shard pod with different val data — not directly comparable</span></li><li class='commit-item'><span class='commit-hash'>249f3ba2</span> <span class='commit-time'>05:58:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: add 11L GQA U-Net body config copies</span></li><li class='commit-item'><span class='commit-hash'>249f3ba2</span> <span class='commit-time'>05:58:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: add 11L GQA U-Net body config copies</span></li><li class='commit-item'><span class='commit-hash'>249f3ba2</span> <span class='commit-time'>05:58:03</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: add 11L GQA U-Net body config copies</span></li><li class='commit-item'><span class='commit-hash'>352d7749</span> <span class='commit-time'>06:02:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant run.sh: clean competition runner with preflight guards</span></li><li class='commit-item'><span class='commit-hash'>352d7749</span> <span class='commit-time'>06:02:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant run.sh: clean competition runner with preflight guards</span></li><li class='commit-item'><span class='commit-hash'>352d7749</span> <span class='commit-time'>06:02:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant run.sh: clean competition runner with preflight guards</span></li><li class='commit-item'><span class='commit-hash'>aeee4b46</span> <span class='commit-time'>06:17:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: SOTA-exact race script — fix COPRIME_MAX_LOADED_SHARDS default to 1</span></li><li class='commit-item'><span class='commit-hash'>aeee4b46</span> <span class='commit-time'>06:17:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: SOTA-exact race script — fix COPRIME_MAX_LOADED_SHARDS default to 1</span></li><li class='commit-item'><span class='commit-hash'>aeee4b46</span> <span class='commit-time'>06:17:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: SOTA-exact race script — fix COPRIME_MAX_LOADED_SHARDS default to 1</span></li><li class='commit-item'><span class='commit-hash'>b9fa53bf</span> <span class='commit-time'>06:28:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant seed=444: 1.20684 int6_sw_bpb, 10.07MB — pyramid-512 + 9,1,1 results</span></li><li class='commit-item'><span class='commit-hash'>b9fa53bf</span> <span class='commit-time'>06:28:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant seed=444: 1.20684 int6_sw_bpb, 10.07MB — pyramid-512 + 9,1,1 results</span></li><li class='commit-item'><span class='commit-hash'>b9fa53bf</span> <span class='commit-time'>06:28:26</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant seed=444: 1.20684 int6_sw_bpb, 10.07MB — pyramid-512 + 9,1,1 results</span></li><li class='commit-item'><span class='commit-hash'>fa043060</span> <span class='commit-time'>06:30:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant run.sh: auto-save checkpoint after run</span></li><li class='commit-item'><span class='commit-hash'>fa043060</span> <span class='commit-time'>06:30:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant run.sh: auto-save checkpoint after run</span></li><li class='commit-item'><span class='commit-hash'>fa043060</span> <span class='commit-time'>06:30:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant run.sh: auto-save checkpoint after run</span></li><li class='commit-item'><span class='commit-hash'>17be7818</span> <span class='commit-time'>06:46:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flat+crawler tap-off body: 9,1,1 battery without pyramid choke</span></li><li class='commit-item'><span class='commit-hash'>17be7818</span> <span class='commit-time'>06:46:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flat+crawler tap-off body: 9,1,1 battery without pyramid choke</span></li><li class='commit-item'><span class='commit-hash'>17be7818</span> <span class='commit-time'>06:46:23</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flat+crawler tap-off body: 9,1,1 battery without pyramid choke</span></li><li class='commit-item'><span class='commit-hash'>8208f506</span> <span class='commit-time'>07:04:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant seed=444: 1.18731 int6_sw_bpb — beats Leg 3 SOTA with battery only</span></li><li class='commit-item'><span class='commit-hash'>8208f506</span> <span class='commit-time'>07:04:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant seed=444: 1.18731 int6_sw_bpb — beats Leg 3 SOTA with battery only</span></li><li class='commit-item'><span class='commit-hash'>8208f506</span> <span class='commit-time'>07:04:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant seed=444: 1.18731 int6_sw_bpb — beats Leg 3 SOTA with battery only</span></li><li class='commit-item'><span class='commit-hash'>a80c8cc5</span> <span class='commit-time'>07:17:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler plus cubric n-gram stack cannon: log seed444 proxy results (TTT bust)</span></li><li class='commit-item'><span class='commit-hash'>a80c8cc5</span> <span class='commit-time'>07:17:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler plus cubric n-gram stack cannon: log seed444 proxy results (TTT bust)</span></li><li class='commit-item'><span class='commit-hash'>a80c8cc5</span> <span class='commit-time'>07:17:12</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler plus cubric n-gram stack cannon: log seed444 proxy results (TTT bust)</span></li><li class='commit-item'><span class='commit-hash'>926a2421</span> <span class='commit-time'>11:15:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: Split-LR + BigramHash(2816x160) + Full GPTQ + Brotli compression packaging compression packaging — val_bpb 1.1105 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>926a2421</span> <span class='commit-time'>11:15:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: Split-LR + BigramHash(2816x160) + Full GPTQ + Brotli compression packaging compression packaging — val_bpb 1.1105 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>926a2421</span> <span class='commit-time'>11:15:11</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record: Split-LR + BigramHash(2816x160) + Full GPTQ + Brotli compression packaging compression packaging — val_bpb 1.1105 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>6772e6ae</span> <span class='commit-time'>11:17:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>fix: clarify PR #1019 attribution (not our merged PR)</span></li><li class='commit-item'><span class='commit-hash'>6772e6ae</span> <span class='commit-time'>11:17:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>fix: clarify PR #1019 attribution (not our merged PR)</span></li><li class='commit-item'><span class='commit-hash'>6772e6ae</span> <span class='commit-time'>11:17:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>fix: clarify PR #1019 attribution (not our merged PR)</span></li><li class='commit-item'><span class='commit-hash'>1a2ba5d7</span> <span class='commit-time'>12:55:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Copy PR 1179 record trainer to repo root</span></li><li class='commit-item'><span class='commit-hash'>1a2ba5d7</span> <span class='commit-time'>12:55:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Copy PR 1179 record trainer to repo root</span></li><li class='commit-item'><span class='commit-hash'>1a2ba5d7</span> <span class='commit-time'>12:55:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Copy PR 1179 record trainer to repo root</span></li><li class='commit-item'><span class='commit-hash'>d95a6379</span> <span class='commit-time'>13:18:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Decompress PR 1179 root trainer wrapper</span></li><li class='commit-item'><span class='commit-hash'>d95a6379</span> <span class='commit-time'>13:18:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Decompress PR 1179 root trainer wrapper</span></li><li class='commit-item'><span class='commit-hash'>d95a6379</span> <span class='commit-time'>13:18:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Decompress PR 1179 root trainer wrapper</span></li><li class='commit-item'><span class='commit-hash'>23e26fbe</span> <span class='commit-time'>14:25:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Port mixed quant to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>23e26fbe</span> <span class='commit-time'>14:25:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Port mixed quant to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>23e26fbe</span> <span class='commit-time'>14:25:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Port mixed quant to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>972dcf3a</span> <span class='commit-time'>15:46:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: add gate_fullgraph.sh — Tier 1 COMPILE_FULLGRAPH=1 test</span></li><li class='commit-item'><span class='commit-hash'>972dcf3a</span> <span class='commit-time'>15:46:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: add gate_fullgraph.sh — Tier 1 COMPILE_FULLGRAPH=1 test</span></li><li class='commit-item'><span class='commit-hash'>972dcf3a</span> <span class='commit-time'>15:46:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: add gate_fullgraph.sh — Tier 1 COMPILE_FULLGRAPH=1 test</span></li><li class='commit-item'><span class='commit-hash'>872a159a</span> <span class='commit-time'>15:57:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant gate_fullgraph: fix broken ablation — revert TORCHDYNAMO_OPTIMIZE_DDP to 0</span></li><li class='commit-item'><span class='commit-hash'>872a159a</span> <span class='commit-time'>15:57:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant gate_fullgraph: fix broken ablation — revert TORCHDYNAMO_OPTIMIZE_DDP to 0</span></li><li class='commit-item'><span class='commit-hash'>872a159a</span> <span class='commit-time'>15:57:27</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant gate_fullgraph: fix broken ablation — revert TORCHDYNAMO_OPTIMIZE_DDP to 0</span></li><li class='commit-item'><span class='commit-hash'>d4fc252f</span> <span class='commit-time'>16:06:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flat+crawler tap-off body: crawler variant + COMPILE_FULLGRAPH=1 (Tier 1 speed win)</span></li><li class='commit-item'><span class='commit-hash'>d4fc252f</span> <span class='commit-time'>16:06:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flat+crawler tap-off body: crawler variant + COMPILE_FULLGRAPH=1 (Tier 1 speed win)</span></li><li class='commit-item'><span class='commit-hash'>d4fc252f</span> <span class='commit-time'>16:06:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flat+crawler tap-off body: crawler variant + COMPILE_FULLGRAPH=1 (Tier 1 speed win)</span></li><li class='commit-item'><span class='commit-hash'>2571aa6d</span> <span class='commit-time'>16:13:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Port depth recurrence to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>2571aa6d</span> <span class='commit-time'>16:13:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Port depth recurrence to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>2571aa6d</span> <span class='commit-time'>16:13:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Port depth recurrence to PR 1179 root trainer</span></li><li class='commit-item'><span class='commit-hash'>1bcab0b4</span> <span class='commit-time'>16:15:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add master progress checklist</span></li><li class='commit-item'><span class='commit-hash'>1bcab0b4</span> <span class='commit-time'>16:15:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add master progress checklist</span></li><li class='commit-item'><span class='commit-hash'>1bcab0b4</span> <span class='commit-time'>16:15:04</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add master progress checklist</span></li><li class='commit-item'><span class='commit-hash'>99b790dd</span> <span class='commit-time'>16:19:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix records/ train_gpt.py: replace placeholder with actual submission script</span></li><li class='commit-item'><span class='commit-hash'>7f55f3d7</span> <span class='commit-time'>16:23:30</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant seed=444 results: 1.18672 int6_sw_bpb</span></li><li class='commit-item'><span class='commit-hash'>7f55f3d7</span> <span class='commit-time'>16:23:30</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant seed=444 results: 1.18672 int6_sw_bpb</span></li><li class='commit-item'><span class='commit-hash'>7f55f3d7</span> <span class='commit-time'>16:23:30</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant seed=444 results: 1.18672 int6_sw_bpb</span></li><li class='commit-item'><span class='commit-hash'>1486b6ae</span> <span class='commit-time'>16:28:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log full untie depth recurrence result</span></li><li class='commit-item'><span class='commit-hash'>1486b6ae</span> <span class='commit-time'>16:28:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log full untie depth recurrence result</span></li><li class='commit-item'><span class='commit-hash'>1486b6ae</span> <span class='commit-time'>16:28:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log full untie depth recurrence result</span></li><li class='commit-item'><span class='commit-hash'>c18ad765</span> <span class='commit-time'>16:52:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>flat+crawler tap-off body: single GPU cannon gate on crawler variant base</span></li><li class='commit-item'><span class='commit-hash'>c18ad765</span> <span class='commit-time'>16:52:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>flat+crawler tap-off body: single GPU cannon gate on crawler variant base</span></li><li class='commit-item'><span class='commit-hash'>c18ad765</span> <span class='commit-time'>16:52:23</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>flat+crawler tap-off body: single GPU cannon gate on crawler variant base</span></li><li class='commit-item'><span class='commit-hash'>86af1f30</span> <span class='commit-time'>16:52:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add QK_SLOT_Ablation: single-GPU cross-correlation harness</span></li><li class='commit-item'><span class='commit-hash'>86af1f30</span> <span class='commit-time'>16:52:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add QK_SLOT_Ablation: single-GPU cross-correlation harness</span></li><li class='commit-item'><span class='commit-hash'>86af1f30</span> <span class='commit-time'>16:52:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add QK_SLOT_Ablation: single-GPU cross-correlation harness</span></li><li class='commit-item'><span class='commit-hash'>0b511a36</span> <span class='commit-time'>16:58:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Lab cleanup: archive old BW experiments, add LAB_PROTOCOL.md</span></li><li class='commit-item'><span class='commit-hash'>0b511a36</span> <span class='commit-time'>16:58:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Lab cleanup: archive old BW experiments, add LAB_PROTOCOL.md</span></li><li class='commit-item'><span class='commit-hash'>0b511a36</span> <span class='commit-time'>16:58:12</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Lab cleanup: archive old BW experiments, add LAB_PROTOCOL.md</span></li><li class='commit-item'><span class='commit-hash'>25b18fa9</span> <span class='commit-time'>17:00:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant seed=300: 1.18758 — does not individually confirm</span></li><li class='commit-item'><span class='commit-hash'>25b18fa9</span> <span class='commit-time'>17:00:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant seed=300: 1.18758 — does not individually confirm</span></li><li class='commit-item'><span class='commit-hash'>25b18fa9</span> <span class='commit-time'>17:00:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant seed=300: 1.18758 — does not individually confirm</span></li><li class='commit-item'><span class='commit-hash'>6001a70b</span> <span class='commit-time'>17:49:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add one-shot 8x quick AB runner for 11L GQA U-Net body GPTQ stream vs insta</span></li><li class='commit-item'><span class='commit-hash'>6001a70b</span> <span class='commit-time'>17:49:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add one-shot 8x quick AB runner for 11L GQA U-Net body GPTQ stream vs insta</span></li><li class='commit-item'><span class='commit-hash'>6001a70b</span> <span class='commit-time'>17:49:00</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add one-shot 8x quick AB runner for 11L GQA U-Net body GPTQ stream vs insta</span></li><li class='commit-item'><span class='commit-hash'>ee004c95</span> <span class='commit-time'>17:51:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Make 8x quick AB runner self-contained with FA3 preflight and no rg dependency</span></li><li class='commit-item'><span class='commit-hash'>ee004c95</span> <span class='commit-time'>17:51:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Make 8x quick AB runner self-contained with FA3 preflight and no rg dependency</span></li><li class='commit-item'><span class='commit-hash'>ee004c95</span> <span class='commit-time'>17:51:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Make 8x quick AB runner self-contained with FA3 preflight and no rg dependency</span></li><li class='commit-item'><span class='commit-hash'>7b2e2800</span> <span class='commit-time'>18:04:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Lock 11L GQA U-Net body baseline launcher to record trainer and add one-shot baseline script</span></li><li class='commit-item'><span class='commit-hash'>7b2e2800</span> <span class='commit-time'>18:04:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Lock 11L GQA U-Net body baseline launcher to record trainer and add one-shot baseline script</span></li><li class='commit-item'><span class='commit-hash'>7b2e2800</span> <span class='commit-time'>18:04:23</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Lock 11L GQA U-Net body baseline launcher to record trainer and add one-shot baseline script</span></li><li class='commit-item'><span class='commit-hash'>2f151c1a</span> <span class='commit-time'>18:09:17</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>flat+crawler tap-off body: cannon gate results — does not promote</span></li><li class='commit-item'><span class='commit-hash'>2f151c1a</span> <span class='commit-time'>18:09:17</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>flat+crawler tap-off body: cannon gate results — does not promote</span></li><li class='commit-item'><span class='commit-hash'>2f151c1a</span> <span class='commit-time'>18:09:17</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>flat+crawler tap-off body: cannon gate results — does not promote</span></li><li class='commit-item'><span class='commit-hash'>c6caaad2</span> <span class='commit-time'>18:35:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add one-shot cu124 baseline runner that reuses custom FA3 module</span></li><li class='commit-item'><span class='commit-hash'>c6caaad2</span> <span class='commit-time'>18:35:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add one-shot cu124 baseline runner that reuses custom FA3 module</span></li><li class='commit-item'><span class='commit-hash'>c6caaad2</span> <span class='commit-time'>18:35:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add one-shot cu124 baseline runner that reuses custom FA3 module</span></li><li class='commit-item'><span class='commit-hash'>9f982e04</span> <span class='commit-time'>18:36:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Make cu124+custom-FA3 runner auto-detect non-venv base python</span></li><li class='commit-item'><span class='commit-hash'>9f982e04</span> <span class='commit-time'>18:36:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Make cu124+custom-FA3 runner auto-detect non-venv base python</span></li><li class='commit-item'><span class='commit-hash'>9f982e04</span> <span class='commit-time'>18:36:56</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Make cu124+custom-FA3 runner auto-detect non-venv base python</span></li><li class='commit-item'><span class='commit-hash'>e132ccdd</span> <span class='commit-time'>18:38:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Harden cu124 custom-FA3 runner with python-path and filesystem auto-discovery</span></li><li class='commit-item'><span class='commit-hash'>e132ccdd</span> <span class='commit-time'>18:38:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Harden cu124 custom-FA3 runner with python-path and filesystem auto-discovery</span></li><li class='commit-item'><span class='commit-hash'>e132ccdd</span> <span class='commit-time'>18:38:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Harden cu124 custom-FA3 runner with python-path and filesystem auto-discovery</span></li><li class='commit-item'><span class='commit-hash'>d4f108b7</span> <span class='commit-time'>18:39:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Extend custom FA3 detection to conda env pythons and .so module files</span></li><li class='commit-item'><span class='commit-hash'>d4f108b7</span> <span class='commit-time'>18:39:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Extend custom FA3 detection to conda env pythons and .so module files</span></li><li class='commit-item'><span class='commit-hash'>d4f108b7</span> <span class='commit-time'>18:39:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Extend custom FA3 detection to conda env pythons and .so module files</span></li><li class='commit-item'><span class='commit-hash'>1b16d622</span> <span class='commit-time'>18:40:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add --no-deps FA3 wheel fallback to cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>1b16d622</span> <span class='commit-time'>18:40:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add --no-deps FA3 wheel fallback to cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>1b16d622</span> <span class='commit-time'>18:40:26</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add --no-deps FA3 wheel fallback to cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>3f3fa943</span> <span class='commit-time'>18:40:30</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add pyramid/cannon gate scripts — 1gpu + 8gpu for each hypothesis</span></li><li class='commit-item'><span class='commit-hash'>3f3fa943</span> <span class='commit-time'>18:40:30</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add pyramid/cannon gate scripts — 1gpu + 8gpu for each hypothesis</span></li><li class='commit-item'><span class='commit-hash'>3f3fa943</span> <span class='commit-time'>18:40:30</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add pyramid/cannon gate scripts — 1gpu + 8gpu for each hypothesis</span></li><li class='commit-item'><span class='commit-hash'>f396059c</span> <span class='commit-time'>18:50:22</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add QK_SLOT_Ablation STATUS.md — current position log</span></li><li class='commit-item'><span class='commit-hash'>f396059c</span> <span class='commit-time'>18:50:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add QK_SLOT_Ablation STATUS.md — current position log</span></li><li class='commit-item'><span class='commit-hash'>f396059c</span> <span class='commit-time'>18:50:22</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add QK_SLOT_Ablation STATUS.md — current position log</span></li><li class='commit-item'><span class='commit-hash'>c61a16ac</span> <span class='commit-time'>18:58:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix gate scripts: stop swallowing output with command substitution</span></li><li class='commit-item'><span class='commit-hash'>c61a16ac</span> <span class='commit-time'>18:58:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix gate scripts: stop swallowing output with command substitution</span></li><li class='commit-item'><span class='commit-hash'>c61a16ac</span> <span class='commit-time'>18:58:29</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix gate scripts: stop swallowing output with command substitution</span></li><li class='commit-item'><span class='commit-hash'>73446afd</span> <span class='commit-time'>19:03:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add sota_now.sh — clean single-file cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>73446afd</span> <span class='commit-time'>19:03:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add sota_now.sh — clean single-file cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>73446afd</span> <span class='commit-time'>19:03:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add sota_now.sh — clean single-file cu124 baseline runner</span></li><li class='commit-item'><span class='commit-hash'>3a1bdc1e</span> <span class='commit-time'>19:19:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix sota_now.sh to use real submission file; vault the correct source</span></li><li class='commit-item'><span class='commit-hash'>3a1bdc1e</span> <span class='commit-time'>19:19:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix sota_now.sh to use real submission file; vault the correct source</span></li><li class='commit-item'><span class='commit-hash'>3a1bdc1e</span> <span class='commit-time'>19:19:53</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix sota_now.sh to use real submission file; vault the correct source</span></li><li class='commit-item'><span class='commit-hash'>101fe210</span> <span class='commit-time'>19:22:17</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Prioritize shared params in GPTQ</span></li><li class='commit-item'><span class='commit-hash'>101fe210</span> <span class='commit-time'>19:22:17</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Prioritize shared params in GPTQ</span></li><li class='commit-item'><span class='commit-hash'>101fe210</span> <span class='commit-time'>19:22:17</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Prioritize shared params in GPTQ</span></li><li class='commit-item'><span class='commit-hash'>0e7c317c</span> <span class='commit-time'>19:23:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Relax CUDA check to 12.x — cu128 pod is valid</span></li><li class='commit-item'><span class='commit-hash'>0e7c317c</span> <span class='commit-time'>19:23:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Relax CUDA check to 12.x — cu128 pod is valid</span></li><li class='commit-item'><span class='commit-hash'>0e7c317c</span> <span class='commit-time'>19:23:52</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Relax CUDA check to 12.x — cu128 pod is valid</span></li><li class='commit-item'><span class='commit-hash'>bbd4d8a8</span> <span class='commit-time'>19:36:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix pod_setup.sh: auto-detect WORKSPACE from script location</span></li><li class='commit-item'><span class='commit-hash'>bbd4d8a8</span> <span class='commit-time'>19:36:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix pod_setup.sh: auto-detect WORKSPACE from script location</span></li><li class='commit-item'><span class='commit-hash'>bbd4d8a8</span> <span class='commit-time'>19:36:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix pod_setup.sh: auto-detect WORKSPACE from script location</span></li><li class='commit-item'><span class='commit-hash'>47f450f3</span> <span class='commit-time'>19:40:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix inverted awk stack parity check in sota_now.sh</span></li><li class='commit-item'><span class='commit-hash'>47f450f3</span> <span class='commit-time'>19:40:24</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix inverted awk stack parity check in sota_now.sh</span></li><li class='commit-item'><span class='commit-hash'>47f450f3</span> <span class='commit-time'>19:40:24</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix inverted awk stack parity check in sota_now.sh</span></li><li class='commit-item'><span class='commit-hash'>e5c909f0</span> <span class='commit-time'>19:43:17</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix submission train_gpt.py to vault-verified file (0ec1f462, 118521 bytes)</span></li><li class='commit-item'><span class='commit-hash'>82c3d262</span> <span class='commit-time'>19:49:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Quarantine racecar lab confusion; fix records/ with vault file</span></li><li class='commit-item'><span class='commit-hash'>82c3d262</span> <span class='commit-time'>19:49:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Quarantine racecar lab confusion; fix records/ with vault file</span></li><li class='commit-item'><span class='commit-hash'>82c3d262</span> <span class='commit-time'>19:49:13</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Quarantine racecar lab confusion; fix records/ with vault file</span></li><li class='commit-item'><span class='commit-hash'>fa91fda9</span> <span class='commit-time'>19:49:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix pod_setup.sh: dataset shard count crash under set -euo pipefail</span></li><li class='commit-item'><span class='commit-hash'>fa91fda9</span> <span class='commit-time'>19:49:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix pod_setup.sh: dataset shard count crash under set -euo pipefail</span></li><li class='commit-item'><span class='commit-hash'>fa91fda9</span> <span class='commit-time'>19:49:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix pod_setup.sh: dataset shard count crash under set -euo pipefail</span></li><li class='commit-item'><span class='commit-hash'>1d9edb82</span> <span class='commit-time'>20:03:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add two-track lab structure: neural/ and crawler/</span></li><li class='commit-item'><span class='commit-hash'>1d9edb82</span> <span class='commit-time'>20:03:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add two-track lab structure: neural/ and crawler/</span></li><li class='commit-item'><span class='commit-hash'>1d9edb82</span> <span class='commit-time'>20:03:05</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add two-track lab structure: neural/ and crawler/</span></li><li class='commit-item'><span class='commit-hash'>525cd343</span> <span class='commit-time'>20:05:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWVC 8GPU gate results: scalar cannon passes speed gate</span></li><li class='commit-item'><span class='commit-hash'>525cd343</span> <span class='commit-time'>20:05:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWVC 8GPU gate results: scalar cannon passes speed gate</span></li><li class='commit-item'><span class='commit-hash'>525cd343</span> <span class='commit-time'>20:05:13</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWVC 8GPU gate results: scalar cannon passes speed gate</span></li><li class='commit-item'><span class='commit-hash'>90475fc7</span> <span class='commit-time'>20:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RESULTS.md stub for flat+crawler tap-off body</span></li><li class='commit-item'><span class='commit-hash'>90475fc7</span> <span class='commit-time'>20:06:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add RESULTS.md stub for flat+crawler tap-off body</span></li><li class='commit-item'><span class='commit-hash'>90475fc7</span> <span class='commit-time'>20:06:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add RESULTS.md stub for flat+crawler tap-off body</span></li><li class='commit-item'><span class='commit-hash'>9e5fef20</span> <span class='commit-time'>20:29:06</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Junkyard: move all legacy/inactive dirs off root surface</span></li><li class='commit-item'><span class='commit-hash'>9e5fef20</span> <span class='commit-time'>20:29:06</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Junkyard: move all legacy/inactive dirs off root surface</span></li><li class='commit-item'><span class='commit-hash'>9e5fef20</span> <span class='commit-time'>20:29:06</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Junkyard: move all legacy/inactive dirs off root surface</span></li><li class='commit-item'><span class='commit-hash'>c688b8b1</span> <span class='commit-time'>20:33:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add folder-based CLAUDE.md agent protocols</span></li><li class='commit-item'><span class='commit-hash'>c688b8b1</span> <span class='commit-time'>20:33:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add folder-based CLAUDE.md agent protocols</span></li><li class='commit-item'><span class='commit-hash'>c688b8b1</span> <span class='commit-time'>20:33:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add folder-based CLAUDE.md agent protocols</span></li><li class='commit-item'><span class='commit-hash'>645857ba</span> <span class='commit-time'>20:39:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWVP 1GPU gate results: pyramid STRONG PASS on quality</span></li><li class='commit-item'><span class='commit-hash'>645857ba</span> <span class='commit-time'>20:39:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWVP 1GPU gate results: pyramid STRONG PASS on quality</span></li><li class='commit-item'><span class='commit-hash'>645857ba</span> <span class='commit-time'>20:39:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWVP 1GPU gate results: pyramid STRONG PASS on quality</span></li><li class='commit-item'><span class='commit-hash'>2f4a7ed9</span> <span class='commit-time'>20:40:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Move active crawler variant gates into crawler/ track; fix train_gpt.py symlink</span></li><li class='commit-item'><span class='commit-hash'>2f4a7ed9</span> <span class='commit-time'>20:40:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Move active crawler variant gates into crawler/ track; fix train_gpt.py symlink</span></li><li class='commit-item'><span class='commit-hash'>2f4a7ed9</span> <span class='commit-time'>20:40:19</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Move active crawler variant gates into crawler/ track; fix train_gpt.py symlink</span></li><li class='commit-item'><span class='commit-hash'>5756670d</span> <span class='commit-time'>20:41:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix PyramidCannon gate_1gpu.sh usage comment path</span></li><li class='commit-item'><span class='commit-hash'>5756670d</span> <span class='commit-time'>20:41:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix PyramidCannon gate_1gpu.sh usage comment path</span></li><li class='commit-item'><span class='commit-hash'>5756670d</span> <span class='commit-time'>20:41:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix PyramidCannon gate_1gpu.sh usage comment path</span></li><li class='commit-item'><span class='commit-hash'>29caede4</span> <span class='commit-time'>20:46:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add H→A→R cycle to protocol; scaffold all 3 files in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>29caede4</span> <span class='commit-time'>20:46:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add H→A→R cycle to protocol; scaffold all 3 files in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>29caede4</span> <span class='commit-time'>20:46:38</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add H→A→R cycle to protocol; scaffold all 3 files in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>c48e7590</span> <span class='commit-time'>20:50:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add QK_GAIN_SLOT_Gate ablation experiment</span></li><li class='commit-item'><span class='commit-hash'>c48e7590</span> <span class='commit-time'>20:50:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add QK_GAIN_SLOT_Gate ablation experiment</span></li><li class='commit-item'><span class='commit-hash'>c48e7590</span> <span class='commit-time'>20:50:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add QK_GAIN_SLOT_Gate ablation experiment</span></li><li class='commit-item'><span class='commit-hash'>35f212e3</span> <span class='commit-time'>20:52:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add per-track science boards + auto-stub in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>35f212e3</span> <span class='commit-time'>20:52:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add per-track science boards + auto-stub in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>35f212e3</span> <span class='commit-time'>20:52:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add per-track science boards + auto-stub in new_leg.sh</span></li><li class='commit-item'><span class='commit-hash'>006d1eef</span> <span class='commit-time'>21:05:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add submissions/ PR zone — validate script, protocol, templates</span></li><li class='commit-item'><span class='commit-hash'>006d1eef</span> <span class='commit-time'>21:05:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add submissions/ PR zone — validate script, protocol, templates</span></li><li class='commit-item'><span class='commit-hash'>006d1eef</span> <span class='commit-time'>21:05:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add submissions/ PR zone — validate script, protocol, templates</span></li><li class='commit-item'><span class='commit-hash'>1ea09018</span> <span class='commit-time'>21:16:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Move pod_setup.sh to scripts/ — accessible from repo root</span></li><li class='commit-item'><span class='commit-hash'>1ea09018</span> <span class='commit-time'>21:16:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Move pod_setup.sh to scripts/ — accessible from repo root</span></li><li class='commit-item'><span class='commit-hash'>1ea09018</span> <span class='commit-time'>21:16:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Move pod_setup.sh to scripts/ — accessible from repo root</span></li><li class='commit-item'><span class='commit-hash'>d9a7d196</span> <span class='commit-time'>21:18:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Somewhat working</span></li><li class='commit-item'><span class='commit-hash'>d9a7d196</span> <span class='commit-time'>21:18:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Somewhat working</span></li><li class='commit-item'><span class='commit-hash'>d9a7d196</span> <span class='commit-time'>21:18:05</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Somewhat working</span></li><li class='commit-item'><span class='commit-hash'>85d11b1d</span> <span class='commit-time'>21:20:10</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWVPC 1GPU gate: pyramid+cannon PASSES</span></li><li class='commit-item'><span class='commit-hash'>85d11b1d</span> <span class='commit-time'>21:20:10</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWVPC 1GPU gate: pyramid+cannon PASSES</span></li><li class='commit-item'><span class='commit-hash'>85d11b1d</span> <span class='commit-time'>21:20:10</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWVPC 1GPU gate: pyramid+cannon PASSES</span></li><li class='commit-item'><span class='commit-hash'>cecb7b10</span> <span class='commit-time'>21:20:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix smoke test threshold to scale with nproc</span></li><li class='commit-item'><span class='commit-hash'>cecb7b10</span> <span class='commit-time'>21:20:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix smoke test threshold to scale with nproc</span></li><li class='commit-item'><span class='commit-hash'>cecb7b10</span> <span class='commit-time'>21:20:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix smoke test threshold to scale with nproc</span></li><li class='commit-item'><span class='commit-hash'>b20b82d0</span> <span class='commit-time'>21:21:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix gate_8gpu.sh: update path comment and step_avg pass criterion</span></li><li class='commit-item'><span class='commit-hash'>b20b82d0</span> <span class='commit-time'>21:21:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix gate_8gpu.sh: update path comment and step_avg pass criterion</span></li><li class='commit-item'><span class='commit-hash'>b20b82d0</span> <span class='commit-time'>21:21:53</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix gate_8gpu.sh: update path comment and step_avg pass criterion</span></li><li class='commit-item'><span class='commit-hash'>310d5d13</span> <span class='commit-time'>21:22:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record smoke test result: 739ms/step is healthy on 1xH100</span></li><li class='commit-item'><span class='commit-hash'>310d5d13</span> <span class='commit-time'>21:22:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record smoke test result: 739ms/step is healthy on 1xH100</span></li><li class='commit-item'><span class='commit-hash'>310d5d13</span> <span class='commit-time'>21:22:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record smoke test result: 739ms/step is healthy on 1xH100</span></li><li class='commit-item'><span class='commit-hash'>2a2fe32c</span> <span class='commit-time'>21:36:17</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log partitioned residual result</span></li><li class='commit-item'><span class='commit-hash'>2a2fe32c</span> <span class='commit-time'>21:36:17</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log partitioned residual result</span></li><li class='commit-item'><span class='commit-hash'>2a2fe32c</span> <span class='commit-time'>21:36:17</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log partitioned residual result</span></li><li class='commit-item'><span class='commit-hash'>dfb84598</span> <span class='commit-time'>21:40:10</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>BWVPC 8GPU gate: DOES NOT PROMOTE — pyramid+cannon fails</span></li><li class='commit-item'><span class='commit-hash'>dfb84598</span> <span class='commit-time'>21:40:10</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>BWVPC 8GPU gate: DOES NOT PROMOTE — pyramid+cannon fails</span></li><li class='commit-item'><span class='commit-hash'>dfb84598</span> <span class='commit-time'>21:40:10</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>BWVPC 8GPU gate: DOES NOT PROMOTE — pyramid+cannon fails</span></li><li class='commit-item'><span class='commit-hash'>60857e58</span> <span class='commit-time'>21:41:48</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Train wallclock log</span></li><li class='commit-item'><span class='commit-hash'>60857e58</span> <span class='commit-time'>21:41:48</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Train wallclock log</span></li><li class='commit-item'><span class='commit-hash'>60857e58</span> <span class='commit-time'>21:41:48</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Train wallclock log</span></li><li class='commit-item'><span class='commit-hash'>50517e36</span> <span class='commit-time'>21:45:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update SCIENCE.md: close pyramid/cannon screw, reflect actual completed results</span></li><li class='commit-item'><span class='commit-hash'>50517e36</span> <span class='commit-time'>21:45:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update SCIENCE.md: close pyramid/cannon screw, reflect actual completed results</span></li><li class='commit-item'><span class='commit-hash'>50517e36</span> <span class='commit-time'>21:45:55</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update SCIENCE.md: close pyramid/cannon screw, reflect actual completed results</span></li><li class='commit-item'><span class='commit-hash'>79d13adc</span> <span class='commit-time'>21:56:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Two crawler legs: crawler variant full run + crawler variant gate</span></li><li class='commit-item'><span class='commit-hash'>79d13adc</span> <span class='commit-time'>21:56:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Two crawler legs: crawler variant full run + crawler variant gate</span></li><li class='commit-item'><span class='commit-hash'>79d13adc</span> <span class='commit-time'>21:56:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Two crawler legs: crawler variant full run + crawler variant gate</span></li><li class='commit-item'><span class='commit-hash'>f8fba279</span> <span class='commit-time'>22:01:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant gate_8gpu.sh — 2000-step 8xH100 A/B gate</span></li><li class='commit-item'><span class='commit-hash'>f8fba279</span> <span class='commit-time'>22:01:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant gate_8gpu.sh — 2000-step 8xH100 A/B gate</span></li><li class='commit-item'><span class='commit-hash'>f8fba279</span> <span class='commit-time'>22:01:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant gate_8gpu.sh — 2000-step 8xH100 A/B gate</span></li><li class='commit-item'><span class='commit-hash'>d28a2fbe</span> <span class='commit-time'>22:12:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PIPELINE.md — full ranked hypothesis queue, both tracks</span></li><li class='commit-item'><span class='commit-hash'>d28a2fbe</span> <span class='commit-time'>22:12:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PIPELINE.md — full ranked hypothesis queue, both tracks</span></li><li class='commit-item'><span class='commit-hash'>d28a2fbe</span> <span class='commit-time'>22:12:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add PIPELINE.md — full ranked hypothesis queue, both tracks</span></li><li class='commit-item'><span class='commit-hash'>c4ddf549</span> <span class='commit-time'>22:13:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant full run: DOES NOT PROMOTE — +0.00020 vs crawler variant at 600s/8034 steps</span></li><li class='commit-item'><span class='commit-hash'>c4ddf549</span> <span class='commit-time'>22:13:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant full run: DOES NOT PROMOTE — +0.00020 vs crawler variant at 600s/8034 steps</span></li><li class='commit-item'><span class='commit-hash'>c4ddf549</span> <span class='commit-time'>22:13:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant full run: DOES NOT PROMOTE — +0.00020 vs crawler variant at 600s/8034 steps</span></li><li class='commit-item'><span class='commit-hash'>0ebead64</span> <span class='commit-time'>22:17:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>logging fix</span></li><li class='commit-item'><span class='commit-hash'>0ebead64</span> <span class='commit-time'>22:17:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>logging fix</span></li><li class='commit-item'><span class='commit-hash'>0ebead64</span> <span class='commit-time'>22:17:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>logging fix</span></li><li class='commit-item'><span class='commit-hash'>3c52f3a0</span> <span class='commit-time'>22:18:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Housekeeping: archive closed crawler legs, move QK_Gain_SLOT to neural track</span></li><li class='commit-item'><span class='commit-hash'>3c52f3a0</span> <span class='commit-time'>22:18:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Housekeeping: archive closed crawler legs, move QK_Gain_SLOT to neural track</span></li><li class='commit-item'><span class='commit-hash'>3c52f3a0</span> <span class='commit-time'>22:18:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Housekeeping: archive closed crawler legs, move QK_Gain_SLOT to neural track</span></li><li class='commit-item'><span class='commit-hash'>e699814b</span> <span class='commit-time'>22:27:22</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant gate: null result — trigram neutral on crawler, −140KB size artifact</span></li><li class='commit-item'><span class='commit-hash'>e699814b</span> <span class='commit-time'>22:27:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant gate: null result — trigram neutral on crawler, −140KB size artifact</span></li><li class='commit-item'><span class='commit-hash'>e699814b</span> <span class='commit-time'>22:27:22</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant gate: null result — trigram neutral on crawler, −140KB size artifact</span></li><li class='commit-item'><span class='commit-hash'>12930581</span> <span class='commit-time'>22:27:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Archive crawler variant — null result, closed</span></li><li class='commit-item'><span class='commit-hash'>12930581</span> <span class='commit-time'>22:27:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Archive crawler variant — null result, closed</span></li><li class='commit-item'><span class='commit-hash'>12930581</span> <span class='commit-time'>22:27:26</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Archive crawler variant — null result, closed</span></li><li class='commit-item'><span class='commit-hash'>9f84d6c4</span> <span class='commit-time'>22:29:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update PIPELINE.md: close cannon/skipgram, fix paths, update neural trigram note</span></li><li class='commit-item'><span class='commit-hash'>9f84d6c4</span> <span class='commit-time'>22:29:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update PIPELINE.md: close cannon/skipgram, fix paths, update neural trigram note</span></li><li class='commit-item'><span class='commit-hash'>9f84d6c4</span> <span class='commit-time'>22:29:29</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update PIPELINE.md: close cannon/skipgram, fix paths, update neural trigram note</span></li><li class='commit-item'><span class='commit-hash'>ba322b08</span> <span class='commit-time'>22:39:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix SLOT backward crash + record run 1 results</span></li><li class='commit-item'><span class='commit-hash'>ba322b08</span> <span class='commit-time'>22:39:24</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix SLOT backward crash + record run 1 results</span></li><li class='commit-item'><span class='commit-hash'>ba322b08</span> <span class='commit-time'>22:39:24</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix SLOT backward crash + record run 1 results</span></li><li class='commit-item'><span class='commit-hash'>06b4c2da</span> <span class='commit-time'>22:52:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant MegaGate: 8-arm ablation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>06b4c2da</span> <span class='commit-time'>22:52:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant MegaGate: 8-arm ablation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>06b4c2da</span> <span class='commit-time'>22:52:59</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant MegaGate: 8-arm ablation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>64992a00</span> <span class='commit-time'>23:00:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant MegaGate pod_setup.sh — fresh pod one-shot launcher</span></li><li class='commit-item'><span class='commit-hash'>64992a00</span> <span class='commit-time'>23:00:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant MegaGate pod_setup.sh — fresh pod one-shot launcher</span></li><li class='commit-item'><span class='commit-hash'>64992a00</span> <span class='commit-time'>23:00:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant MegaGate pod_setup.sh — fresh pod one-shot launcher</span></li><li class='commit-item'><span class='commit-hash'>cc36ca60</span> <span class='commit-time'>23:03:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Relax flash_attn preflight in crawler variant MegaGate — warn not abort</span></li><li class='commit-item'><span class='commit-hash'>cc36ca60</span> <span class='commit-time'>23:03:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Relax flash_attn preflight in crawler variant MegaGate — warn not abort</span></li><li class='commit-item'><span class='commit-hash'>cc36ca60</span> <span class='commit-time'>23:03:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Relax flash_attn preflight in crawler variant MegaGate — warn not abort</span></li><li class='commit-item'><span class='commit-hash'>07521748</span> <span class='commit-time'>23:05:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix torchrun path: fallback to python3 -m torch.distributed.run</span></li><li class='commit-item'><span class='commit-hash'>07521748</span> <span class='commit-time'>23:05:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix torchrun path: fallback to python3 -m torch.distributed.run</span></li><li class='commit-item'><span class='commit-hash'>07521748</span> <span class='commit-time'>23:05:45</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix torchrun path: fallback to python3 -m torch.distributed.run</span></li><li class='commit-item'><span class='commit-hash'>e5a01dc5</span> <span class='commit-time'>23:19:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>First run in</span></li><li class='commit-item'><span class='commit-hash'>e5a01dc5</span> <span class='commit-time'>23:19:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>First run in</span></li><li class='commit-item'><span class='commit-hash'>e5a01dc5</span> <span class='commit-time'>23:19:23</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>First run in</span></li><li class='commit-item'><span class='commit-hash'>78cf56a3</span> <span class='commit-time'>23:34:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Parallel Residuals readme entry</span></li><li class='commit-item'><span class='commit-hash'>78cf56a3</span> <span class='commit-time'>23:34:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Parallel Residuals readme entry</span></li><li class='commit-item'><span class='commit-hash'>78cf56a3</span> <span class='commit-time'>23:34:56</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Parallel Residuals readme entry</span></li><li class='commit-item'><span class='commit-hash'>f225709b</span> <span class='commit-time'>23:39:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update neural/SCIENCE.md with competitive intelligence + hypothesis roadmap</span></li><li class='commit-item'><span class='commit-hash'>f225709b</span> <span class='commit-time'>23:39:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update neural/SCIENCE.md with competitive intelligence + hypothesis roadmap</span></li><li class='commit-item'><span class='commit-hash'>f225709b</span> <span class='commit-time'>23:39:44</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update neural/SCIENCE.md with competitive intelligence + hypothesis roadmap</span></li><li class='commit-item'><span class='commit-hash'>e2867c24</span> <span class='commit-time'>23:45:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Arch+Sched Sweep: 6-case 4×GPU ablation (rope_32, bigram_4096, qat_{early,late}, swa_dense)</span></li><li class='commit-item'><span class='commit-hash'>e2867c24</span> <span class='commit-time'>23:45:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Arch+Sched Sweep: 6-case 4×GPU ablation (rope_32, bigram_4096, qat_{early,late}, swa_dense)</span></li><li class='commit-item'><span class='commit-hash'>e2867c24</span> <span class='commit-time'>23:45:28</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add Arch+Sched Sweep: 6-case 4×GPU ablation (rope_32, bigram_4096, qat_{early,late}, swa_dense)</span></li><li class='commit-item'><span class='commit-hash'>963b440f</span> <span class='commit-time'>23:49:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Expand sweep to 9 cases: add gptq, bigram_3072, warmdown_4k</span></li><li class='commit-item'><span class='commit-hash'>963b440f</span> <span class='commit-time'>23:49:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Expand sweep to 9 cases: add gptq, bigram_3072, warmdown_4k</span></li><li class='commit-item'><span class='commit-hash'>963b440f</span> <span class='commit-time'>23:49:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Expand sweep to 9 cases: add gptq, bigram_3072, warmdown_4k</span></li><li class='commit-item'><span class='commit-hash'>1dc3a321</span> <span class='commit-time'>00:01:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Sweep: gptq case reuses baseline checkpoint (SKIP_TRAIN=1 + LOAD_CHECKPOINT)</span></li><li class='commit-item'><span class='commit-hash'>1dc3a321</span> <span class='commit-time'>00:01:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Sweep: gptq case reuses baseline checkpoint (SKIP_TRAIN=1 + LOAD_CHECKPOINT)</span></li><li class='commit-item'><span class='commit-hash'>1dc3a321</span> <span class='commit-time'>00:01:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Sweep: gptq case reuses baseline checkpoint (SKIP_TRAIN=1 + LOAD_CHECKPOINT)</span></li><li class='commit-item'><span class='commit-hash'>4c6ef069</span> <span class='commit-time'>00:09:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SLOT legality analysis to neural/SCIENCE.md</span></li><li class='commit-item'><span class='commit-hash'>4c6ef069</span> <span class='commit-time'>00:09:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SLOT legality analysis to neural/SCIENCE.md</span></li><li class='commit-item'><span class='commit-hash'>4c6ef069</span> <span class='commit-time'>00:09:52</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add SLOT legality analysis to neural/SCIENCE.md</span></li><li class='commit-item'><span class='commit-hash'>ad65f02c</span> <span class='commit-time'>00:20:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update submission README and add seed logs</span></li><li class='commit-item'><span class='commit-hash'>ad65f02c</span> <span class='commit-time'>00:20:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update submission README and add seed logs</span></li><li class='commit-item'><span class='commit-hash'>ad65f02c</span> <span class='commit-time'>00:20:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update submission README and add seed logs</span></li><li class='commit-item'><span class='commit-hash'>479484a2</span> <span class='commit-time'>00:23:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant: shared encoder tap dim=32 — strongest MegaGate signal</span></li><li class='commit-item'><span class='commit-hash'>479484a2</span> <span class='commit-time'>00:23:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant: shared encoder tap dim=32 — strongest MegaGate signal</span></li><li class='commit-item'><span class='commit-hash'>479484a2</span> <span class='commit-time'>00:23:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant: shared encoder tap dim=32 — strongest MegaGate signal</span></li><li class='commit-item'><span class='commit-hash'>b7c49315</span> <span class='commit-time'>00:24:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update submission reproducibility notes</span></li><li class='commit-item'><span class='commit-hash'>b7c49315</span> <span class='commit-time'>00:24:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update submission reproducibility notes</span></li><li class='commit-item'><span class='commit-hash'>b7c49315</span> <span class='commit-time'>00:24:09</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update submission reproducibility notes</span></li><li class='commit-item'><span class='commit-hash'>18e14d38</span> <span class='commit-time'>00:39:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add submission metadata for ParallelResiduals run</span></li><li class='commit-item'><span class='commit-hash'>18e14d38</span> <span class='commit-time'>00:39:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add submission metadata for ParallelResiduals run</span></li><li class='commit-item'><span class='commit-hash'>18e14d38</span> <span class='commit-time'>00:39:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add submission metadata for ParallelResiduals run</span></li><li class='commit-item'><span class='commit-hash'>7441f45a</span> <span class='commit-time'>00:42:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Clean root for submission branch</span></li><li class='commit-item'><span class='commit-hash'>7441f45a</span> <span class='commit-time'>00:42:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Clean root for submission branch</span></li><li class='commit-item'><span class='commit-hash'>7441f45a</span> <span class='commit-time'>00:42:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Clean root for submission branch</span></li><li class='commit-item'><span class='commit-hash'>ae2f7b7f</span> <span class='commit-time'>00:45:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore root files for submission</span></li><li class='commit-item'><span class='commit-hash'>ae2f7b7f</span> <span class='commit-time'>00:45:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore root files for submission</span></li><li class='commit-item'><span class='commit-hash'>ae2f7b7f</span> <span class='commit-time'>00:45:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Restore root files for submission</span></li><li class='commit-item'><span class='commit-hash'>3a93e20e</span> <span class='commit-time'>01:23:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add QK_Gain_SLOT_Legal: context-only SLOT (legal causality-safe variant)</span></li><li class='commit-item'><span class='commit-hash'>3a93e20e</span> <span class='commit-time'>01:23:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add QK_Gain_SLOT_Legal: context-only SLOT (legal causality-safe variant)</span></li><li class='commit-item'><span class='commit-hash'>3a93e20e</span> <span class='commit-time'>01:23:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add QK_Gain_SLOT_Legal: context-only SLOT (legal causality-safe variant)</span></li><li class='commit-item'><span class='commit-hash'>ef750ced</span> <span class='commit-time'>01:23:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant gate + update SCIENCE.md with MegaGate results</span></li><li class='commit-item'><span class='commit-hash'>ef750ced</span> <span class='commit-time'>01:23:24</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant gate + update SCIENCE.md with MegaGate results</span></li><li class='commit-item'><span class='commit-hash'>ef750ced</span> <span class='commit-time'>01:23:24</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant gate + update SCIENCE.md with MegaGate results</span></li><li class='commit-item'><span class='commit-hash'>89a321e1</span> <span class='commit-time'>01:36:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix gate.sh: remove quotes from inline env var assignments</span></li><li class='commit-item'><span class='commit-hash'>89a321e1</span> <span class='commit-time'>01:36:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix gate.sh: remove quotes from inline env var assignments</span></li><li class='commit-item'><span class='commit-hash'>89a321e1</span> <span class='commit-time'>01:36:19</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix gate.sh: remove quotes from inline env var assignments</span></li><li class='commit-item'><span class='commit-hash'>75840c7f</span> <span class='commit-time'>01:44:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant — loop-aware GPTQ gate on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>75840c7f</span> <span class='commit-time'>01:44:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant — loop-aware GPTQ gate on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>75840c7f</span> <span class='commit-time'>01:44:25</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant — loop-aware GPTQ gate on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>33a81443</span> <span class='commit-time'>02:22:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add gptq_full case: full training run with SKIP_GPTQ=0 (not post_only)</span></li><li class='commit-item'><span class='commit-hash'>33a81443</span> <span class='commit-time'>02:22:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add gptq_full case: full training run with SKIP_GPTQ=0 (not post_only)</span></li><li class='commit-item'><span class='commit-hash'>33a81443</span> <span class='commit-time'>02:22:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add gptq_full case: full training run with SKIP_GPTQ=0 (not post_only)</span></li><li class='commit-item'><span class='commit-hash'>52cd457d</span> <span class='commit-time'>02:28:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log Arch+Sched sweep results (seed 444, 4×GPU): all 9 cases dead</span></li><li class='commit-item'><span class='commit-hash'>52cd457d</span> <span class='commit-time'>02:28:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log Arch+Sched sweep results (seed 444, 4×GPU): all 9 cases dead</span></li><li class='commit-item'><span class='commit-hash'>52cd457d</span> <span class='commit-time'>02:28:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log Arch+Sched sweep results (seed 444, 4×GPU): all 9 cases dead</span></li><li class='commit-item'><span class='commit-hash'>c0ceacd8</span> <span class='commit-time'>02:44:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 11L GQA U-Net body leg: context-only Legal SLOT on 11L GQA U-Net body II base</span></li><li class='commit-item'><span class='commit-hash'>c0ceacd8</span> <span class='commit-time'>02:44:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 11L GQA U-Net body leg: context-only Legal SLOT on 11L GQA U-Net body II base</span></li><li class='commit-item'><span class='commit-hash'>c0ceacd8</span> <span class='commit-time'>02:44:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 11L GQA U-Net body leg: context-only Legal SLOT on 11L GQA U-Net body II base</span></li><li class='commit-item'><span class='commit-hash'>b5e9e7c3</span> <span class='commit-time'>02:45:48</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler variant — 5F+1C depth revisit on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>b5e9e7c3</span> <span class='commit-time'>02:45:48</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler variant — 5F+1C depth revisit on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>b5e9e7c3</span> <span class='commit-time'>02:45:48</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler variant — 5F+1C depth revisit on crawler variant baseline</span></li><li class='commit-item'><span class='commit-hash'>93ef50ae</span> <span class='commit-time'>02:48:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body run.sh: minimal racer, exact SOTA env + SLOT_ENABLED=1</span></li><li class='commit-item'><span class='commit-hash'>93ef50ae</span> <span class='commit-time'>02:48:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body run.sh: minimal racer, exact SOTA env + SLOT_ENABLED=1</span></li><li class='commit-item'><span class='commit-hash'>93ef50ae</span> <span class='commit-time'>02:48:02</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body run.sh: minimal racer, exact SOTA env + SLOT_ENABLED=1</span></li><li class='commit-item'><span class='commit-hash'>5efb22ba</span> <span class='commit-time'>03:05:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: gate PASS — −0.00486 int6_sw, step time clean</span></li><li class='commit-item'><span class='commit-hash'>5efb22ba</span> <span class='commit-time'>03:05:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: gate PASS — −0.00486 int6_sw, step time clean</span></li><li class='commit-item'><span class='commit-hash'>5efb22ba</span> <span class='commit-time'>03:05:21</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: gate PASS — −0.00486 int6_sw, step time clean</span></li><li class='commit-item'><span class='commit-hash'>cb4f1c23</span> <span class='commit-time'>03:12:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, LOOP_AWARE_GPTQ=1)</span></li><li class='commit-item'><span class='commit-hash'>cb4f1c23</span> <span class='commit-time'>03:12:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, LOOP_AWARE_GPTQ=1)</span></li><li class='commit-item'><span class='commit-hash'>cb4f1c23</span> <span class='commit-time'>03:12:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, LOOP_AWARE_GPTQ=1)</span></li><li class='commit-item'><span class='commit-hash'>dd2e06ac</span> <span class='commit-time'>03:21:20</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, NUM_FLAT_LAYERS=5)</span></li><li class='commit-item'><span class='commit-hash'>dd2e06ac</span> <span class='commit-time'>03:21:20</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, NUM_FLAT_LAYERS=5)</span></li><li class='commit-item'><span class='commit-hash'>dd2e06ac</span> <span class='commit-time'>03:21:20</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: add production run.sh (8×H100, 600s, NUM_FLAT_LAYERS=5)</span></li><li class='commit-item'><span class='commit-hash'>0e428cda</span> <span class='commit-time'>03:23:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 11L GQA U-Net body — 4-arm legal window strategy suite</span></li><li class='commit-item'><span class='commit-hash'>0e428cda</span> <span class='commit-time'>03:23:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 11L GQA U-Net body — 4-arm legal window strategy suite</span></li><li class='commit-item'><span class='commit-hash'>0e428cda</span> <span class='commit-time'>03:23:35</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 11L GQA U-Net body — 4-arm legal window strategy suite</span></li><li class='commit-item'><span class='commit-hash'>2338fee7</span> <span class='commit-time'>03:29:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.18292670 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>2338fee7</span> <span class='commit-time'>03:29:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.18292670 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>2338fee7</span> <span class='commit-time'>03:29:05</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.18292670 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>a70185a3</span> <span class='commit-time'>03:39:22</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: surgical SLOT via hook, no model class changes</span></li><li class='commit-item'><span class='commit-hash'>a70185a3</span> <span class='commit-time'>03:39:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: surgical SLOT via hook, no model class changes</span></li><li class='commit-item'><span class='commit-hash'>a70185a3</span> <span class='commit-time'>03:39:22</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: surgical SLOT via hook, no model class changes</span></li><li class='commit-item'><span class='commit-hash'>ef2c9328</span> <span class='commit-time'>03:42:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.17651313 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>ef2c9328</span> <span class='commit-time'>03:42:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.17651313 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>ef2c9328</span> <span class='commit-time'>03:42:52</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler variant: full run PROMOTES — 1.17651313 BPB, new champion</span></li><li class='commit-item'><span class='commit-hash'>6c864c16</span> <span class='commit-time'>03:48:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Scaffold Crawler II submission — seed=444 pre-filled, seed=300 pending</span></li><li class='commit-item'><span class='commit-hash'>6c864c16</span> <span class='commit-time'>03:48:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Scaffold Crawler II submission — seed=444 pre-filled, seed=300 pending</span></li><li class='commit-item'><span class='commit-hash'>6c864c16</span> <span class='commit-time'>03:48:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Scaffold Crawler II submission — seed=444 pre-filled, seed=300 pending</span></li><li class='commit-item'><span class='commit-hash'>385d7042</span> <span class='commit-time'>04:02:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Rename submission: Crawler II → widened crawler bottleneck</span></li><li class='commit-item'><span class='commit-hash'>385d7042</span> <span class='commit-time'>04:02:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Rename submission: Crawler II → widened crawler bottleneck</span></li><li class='commit-item'><span class='commit-hash'>385d7042</span> <span class='commit-time'>04:02:59</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Rename submission: Crawler II → widened crawler bottleneck</span></li><li class='commit-item'><span class='commit-hash'>7b9a11b0</span> <span class='commit-time'>04:09:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>widened crawler bottleneck: fill seed=300 results — 1.17490448 BPB, mean 1.1757</span></li><li class='commit-item'><span class='commit-hash'>7b9a11b0</span> <span class='commit-time'>04:09:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>widened crawler bottleneck: fill seed=300 results — 1.17490448 BPB, mean 1.1757</span></li><li class='commit-item'><span class='commit-hash'>7b9a11b0</span> <span class='commit-time'>04:09:31</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>widened crawler bottleneck: fill seed=300 results — 1.17490448 BPB, mean 1.1757</span></li><li class='commit-item'><span class='commit-hash'>6f8e0937</span> <span class='commit-time'>04:15:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>widened crawler bottleneck: add seed logs; fix validate.sh set-e/arithmetic bug</span></li><li class='commit-item'><span class='commit-hash'>6f8e0937</span> <span class='commit-time'>04:15:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>widened crawler bottleneck: add seed logs; fix validate.sh set-e/arithmetic bug</span></li><li class='commit-item'><span class='commit-hash'>6f8e0937</span> <span class='commit-time'>04:15:35</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>widened crawler bottleneck: add seed logs; fix validate.sh set-e/arithmetic bug</span></li><li class='commit-item'><span class='commit-hash'>bcd26f76</span> <span class='commit-time'>04:19:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>widened crawler bottleneck: add seed=4 (1.17676091 BPB), update mean to 1.1761</span></li><li class='commit-item'><span class='commit-hash'>bcd26f76</span> <span class='commit-time'>04:19:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>widened crawler bottleneck: add seed=4 (1.17676091 BPB), update mean to 1.1761</span></li><li class='commit-item'><span class='commit-hash'>bcd26f76</span> <span class='commit-time'>04:19:27</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>widened crawler bottleneck: add seed=4 (1.17676091 BPB), update mean to 1.1761</span></li><li class='commit-item'><span class='commit-hash'>e0b05ab6</span> <span class='commit-time'>04:28:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: log both full runs — signal confirmed, size blocked</span></li><li class='commit-item'><span class='commit-hash'>e0b05ab6</span> <span class='commit-time'>04:28:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: log both full runs — signal confirmed, size blocked</span></li><li class='commit-item'><span class='commit-hash'>e0b05ab6</span> <span class='commit-time'>04:28:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: log both full runs — signal confirmed, size blocked</span></li><li class='commit-item'><span class='commit-hash'>9332369a</span> <span class='commit-time'>04:29:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: enforce cu124 — reject cu128 at launch</span></li><li class='commit-item'><span class='commit-hash'>9332369a</span> <span class='commit-time'>04:29:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: enforce cu124 — reject cu128 at launch</span></li><li class='commit-item'><span class='commit-hash'>9332369a</span> <span class='commit-time'>04:29:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: enforce cu124 — reject cu128 at launch</span></li><li class='commit-item'><span class='commit-hash'>587534e0</span> <span class='commit-time'>04:54:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Enforce strict Neural SOTA stack parity on pod setup/run</span></li><li class='commit-item'><span class='commit-hash'>587534e0</span> <span class='commit-time'>04:54:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Enforce strict Neural SOTA stack parity on pod setup/run</span></li><li class='commit-item'><span class='commit-hash'>587534e0</span> <span class='commit-time'>04:54:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Enforce strict Neural SOTA stack parity on pod setup/run</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-03-31</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">014</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">4 unique  (4 valid / 0 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">POST-TRAINING QUANTIZATION CALIBRATION (×1)  ·  11L GQA U-NET BODY (×1)  ·  CRAWLER-SAFE TRAIN/EVAL SURFACE (×1)  ·  OTHER (×1)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 75% (3) / NEURAL 25% (1)"><span class="alloc-seg-exp" style="width:75.00%"></span><span class="alloc-seg-neu" style="width:25.00%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 75% (3)</span><span class="alloc-sep">/</span><span class="alloc-text-neu">NEURAL 25% (1)</span></span></span></div></div>
+
+<section class="architecture-recipe" aria-label="Architecture recipe"><div class="ar-kicker">ARCHITECTURE RECIPE</div><div class="ar-cards"><article class="ar-card"><div class="ar-head"><span class="ar-name">11L GQA U-NET BODY</span><span class="ar-count">x1</span></div><p class="ar-summary">11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · head_dim=64 · mlp_mult=3.0 · tie_embeddings=1</span></div><div class="ar-line"><span class="ar-key">STRUCTURE</span><span class="ar-val">encoder_layers=5 · decoder_layers=6 · skip_weights=5 · GQA attention · RMSNorm · relu_sq MLP · Muon matrix optimizer path</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash vocab=2048 dim=128 · XSA last_n=11 · rope_dims=16 · VE dim=128 layers=9,10 · SmearGate · logit_softcap=30</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-SAFE TRAIN/EVAL SURFACE</span><span class="ar-count">x1</span></div><p class="ar-summary">Crawler-safe training/eval surface around a widened shared-crawler stack with final int6 and int8 checks.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · model_dim=512 · num_heads=8 · num_kv_heads=4 · shared crawler block · looped crawler passes</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash · XSA · RoPE · crawler loop rope scales · instruction bottleneck</span></div><div class="ar-line"><span class="ar-key">QUANT / EVAL</span><span class="ar-val">int6 roundtrip · int6 sliding-window eval · int8 zlib roundtrip · 8xH100 · 600s wallclock</span></div></article></div></section>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>POST-TRAINING QUANTIZATION CALIBRATION (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>11L GQA U-NET BODY (x1): 11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate. Specs: num_layers=11; model_dim=512; vocab_size=1024; num_heads=8; num_kv_heads=4; head_dim=64.</span> <span>CRAWLER-SAFE TRAIN/EVAL SURFACE (x1): Crawler-safe training/eval surface around a widened shared-crawler stack with final int6 and int8 checks. Specs: model_dim=512; vocab_size=1024; num_heads=8; num_kv_heads=4; BigramHash; XSA.</span></p><p>Day 014 measured <strong>4 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>4 valid</strong> rows and <strong>0 TTT leakage</strong> readings excluded. Techniques to copy/reference: <strong>SmearGate; BigramHash; XSA; RoPE; crawler loop rope scales; instruction bottleneck; int6 roundtrip; int6 sliding-window eval</strong>.</p><p>No new personal best. Best valid of the day = <strong>1.1099</strong> (Add two-track lab structure: neural/ and crawler/); best-before-today = <strong>1.0672</strong> still stands.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-03-31_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-03-31 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-31_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-03-31_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-03-31 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-31_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>POST-TRAINING QUANTIZATION CALIBRATION</td><td>1</td><td>1.2840</td><td>1.2840</td><td>1.2840</td><td><a class='bpb-download-action' href='architecture-run-files/archives/02_ar-self-gen-gptq.zip' download>download</a></td></tr>
+<tr><td>CRAWLER-SAFE TRAIN/EVAL SURFACE</td><td>1</td><td>1.1099</td><td>1.1099</td><td>1.1099</td><td><a class='bpb-download-action' href='architecture-run-files/archives/36_sota-crawler.zip' download>download</a></td></tr>
+<tr><td>OTHER</td><td>1</td><td>1.1099</td><td>1.1099</td><td>1.1099</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>LEADERBOARD TRANSFORMER VARIANTS</td><td>1</td><td>1.1099</td><td>1.1099</td><td>1.1099</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>ALL VALID</td><td>4</td><td>1.1099</td><td>1.1099</td><td>1.2840</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 3</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>03:05</td><td>—</td><td>crawler variant: gate PASS — −0.00486 int6_sw, step time clean (×3)</td><td>1.2840</td><td>OK</td><td>↑20.3%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-31_row0001_details_bc52a8e9d547.html' data-target='row-detail-2026-03-31-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-31-1' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>2</strong></td><td>13:46</td><td>—</td><td>11L GQA U-Net body</td><td>1.1099</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-31_row0002_details_8b8bfd342f35.html' data-target='row-detail-2026-03-31-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-31-2' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>4</strong></td><td>20:03</td><td>—</td><td>Add two-track lab structure: neural/ and crawler/ (×3)</td><td>1.1099</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-31_row0004_details_e1fc55db6d41.html' data-target='row-detail-2026-03-31-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-31-4' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table>
+
+<h3>NEURAL TEST RUNS — 1</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>3</strong></td><td>19:43</td><td>—</td><td>Fix submission train_gpt.py to vault-verified file (0ec1f462, 118521 bytes)</td><td>1.1099</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-31_row0003_details_5dbc7b611cba.html' data-target='row-detail-2026-03-31-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-31-3' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

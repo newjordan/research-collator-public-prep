@@ -1,0 +1,8 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,d72_fallback_probe_dq_128_64_8_2_dkdv_128_128_8_3_mr_256_qmr_928_20260421_054604,,,kernel,2026-04-21T05:49:36Z,H100,,,unknown,,,1,SOTA_FINAL
+2,d72_primary_probe_dq_128_64_8_5_dkdv_128_64_8_3_mr_256_qmr_1984_20260421_054604,,,kernel,2026-04-21T05:49:37Z,H100,,,unknown,,,1,SOTA_FINAL
+3,d72_hybrid_b_probe_dq_128_64_8_5_dkdv_128_128_8_3_mr_256_qmr_1952_20260421_054938,,,kernel,2026-04-21T05:53:10Z,H100,,,unknown,,,1,SOTA_FINAL
+4,d72_hybrid_b_probe_dq_128_64_8_5_dkdv_128_128_8_3_mr_256_qmr_2192_20260421_055310,,,kernel,2026-04-21T05:56:42Z,H100,,,unknown,,,1,SOTA_FINAL
+5,blessed_whale_hybrid_b1952_anchor,,,kernel,2026-04-21T07:09:51Z,,,,unknown,,,2,SOTA_FINAL
+6,blessed_whale_anchor,,,kernel,2026-04-21T18:23:46Z,,,,unknown,,,1,SOTA_FINAL
+7,blessed_whale_fallback_anchor,,,kernel,2026-04-21T18:23:47Z,,,,unknown,,,1,SOTA_FINAL

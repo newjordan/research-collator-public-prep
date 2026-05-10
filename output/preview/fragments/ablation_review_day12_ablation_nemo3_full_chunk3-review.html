@@ -1,0 +1,43 @@
+<div class='ablation-review-doc'><h2>Nemo3 Ablation Label Review</h2>
+
+<p>Edit the JSONL <code>approved</code> field to true for rows you accept, then run:</p>
+
+<pre class='codeblock'>
+python3 ablation_label_local.py --promote-reviewed ~/research_collator/output/ablation_labels/day12_ablation_nemo3_full_chunk3.review.jsonl
+</pre>
+
+<table class='md-table'><thead><tr><th>DATE</th><th>#</th><th>CAMP</th><th>RAW ABLATION</th><th>SUGGESTED</th><th>CONF</th><th>REVIEW</th><th>CHANGE</th></tr></thead><tbody>
+<tr><td>2026-03-28</td><td>1</td><td>experimental</td><td>clowncar_s42_20260328_000645.log</td><td>clowncar s42 baseline</td><td>0.95</td><td>False</td><td>starting point</td></tr>
+<tr><td>2026-03-28</td><td>2</td><td>experimental</td><td>clowncar_s123_20260328_001927.log</td><td>clowncar s123</td><td>0.95</td><td>False</td><td>changed filename from clowncar_s42 to clowncar_s123</td></tr>
+<tr><td>2026-03-28</td><td>3</td><td>experimental</td><td>clowncar2_s1337_20260328_021444.log</td><td>clowncar2 s1337</td><td>0.95</td><td>False</td><td>changed filename from clowncar_s123 to clowncar2_s1337</td></tr>
+<tr><td>2026-03-28</td><td>4</td><td>experimental</td><td>clowncar4_s1337_20260328_023634.log</td><td>clowncar4 baseline</td><td>0.95</td><td>False</td><td>starting point</td></tr>
+<tr><td>2026-03-28</td><td>5</td><td>experimental</td><td>clowncar4_s1337_20260328_024744.log</td><td>clowncar4 unchanged</td><td>0.9</td><td>False</td><td>no change from previous clowncar4 run</td></tr>
+<tr><td>2026-03-28</td><td>6</td><td>experimental</td><td>clowncar4_s1337_20260328_025138.log</td><td>clowncar4 unchanged</td><td>0.9</td><td>False</td><td>no change from previous clowncar4 run</td></tr>
+<tr><td>2026-03-28</td><td>7</td><td>experimental</td><td>clowncar4_s1337_20260328_032541.log</td><td>clowncar4 baseline</td><td>0.95</td><td>False</td><td>starting point</td></tr>
+<tr><td>2026-03-28</td><td>8</td><td>experimental</td><td>medusa_s1337_20260328_035523.log</td><td>medusa</td><td>0.95</td><td>False</td><td>switched from clowncar4 to medusa</td></tr>
+<tr><td>2026-03-28</td><td>9</td><td>experimental</td><td>medusa_s1337_20260328_043415.log</td><td>medusa later</td><td>0.95</td><td>False</td><td>same medusa configuration, later run</td></tr>
+<tr><td>2026-03-28</td><td>10</td><td>experimental</td><td>medusa2_s1337_20260328_045431.log</td><td>medusa2</td><td>0.9</td><td>False</td><td>filename changed from medusa_s1337_20260328_043415.log to medusa2_s1337_20260328_045431.log</td></tr>
+<tr><td>2026-03-28</td><td>11</td><td>experimental</td><td>medusa2_s1337_20260328_054028.log</td><td>medusa2</td><td>0.95</td><td>False</td><td>timestamp advanced from 04:54 to 05:40</td></tr>
+<tr><td>2026-03-28</td><td>12</td><td>experimental</td><td>medusa2_ab_short_A_post_ema_s1337_20260328_055922.log</td><td>medusa2_ab_short_A_post_ema</td><td>0.9</td><td>False</td><td>filename added &#x27;ab_short_A_post_ema&#x27; segment</td></tr>
+<tr><td>2026-03-28</td><td>13</td><td>experimental</td><td>medusa2_ab_short_B_pre_ema_control_s1337_20260328_055922.log</td><td>medusa2_ab_short_B_pre_ema_control</td><td>0.99</td><td>False</td><td>changed from A post_ema to B pre_ema control</td></tr>
+<tr><td>2026-03-28</td><td>14</td><td>experimental</td><td>medusa2_ab_short_C_post_ema_delta_int8_s1337_20260328_055922.log</td><td>medusa2_ab_short_C_post_ema_delta_int8</td><td>0.99</td><td>False</td><td>changed from B pre_ema control to C post_ema delta_int8</td></tr>
+<tr><td>2026-03-28</td><td>15</td><td>experimental</td><td>medusa2_ab_short_A_post_ema_s1337_20260328_061037.log</td><td>medusa2_ab_short_A_post_ema</td><td>0.99</td><td>False</td><td>changed from C post_ema delta_int8 to A post_ema</td></tr>
+<tr><td>2026-03-28</td><td>16</td><td>experimental</td><td>medusa2_ab_short_B_pre_ema_control_s1337_20260328_061037.log</td><td>pre_ema_control</td><td>0.95</td><td>False</td><td>Switched from post_ema to pre_ema and added control.</td></tr>
+<tr><td>2026-03-28</td><td>17</td><td>experimental</td><td>medusa2_ab_short_C_post_ema_delta_int8_s1337_20260328_061037.log</td><td>post_ema_delta_int8</td><td>0.95</td><td>False</td><td>Changed to post_ema with delta and int8 quantization.</td></tr>
+<tr><td>2026-03-28</td><td>18</td><td>experimental</td><td>medusa4_s300_20260328_061654.log</td><td>medusa4 architecture</td><td>0.9</td><td>False</td><td>Switched architecture from medusa2 to medusa4.</td></tr>
+<tr><td>2026-03-28</td><td>19</td><td>experimental</td><td>medusa2_ab_finish_B_pre_ema_control_s1337_20260328_063405.log</td><td>medusa2 ab finish B pre EMA control</td><td>0.96</td><td>False</td><td>starting point</td></tr>
+<tr><td>2026-03-28</td><td>20</td><td>experimental</td><td>medusa2_ab_finish_A_post_ema_s1337_20260328_063405.log</td><td>medusa2 ab finish A post EMA</td><td>0.96</td><td>False</td><td>switched finish from B to A and pre‑ema to post‑ema</td></tr>
+<tr><td>2026-03-28</td><td>21</td><td>experimental</td><td>medusa2_ab_finish_C_post_ema_delta_int8_s1337_20260328_063405.log</td><td>medusa2 ab finish C post EMA delta_int8</td><td>0.96</td><td>False</td><td>changed finish to C and added delta_int8</td></tr>
+<tr><td>2026-03-28</td><td>22</td><td>neural</td><td>Add Medusa_V: fix state dtype cast (new_state.to(dtype))</td><td>Medusa_V state dtype fix</td><td>0.9</td><td>True</td><td>starting point</td></tr>
+<tr><td>2026-03-28</td><td>23</td><td>experimental</td><td>medusa2_ab_additional_D_no_loopaware_s1337_20260328_064357.log</td><td>additional_D_no_loopaware</td><td>0.85</td><td>False</td><td>added additional_D_no_loopaware to medusa2_ab_finish_C_post_ema_delta_int8</td></tr>
+<tr><td>2026-03-28</td><td>24</td><td>experimental</td><td>medusa2_ab_additional_A_skip_gptq_s1337_20260328_064357.log</td><td>additional_A_skip_gptq</td><td>0.9</td><td>False</td><td>replaced additional_D_no_loopaware with additional_A_skip_gptq</td></tr>
+<tr><td>2026-03-28</td><td>25</td><td>experimental</td><td>medusa2_ab_finish_D_post_ema_no_loopaware_s1337_20260328_064357.log</td><td>medusa2 finish_D post_ema no_loopaware</td><td>0.8</td><td>False</td><td>changed ablation from additional_A_skip_gptq to finish_D_post_ema_no_loopaware</td></tr>
+<tr><td>2026-03-28</td><td>26</td><td>experimental</td><td>medusa2_ab_finish_A_post_ema_s1337_20260328_064636.log</td><td>medusa2 finish_A post_ema</td><td>0.85</td><td>False</td><td>changed ablation from finish_D_no_loopaware to finish_A_post_ema</td></tr>
+<tr><td>2026-03-28</td><td>27</td><td>experimental</td><td>medusa5_s44_20260328_065019.log</td><td>medusa5 s44</td><td>0.9</td><td>False</td><td>changed model from medusa2 to medusa5 and seed from s1337 to s44</td></tr>
+<tr><td>2026-03-28</td><td>28</td><td>neural</td><td>Add Medusa_V_SOTAMAXX: frozen SOTA config snapshot</td><td>Add Medusa_V_SOTAMAXX frozen config</td><td>0.5</td><td>True</td><td>added frozen SOTA config snapshot</td></tr>
+<tr><td>2026-03-28</td><td>29</td><td>experimental</td><td>medusa6_s1337_20260328_072024.log</td><td>medusa6 training log</td><td>0.5</td><td>True</td><td>changed log filename from medusa5 to medusa6</td></tr>
+<tr><td>2026-03-28</td><td>30</td><td>experimental</td><td>medusa4_s1337_20260328_073746.log</td><td>medusa4 training log</td><td>0.5</td><td>True</td><td>changed log filename from medusa6 to medusa4</td></tr>
+<tr><td>2026-03-28</td><td>31</td><td>neural</td><td>Record: AR Self-Gen GPTQ + XSA-all + BigramHash 3072×112 — val_bpb 1.11473 (3-seed mean)</td><td>Record: AR Self-Gen GPTQ + XSA-all + BigramHash 3072×112</td><td>0.0</td><td>True</td><td>model error: Expecting &#x27;,&#x27; delimiter: line 24 column 6 (char 643)</td></tr>
+<tr><td>2026-03-28</td><td>32</td><td>experimental</td><td>medusa4_s42_20260328_154217.log</td><td>medusa4_s42_20260328_154217</td><td>0.0</td><td>True</td><td>model error: Expecting &#x27;,&#x27; delimiter: line 24 column 6 (char 643)</td></tr>
+<tr><td>2026-03-28</td><td>33</td><td>experimental</td><td>Records: Medusa_IV 3-seed complete — seed 42=0.8104 BPB (best), mean=0.9984, std=0.1724</td><td>Records: Medusa_IV 3-seed complete — seed 42=0.8104 BPB</td><td>0.0</td><td>True</td><td>model error: Expecting &#x27;,&#x27; delimiter: line 24 column 6 (char 643)</td></tr>
+</tbody></table></div>

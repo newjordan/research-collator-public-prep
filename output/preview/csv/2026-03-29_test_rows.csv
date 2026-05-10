@@ -1,0 +1,39 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,medusa_legal_s300_20260329_000231.log,,,experimental,2026-03-29T00:02:31+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+2,medusa_legal_s444_20260329_001944.log,,,experimental,2026-03-29T00:19:44+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+3,medusa_legal_s4_20260329_003414.log,,,experimental,2026-03-29T00:34:14+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+4,SHROUD_JUNKYARD_MINI_SPARK.log,,,experimental,2026-03-29T02:47:15+00:00,1×GB10,,,log_final_eval,,,2,open_parameter_golf_junkyard
+5,Record: Rascal — val_bpb 1.1099 (3-seed mean),,,neural,2026-03-29T04:53:35+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+6,Bandit: ClownCar Crawler x Cubric Ngram9,,,experimental,2026-03-29T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+7,medusa7_dn0_s300_20260329_135148.log,,,experimental,2026-03-29T13:51:48+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+8,medusa7_dn4_s300_20260329_141236.log,,,experimental,2026-03-29T14:12:36+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+9,bandit_s1337_20260329_144616.log,,,experimental,2026-03-29T14:46:16+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+10,bandit_s4_20260329_150338.log,,,experimental,2026-03-29T15:03:38+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+11,bandit_s444_20260329_151834.log,,,experimental,2026-03-29T15:18:34+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+12,bandit_s300_20260329_153400.log,,,experimental,2026-03-29T15:34:00+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+13,Bandit: ClownCar Crawler x Cubric Ngram9 — 0.4961 BPB (3-seed mean),,,experimental,2026-03-29T15:49:54Z,,,,commit_message,,,3,git:parameter-golf-lab
+14,SHROUD_LOOPVIZ_BASE.log,,,experimental,2026-03-29T18:00:21Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+15,SHROUD_LOOPVIZ_INST0.log,,,experimental,2026-03-29T18:00:42Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+16,SHROUD_LOOPVIZ_LOOPS3.log,,,experimental,2026-03-29T18:11:10Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+17,BW_LOOPVIZ_ANCHOR.log,,,experimental,2026-03-29T18:43:07Z,1×RTX 5090,,,log_final_eval,,,1,open_parameter_golf_junkyard
+18,BW_LOOPVIZ_WIDTH640.log,,,experimental,2026-03-29T18:43:39Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+19,BW_LOOPVIZ_DEPTH6.log,,,experimental,2026-03-29T18:44:00Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+20,BW-00_anchor.log,,,experimental,2026-03-29T18:56:44Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+21,BW-01_width_576.log,,,experimental,2026-03-29T18:57:00Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+22,BW-02_width_640.log,,,experimental,2026-03-29T18:57:19Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+23,BW-03_depth_5flat.log,,,experimental,2026-03-29T18:57:35Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+24,BW-04_depth_6flat.log,,,experimental,2026-03-29T18:57:51Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+25,junkyard_rat_s300_20260329_201546.log,,,experimental,2026-03-29T20:15:46+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+26,SHROUD_LOOPVIZ_INTERACT.log,,,experimental,2026-03-29T20:18:48Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+27,junkyard_rat_s300_20260329_202017.log,,,experimental,2026-03-29T20:20:17+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+28,junkyard_rat_s1337_20260329_202241.log,,,experimental,2026-03-29T20:22:41+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+29,junkyard_rat_s300_20260329_203618.log,,,experimental,2026-03-29T20:36:18+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+30,junkyard_rat_s1337_20260329_210836.log,,,experimental,2026-03-29T21:08:36+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+31,junkyard_rat_s1337_20260329_213454.log,,,experimental,2026-03-29T21:34:54+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+32,junkyard_rat_s1337_20260329_214718.log,,,experimental,2026-03-29T21:47:18+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+33,junkyard_rat_s1337_20260329_215827.log,,,experimental,2026-03-29T21:58:27+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+34,junkyard_rat_s1337_20260329_220937.log,,,experimental,2026-03-29T22:09:37+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+35,junkyard_rat_s1337_20260329_222047.log,,,experimental,2026-03-29T22:20:47+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+36,junkyard_rat_s1337_20260329_223157.log,,,experimental,2026-03-29T22:31:57+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+37,junkyard_rat_s1337_20260329_224919.log,,,experimental,2026-03-29T22:49:19+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+38,SHROUD_LOOPVIZ_FLOWTAG.log,,,experimental,2026-03-29T23:57:38Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard

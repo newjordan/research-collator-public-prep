@@ -9,7 +9,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
 # Use miniconda Python/torchrun (system torchrun is CPU-only)
-export PATH="/home/frosty40/miniconda3/bin:${PATH}"
+export PATH="~/miniconda3/bin:${PATH}"
 cd "${REPO_ROOT}"
 export PYTHONPATH="${REPO_ROOT}/flash-attention/hopper:${PYTHONPATH:-}"
 

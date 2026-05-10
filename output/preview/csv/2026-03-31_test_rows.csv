@@ -1,0 +1,5 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,"BW10_GPTQ: gate PASS — −0.00486 int6_sw, step time clean",,,experimental,2026-03-31T03:05:21+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+2,Rascal,,,experimental,2026-03-31T13:46:07+00:00,,,,json_top_level,,,1,open_parameter_golf_junkyard
+3,"Fix submission train_gpt.py to vault-verified file (0ec1f462, 118521 bytes)",,,neural,2026-03-31T19:43:17Z,,,,commit_message,,,1,git:parameter-golf-lab
+4,Add two-track lab structure: neural/ and crawler/,,,experimental,2026-03-31T20:03:05Z,,,,commit_message,,,3,git:parameter-golf-lab

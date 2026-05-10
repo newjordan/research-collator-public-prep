@@ -1,0 +1,847 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-03-21 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-03-21.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-03-21</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 310 of 337 · 18 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-03-21 | 18 | 21 |&#10;  - **exact evidence:** SQLite `metrics_json` shows `{&quot;val_bpb&quot;: 1.1428, &quot;val_bpb_source&quot;: &quot;commit_message&quot;}`. `audit_daily_accuracy.is_commit_only` returned True (only sources for the row are `git_commit` rows). `render_day.best_date(rec) == &quot;2026-03-20&quot;` matches the page; `mtime_iso = 2026-03-21T00:04:49Z` is correctly converted to local CDT 2026-03-20.&#10;- **date:** 2026-03-21&#10;  - **exact evidence:** `metrics_json = {&quot;val_bpb&quot;: 1.124, &quot;val_bpb_source&quot;: &quot;commit_message&quot;}`. No corresponding training_log was scraped for this commit&#x27;s PR315+TTT path on 2026-03-21.</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-03-21&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 337,&#10;  &quot;render_records&quot;: 310,&#10;  &quot;test_rows&quot;: 21,&#10;  &quot;warnings&quot;: 18&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>284 commits on 2026-03-21</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>2951651b</span> <span class='commit-time'>06:10:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: 11L Partial RoPE + LN Scale + EMA + XSA4 (val_bpb: 1.1248)</span></li><li class='commit-item'><span class='commit-hash'>2951651b</span> <span class='commit-time'>06:10:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: 11L Partial RoPE + LN Scale + EMA + XSA4 (val_bpb: 1.1248)</span></li><li class='commit-item'><span class='commit-hash'>2951651b</span> <span class='commit-time'>06:10:19</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record: 11L Partial RoPE + LN Scale + EMA + XSA4 (val_bpb: 1.1248)</span></li><li class='commit-item'><span class='commit-hash'>1a921fde</span> <span class='commit-time'>13:52:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR #198 clone script — SOTA baseline + our edges (XSA, TTT 3ep)</span></li><li class='commit-item'><span class='commit-hash'>1a921fde</span> <span class='commit-time'>13:52:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR #198 clone script — SOTA baseline + our edges (XSA, TTT 3ep)</span></li><li class='commit-item'><span class='commit-hash'>270d5809</span> <span class='commit-time'>15:00:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Clean start from PR #198 record + XSA + TTT SGD 3ep</span></li><li class='commit-item'><span class='commit-hash'>270d5809</span> <span class='commit-time'>15:00:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Clean start from PR #198 record + XSA + TTT SGD 3ep</span></li><li class='commit-item'><span class='commit-hash'>4260c9cb</span> <span class='commit-time'>15:36:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add QKV attention variants + int5 MLP default quantization</span></li><li class='commit-item'><span class='commit-hash'>bb214425</span> <span class='commit-time'>15:41:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR #180 progressive MLP test test A/B test experiment</span></li><li class='commit-item'><span class='commit-hash'>bb214425</span> <span class='commit-time'>15:41:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR #180 progressive MLP test test A/B test experiment</span></li><li class='commit-item'><span class='commit-hash'>665a3e4f</span> <span class='commit-time'>15:45:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Convert PR #180 progressive MLP test test experiment to FA3</span></li><li class='commit-item'><span class='commit-hash'>665a3e4f</span> <span class='commit-time'>15:45:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Convert PR #180 progressive MLP test test experiment to FA3</span></li><li class='commit-item'><span class='commit-hash'>8926429f</span> <span class='commit-time'>16:19:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix grammar in README</span></li><li class='commit-item'><span class='commit-hash'>8926429f</span> <span class='commit-time'>16:19:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix grammar in README</span></li><li class='commit-item'><span class='commit-hash'>8926429f</span> <span class='commit-time'>16:19:34</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix grammar in README</span></li><li class='commit-item'><span class='commit-hash'>6db5e2fd</span> <span class='commit-time'>16:32:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add A/B/C test: progressive MLP test test + fat BigramHash compensation</span></li><li class='commit-item'><span class='commit-hash'>6db5e2fd</span> <span class='commit-time'>16:32:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add A/B/C test: progressive MLP test test + fat BigramHash compensation</span></li><li class='commit-item'><span class='commit-hash'>5e0a2554</span> <span class='commit-time'>16:46:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add test D: progressive attention gain (soft-early, sharp-late)</span></li><li class='commit-item'><span class='commit-hash'>5e0a2554</span> <span class='commit-time'>16:46:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add test D: progressive attention gain (soft-early, sharp-late)</span></li><li class='commit-item'><span class='commit-hash'>bc7f59c6</span> <span class='commit-time'>17:21:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Switch FA3 import to FA2 (pre-built wheel, same API)</span></li><li class='commit-item'><span class='commit-hash'>bc7f59c6</span> <span class='commit-time'>17:21:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Switch FA3 import to FA2 (pre-built wheel, same API)</span></li><li class='commit-item'><span class='commit-hash'>f30f1273</span> <span class='commit-time'>18:11:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add run D (progressive attn gain) + FA3 fallback to PyTorch SDP</span></li><li class='commit-item'><span class='commit-hash'>f30f1273</span> <span class='commit-time'>18:11:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add run D (progressive attn gain) + FA3 fallback to PyTorch SDP</span></li><li class='commit-item'><span class='commit-hash'>bff38a15</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>c96ec49c</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>203e59dc</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>aa206004</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>bff38a15</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>203e59dc</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>aa206004</span> <span class='commit-time'>19:10:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB)</span></li><li class='commit-item'><span class='commit-hash'>7f511e39</span> <span class='commit-time'>19:16:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add LightBlock and HybridBlock: attention-free alternatives</span></li><li class='commit-item'><span class='commit-hash'>64ff1ad4</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>5e31538e</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>caf1fc79</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>2636011f</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>64ff1ad4</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>caf1fc79</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>2636011f</span> <span class='commit-time'>22:17:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA last 3 layers to #254 SOTA clone</span></li><li class='commit-item'><span class='commit-hash'>334565d1</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>75ef44f5</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>23427120</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>4e4cc7fa</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>334565d1</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>23427120</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>4e4cc7fa</span> <span class='commit-time'>22:26:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA GQA broadcast bug — expand KV heads before manual attention</span></li><li class='commit-item'><span class='commit-hash'>ff1834cd</span> <span class='commit-time'>22:35:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add COMPILE=0 env var to skip torch.compile for fast local testing</span></li><li class='commit-item'><span class='commit-hash'>44e662fe</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>8f6a8cca</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>0fa4ea33</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>44d290db</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>44e662fe</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>0fa4ea33</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>44d290db</span> <span class='commit-time'>22:53:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536</span></li><li class='commit-item'><span class='commit-hash'>d975df5a</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>18c0e662</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>d5f22078</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>83efa9c1</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>d975df5a</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>d5f22078</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>83efa9c1</span> <span class='commit-time'>23:11:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FarnsworthEngine v2: full improvement stack on SOTA254 base</span></li><li class='commit-item'><span class='commit-hash'>a288184a</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>d0d47752</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>fe35f950</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>e0d06d07</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>a288184a</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>fe35f950</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>e0d06d07</span> <span class='commit-time'>23:20:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add FA3→FA2→SDPA fallback chain for pod restart resilience</span></li><li class='commit-item'><span class='commit-hash'>9ecba65c</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>82c06249</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>2aa53150</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>d94c7a1c</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>9ecba65c</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>2aa53150</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>d94c7a1c</span> <span class='commit-time'>23:24:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Revert FA3 fallback chain — was unauthorized code change to baseline + untested v2</span></li><li class='commit-item'><span class='commit-hash'>0e5d8397</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>a768362f</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>cb95d033</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>7171b6a7</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>0e5d8397</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>cb95d033</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>7171b6a7</span> <span class='commit-time'>23:41:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix FA3 NaN: cast qkv to bf16 before FA3 call, disable dynamo DDP opt</span></li><li class='commit-item'><span class='commit-hash'>e6a4f552</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>ae0afa0b</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>960ada44</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>c0adf168</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>e6a4f552</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>960ada44</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>c0adf168</span> <span class='commit-time'>23:52:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 2-seed validation scripts for exp A/B/C</span></li><li class='commit-item'><span class='commit-hash'>ee693e26</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>4abe6f52</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>abdfdeae</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>a54066ac</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>ee693e26</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>abdfdeae</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>a54066ac</span> <span class='commit-time'>00:15:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp A/B results: both behind baseline, zlib fallback bug found</span></li><li class='commit-item'><span class='commit-hash'>c0889712</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>ac31eebb</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>4ef403f6</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>065bd065</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>c0889712</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>4ef403f6</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>065bd065</span> <span class='commit-time'>00:27:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix XSA NaN: position 0 has no valid targets when self-mask + causal combine</span></li><li class='commit-item'><span class='commit-hash'>432051b1</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>c916c9f9</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>b356a91e</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>0b2c73ca</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>432051b1</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>b356a91e</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>0b2c73ca</span> <span class='commit-time'>00:35:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Disable XSA in ttt_only run — manual attention too slow vs FA3</span></li><li class='commit-item'><span class='commit-hash'>1f02d0b3</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>c68de2c2</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>c8bfd590</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>2d79228d</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>1f02d0b3</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>c8bfd590</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>2d79228d</span> <span class='commit-time'>00:38:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add run_v2_ttt_noXSA.sh — TTT v2 + temp scaling, all FA3, max speed</span></li><li class='commit-item'><span class='commit-hash'>660abd0c</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>27889d62</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>12f37dc9</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>508cdf1f</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>660abd0c</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>12f37dc9</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>508cdf1f</span> <span class='commit-time'>00:38:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore XSA_LAST_N=3 in run_v2_ttt_only.sh (keep existing test intact)</span></li><li class='commit-item'><span class='commit-hash'>d89ea7d3</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>277511f5</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>0c4d8616</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>c1e74ba5</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>d89ea7d3</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>0c4d8616</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>c1e74ba5</span> <span class='commit-time'>00:49:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline)</span></li><li class='commit-item'><span class='commit-hash'>bc11dc6c</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>c269e904</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>ecc4755f</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>f263214a</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>bc11dc6c</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>ecc4755f</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>f263214a</span> <span class='commit-time'>00:51:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Strip verbose logging from v2 train loop — match baseline format</span></li><li class='commit-item'><span class='commit-hash'>812535ed</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>bcfb4752</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>7a11286a</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>7bdf6dea</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>812535ed</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>7a11286a</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>7bdf6dea</span> <span class='commit-time'>01:05:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline</span></li><li class='commit-item'><span class='commit-hash'>5e222b7a</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>2c00f0a5</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>f56f6959</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>2620ec3f</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>5e222b7a</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>f56f6959</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>2620ec3f</span> <span class='commit-time'>01:08:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp_a/b/c results: all worse than 1.1301 baseline, exp_c never ran</span></li><li class='commit-item'><span class='commit-hash'>114a4476</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>ee44ac00</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>35110f97</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>aea1e39a</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>114a4476</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>35110f97</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>aea1e39a</span> <span class='commit-time'>01:10:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp D: TTT 8 epochs + stride 32 (eval-only improvement)</span></li><li class='commit-item'><span class='commit-hash'>3eecc334</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>d1ab62e0</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>07f0bba3</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>e407bea1</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>3eecc334</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>07f0bba3</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>e407bea1</span> <span class='commit-time'>01:15:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM (Sharpness-Aware Minimization) option for TTT</span></li><li class='commit-item'><span class='commit-hash'>e79ec97a</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>853bce82</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>4b100ac7</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>4fb1becb</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>e79ec97a</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>4b100ac7</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>4fb1becb</span> <span class='commit-time'>01:17:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add baseline reproduction script — verify 1.1303 on current FA3 build</span></li><li class='commit-item'><span class='commit-hash'>d0a88bce</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>56d9a790</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>4bfbe607</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>35838893</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>d0a88bce</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>4bfbe607</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>35838893</span> <span class='commit-time'>01:23:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SAM to baseline TTT — test sharpness-aware adaptation on proven code</span></li><li class='commit-item'><span class='commit-hash'>fc89b547</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>fcf812f5</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>723d095f</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>9d86a37c</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>fc89b547</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>723d095f</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>9d86a37c</span> <span class='commit-time'>01:29:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline)</span></li><li class='commit-item'><span class='commit-hash'>bc6b8419</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>39064eff</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>2bf61711</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>79c9c2aa</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>bc6b8419</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>2bf61711</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>79c9c2aa</span> <span class='commit-time'>01:47:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301)</span></li><li class='commit-item'><span class='commit-hash'>a00e8553</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>38fb7cc6</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>a1b9703a</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>87c2831f</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>a00e8553</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>a1b9703a</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>87c2831f</span> <span class='commit-time'>02:05:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d SAM variant — TTT 8ep + stride 32 + sharpness-aware TTT</span></li><li class='commit-item'><span class='commit-hash'>440366fc</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>473aa628</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>ef4dc442</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>e24283ad</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>440366fc</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>ef4dc442</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>e24283ad</span> <span class='commit-time'>02:06:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit</span></li><li class='commit-item'><span class='commit-hash'>2700346d</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>33a1276d</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>74292852</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>e6d3dc59</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>2700346d</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>74292852</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>e6d3dc59</span> <span class='commit-time'>02:19:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Partial RoPE + LN Scale (from PR #315) to sota254 + run_sam</span></li><li class='commit-item'><span class='commit-hash'>196a5045</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>86ef9af9</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>32de9e9b</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>753ebd15</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>196a5045</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>32de9e9b</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>753ebd15</span> <span class='commit-time'>02:19:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add exp_d/run_sam_clean.sh — pure SAM A/B test, no other changes</span></li><li class='commit-item'><span class='commit-hash'>418c4409</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>d2750e96</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>3cc6006b</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>d8053e69</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>418c4409</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>3cc6006b</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>d8053e69</span> <span class='commit-time'>02:23:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log exp D seeds 7+137: both over size limit</span></li><li class='commit-item'><span class='commit-hash'>e1dd24c3</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>12ca289d</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>aa4b1c06</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>169e4a35</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>e1dd24c3</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>aa4b1c06</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>169e4a35</span> <span class='commit-time'>02:33:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-only improvement</span></li><li class='commit-item'><span class='commit-hash'>964fe7bc</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>1b9a2dc5</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>f9ef3637</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>e65d662b</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>964fe7bc</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>f9ef3637</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>e65d662b</span> <span class='commit-time'>02:38:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR#315 clone with TTT 8ep + run script</span></li><li class='commit-item'><span class='commit-hash'>551d81c7</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>fdd256e8</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>8dd0e89d</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>9de9e704</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>551d81c7</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>8dd0e89d</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>9de9e704</span> <span class='commit-time'>02:45:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script</span></li><li class='commit-item'><span class='commit-hash'>91589f33</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>b10ef8a8</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>719b69d7</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>24267e1a</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>91589f33</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>719b69d7</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>24267e1a</span> <span class='commit-time'>03:23:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned)</span></li><li class='commit-item'><span class='commit-hash'>cdc12fa7</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>ca939f26</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>72573d96</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>f7c1a70d</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>cdc12fa7</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>72573d96</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>f7c1a70d</span> <span class='commit-time'>04:11:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@1024 + EMA</span></li><li class='commit-item'><span class='commit-hash'>b038850f</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>0fa2d63d</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>6f88e84d</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>511428d5</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>b038850f</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>6f88e84d</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>511428d5</span> <span class='commit-time'>04:45:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add RunPod 8xH100 setup guide — every gotcha we&#x27;ve hit 3 times</span></li><li class='commit-item'><span class='commit-hash'>f6b692f6</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>2d47e82b</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>b27e1346</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>23696543</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>f6b692f6</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>b27e1346</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>23696543</span> <span class='commit-time'>04:46:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add fractal cadence test cadence test cadence experiment: F/N alternation pattern</span></li><li class='commit-item'><span class='commit-hash'>208a4d56</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>9782e189</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>63714e4c</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>fbc18889</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>208a4d56</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>63714e4c</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li><li class='commit-item'><span class='commit-hash'>fbc18889</span> <span class='commit-time'>04:56:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add PR374-safe: EMA + earlier QAT + longer warmdown only, shape unchanged</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-03-21</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">004</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">21 unique  (21 valid / 0 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">LEADERBOARD TRANSFORMER VARIANTS (×8)  ·  CRAWLER ABLATION CONTROL SET (×5)  ·  PROGRESSIVE MLP AND FRACTAL CADENCE TESTS (×4)  ·  TTT8 STRIDE-32 TEST FAMILY (×3)  ·  STATE-SPACE TTT VARIANT (×1)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 90% (19) / NEURAL 10% (2)"><span class="alloc-seg-exp" style="width:90.48%"></span><span class="alloc-seg-neu" style="width:9.52%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 90% (19)</span><span class="alloc-sep">/</span><span class="alloc-text-neu">NEURAL 10% (2)</span></span></span></div></div>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>LEADERBOARD TRANSFORMER VARIANTS (x7): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>CRAWLER ABLATION CONTROL SET (x5): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>PROGRESSIVE MLP AND FRACTAL CADENCE TESTS (x4): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p><strong>Neural work:</strong> <span>TTT8 STRIDE-32 TEST FAMILY (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>LEADERBOARD TRANSFORMER VARIANTS (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p>Day 004 measured <strong>21 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>21 valid</strong> rows and <strong>0 TTT leakage</strong> readings excluded.</p><p><strong>NEW PERSONAL BEST.</strong> Best valid <strong>1.1210</strong> beats prior bar <strong>1.1313</strong>.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-03-21_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-03-21 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-21_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-03-21_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-03-21 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-21_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>LEADERBOARD TRANSFORMER VARIANTS</td><td>8</td><td>1.1210</td><td>1.1288</td><td>1.1318</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>CRAWLER ABLATION CONTROL SET</td><td>5</td><td>1.1295</td><td>1.1326</td><td>1.1982</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>PROGRESSIVE MLP AND FRACTAL CADENCE TESTS</td><td>4</td><td>1.1428</td><td>1.4355</td><td>2.6276</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>TTT8 STRIDE-32 TEST FAMILY</td><td>3</td><td>1.1307</td><td>1.1313</td><td>1.1313</td><td><a class='bpb-download-action' href='architecture-run-files/archives/37_sota-v2-ttt.zip' download>download</a></td></tr>
+<tr><td>STATE-SPACE TTT VARIANT</td><td>1</td><td>1.1303</td><td>1.1303</td><td>1.1303</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>ALL VALID</td><td>21</td><td>1.1210</td><td>1.1313</td><td>2.6276</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 19</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>00:15</td><td>—</td><td>Log exp A/B results: both behind baseline, zlib fallback bug found (×7)</td><td>1.1619</td><td>OK</td><td>↑2.7%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0001_details_1540d315e048.html' data-target='row-detail-2026-03-21-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-1' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>2</strong></td><td>00:49</td><td>—</td><td>Log v2 TTT-only + XSA=3 result: 1.1982 BPB (worse than 1.1301 baseline) (×7)</td><td>1.1982</td><td>OK</td><td>↑5.9%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0002_details_70d93123f906.html' data-target='row-detail-2026-03-21-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-2' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>3</strong></td><td>01:05</td><td>—</td><td>Log v2 noXSA result: 1.1538/1.1315 BPB — TTT v2 hurt, no edge over baseline (×7)</td><td>1.1315</td><td>OK</td><td>↑0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0003_details_66142897f074.html' data-target='row-detail-2026-03-21-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-3' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>4</strong></td><td>01:29</td><td>—</td><td>Log exp D result: 1.1295 BPB — new best (-0.0008 vs baseline) (×7)</td><td>1.1295</td><td>OK</td><td>↓0.2%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0004_details_a7b34be56b97.html' data-target='row-detail-2026-03-21-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-4' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>5</strong></td><td>01:47</td><td>—</td><td>Log exp D seed 42: 1.1307 BPB — confirms improvement (mean 1.1301) (×7)</td><td>1.1307</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0005_details_c579b5e5c8e5.html' data-target='row-detail-2026-03-21-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-5' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>7</strong></td><td>02:23</td><td>—</td><td>Log exp D seeds 7+137: both over size limit (×7)</td><td>1.1313</td><td>OK</td><td>0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0007_details_d73db22c7e2c.html' data-target='row-detail-2026-03-21-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>02:33</td><td>—</td><td>Add TTT stride-32 eval-only experiment experiment: TTT 8ep + stride 32 eval-o…</td><td>1.1303</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0008_details_2cb95dbc78c5.html' data-target='row-detail-2026-03-21-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>02:45</td><td>—</td><td>Log D+SAM+PR315tricks: 1.1274 BPB new best; add SAM to pr315 run script (×7)</td><td>1.1274</td><td>OK</td><td>↓0.3%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0009_details_ee2740e72104.html' data-target='row-detail-2026-03-21-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>03:23</td><td>—</td><td>Log PR315+TTT results: 1.1240 BPB (invalidated — TTT now banned) (×7)</td><td>1.1240</td><td>OK</td><td>↓0.6%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0010_details_452ccc4dedb6.html' data-target='row-detail-2026-03-21-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-10' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>11</strong></td><td>04:11</td><td>—</td><td>Add PR374 12L/2KV/2.75xMLP experiment experiment: 12L/2KV/2.75xMLP + train@10…</td><td>1.1246</td><td>OK</td><td>↓0.6%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0011_details_9d85187a0c22.html' data-target='row-detail-2026-03-21-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>04:46</td><td>—</td><td>Add fractal cadence test cadence test cadence experiment: F/N alternation pat…</td><td>2.6276</td><td>OK</td><td>↑132.3%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0012_details_2f6fcf53982c.html' data-target='row-detail-2026-03-21-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-12' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>13:52</td><td>—</td><td>Add PR #198 clone script — SOTA baseline + our edges (XSA, TTT 3ep) (×2)</td><td>1.1326</td><td>OK</td><td>↑0.1%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0013_details_a47e2217d224.html' data-target='row-detail-2026-03-21-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-13' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>15</strong></td><td>15:41</td><td>—</td><td>Add PR #180 progressive MLP test test A/B test experiment (×2)</td><td>1.1428</td><td>OK</td><td>↑1.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0015_details_64fa27f7830d.html' data-target='row-detail-2026-03-21-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-15' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>16</strong></td><td>18:46</td><td>1×GB10</td><td>A_uniform.log</td><td>1.5020</td><td>OK</td><td>↑32.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0016_details_59a5c57d45d3.html' data-target='row-detail-2026-03-21-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>19:05</td><td>1×GB10</td><td>B_progressive.log</td><td>1.3691</td><td>OK</td><td>↑21.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0017_details_467731ea31d4.html' data-target='row-detail-2026-03-21-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>19:10</td><td>—</td><td>Add exact clone of PR #254 — best pending SOTA (1.1313 BPB) (×7)</td><td>1.1313</td><td>OK</td><td>0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0018_details_262be43a6520.html' data-target='row-detail-2026-03-21-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-18' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>19</strong></td><td>22:17</td><td>—</td><td>Add XSA last 3 layers to #254 SOTA clone (×7)</td><td>1.1210</td><td>OK</td><td>↓0.9%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0019_details_cdb5e45d498f.html' data-target='row-detail-2026-03-21-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-19' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>20</strong></td><td>22:53</td><td>—</td><td>Add 3 SOTA improvement experiments: MTP, SwiGLU, Vocab1536 (×7)</td><td>1.1303</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0020_details_fef5cacb8563.html' data-target='row-detail-2026-03-21-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-20' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>21</strong></td><td>23:58</td><td>8×H100</td><td>run_s1337.log (×3)</td><td>1.1301</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0021_details_44a90c10f9b0.html' data-target='row-detail-2026-03-21-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-21' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table>
+
+<h3>NEURAL TEST RUNS — 2</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>6</strong></td><td>02:06</td><td>—</td><td>Log exp D seed 7: 1.1313 BPB but 16.18 MB — over size limit (×7)</td><td>1.1313</td><td>OK</td><td>0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0006_details_186a124db0d9.html' data-target='row-detail-2026-03-21-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-6' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>14</strong></td><td>15:00</td><td>—</td><td>Clean start from PR #198 record + XSA + TTT SGD 3ep (×2)</td><td>1.1318</td><td>OK</td><td>↑0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-21_row0014_details_65748ee38f70.html' data-target='row-detail-2026-03-21-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-21-14' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

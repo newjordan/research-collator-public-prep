@@ -40,8 +40,8 @@ BLOB_BASE = (
     "art/palette-switcher"
 )
 SEARCH_ROOTS = [
-    Path("/home/frosty40/llm_research"),
-    Path("/home/frosty40"),
+    Path("~/llm_research"),
+    Path("~"),
 ]
 EXCLUDED_DIR_NAMES = {
     ".git",

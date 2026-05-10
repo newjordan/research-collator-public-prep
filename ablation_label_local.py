@@ -25,7 +25,7 @@ from typing import Any
 import render_day
 
 DB = Path(render_day.DB)
-OUT_DIR = Path("/home/frosty40/research_collator/output/ablation_labels")
+OUT_DIR = Path("~/research_collator/output/ablation_labels")
 DEFAULT_BASE_URL = "http://127.0.0.1:8000/v1"
 DEFAULT_MODEL = "nemotron_3_nano_omni"
 

@@ -93,15 +93,15 @@ LOCAL_TO_GIT_SOURCE = {
     "rascal-private": "git:rascal-private",
 }
 PUBLIC_SOURCE_ROOTS = {
-    "parameter-golf-lab": "/home/frosty40/llm_research/parameter-golf-lab",
-    "open_parameter_golf_junkyard": "/home/frosty40/llm_research/parameter-golf-lab",
-    "parameter-golf-cross-repo": "/home/frosty40/llm_research/parameter-golf-cross-repo",
-    "sota_crawler": "/home/frosty40/llm_research/sota_crawler",
-    "SOTA_FINAL": "/home/frosty40/llm_research/SOTA_FINAL",
-    "sota_rascal": "/home/frosty40/llm_research/sota_rascal",
-    "sota_nueral": "/home/frosty40/llm_research/sota_nueral",
-    "pg_whale": "/home/frosty40/llm_research/pg_whale",
-    "rascal-private": "/home/frosty40/llm_research/rascal-private",
+    "parameter-golf-lab": "~/llm_research/parameter-golf-lab",
+    "open_parameter_golf_junkyard": "~/llm_research/parameter-golf-lab",
+    "parameter-golf-cross-repo": "~/llm_research/parameter-golf-cross-repo",
+    "sota_crawler": "~/llm_research/sota_crawler",
+    "SOTA_FINAL": "~/llm_research/SOTA_FINAL",
+    "sota_rascal": "~/llm_research/sota_rascal",
+    "sota_nueral": "~/llm_research/sota_nueral",
+    "pg_whale": "~/llm_research/pg_whale",
+    "rascal-private": "~/llm_research/rascal-private",
 }
 PUBLIC_URL_CHECK_CACHE: dict[str, bool] = {}
 

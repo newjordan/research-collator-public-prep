@@ -12,7 +12,7 @@ index and research corpus available.
 The safest deployment path is local static deploy from this machine:
 
 ```bash
-cd /home/frosty40/research_collator
+cd ~/research_collator
 python3 render_all.py
 npx vercel deploy --prod
 ```

@@ -27,8 +27,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Iterable
 
-DB = Path("/home/frosty40/research_collator/index.sqlite")
-OUT_DIR = Path("/home/frosty40/research_collator/output/chat_extract")
+DB = Path("~/research_collator/index.sqlite")
+OUT_DIR = Path("~/research_collator/output/chat_extract")
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 DEFAULT_QWEN_MODEL = "qwen3-coder:30b"
 SESSION_KINDS = ("codex_session", "claude_session")

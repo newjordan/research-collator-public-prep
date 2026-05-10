@@ -1,0 +1,13 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,Save Midnight III raw training logs from 8xH100 pod,,,experimental,2026-04-10T04:58:31+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+2,train_seed444_20260410_055647.log,,,experimental,2026-04-10T05:56:47+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+3,train_seed300.log,,,experimental,2026-04-10T06:39:23+00:00,8×H100,,,log_final_eval,,,1,sota_crawler
+4,train_seed4.log,,,experimental,2026-04-10T06:39:23+00:00,8×H100,,,log_final_eval,,,1,sota_crawler
+5,Nightcrawler Cubed,,,experimental,2026-04-10T06:39:23+00:00,,,,json_top_level,,,1,sota_crawler
+6,train_seed4_4h.log,,,experimental,2026-04-10T06:39:23+00:00,8×H100,,,log_final_eval,,,1,sota_crawler
+7,train_seed444.log,,,experimental,2026-04-10T06:39:23+00:00,8×H100,,,log_final_eval,,,1,sota_crawler
+8,train_seed444_20260410_065634_recovered_from_chat.log,,,experimental,2026-04-10T13:46:07+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+9,Forensic recovery: Midnight_Black results + corpus corrections,,,neural,2026-04-10T15:11:05Z,,,,commit_message,,,1,git:sota_nueral
+10,best_crawler_SOTA_CRAWLER_SAFE_seed444_20260410_205837.log,,,experimental,2026-04-10T20:58:37+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+11,train_seed300_20260410_211710.log,,,experimental,2026-04-10T21:17:10+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+12,best_crawler_SOTA_CRAWLER_SAFE_seed4_20260410_213324.log,,,experimental,2026-04-10T21:33:24+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab

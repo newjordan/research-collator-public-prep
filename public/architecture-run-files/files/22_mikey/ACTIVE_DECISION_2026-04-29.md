@@ -54,7 +54,7 @@ Marked loser:
 
 The current 8x pod target is clean Mikey v5 on SP5200, not Rascal.
 
-- Pod: `35002131`, direct SSH `root@35.192.20.187 -p 9438`
+- Pod: `35002131`, direct SSH `root@<redacted-ip> -p 9438`
 - First runner: `legs/2026-04-29_mikey_II_v5_sp5200_loop2_11l_8x/run.py`
 - Follow-up runners: `11l_mlp35_8x`, then `12l_8x`
 - Tokenizer SHA256: `8bedf3c9e6e7a8ee55539c0ec2627b0c7a4c08782c26559bf007c8d07cd5e07f`
@@ -64,5 +64,5 @@ The current 8x pod target is clean Mikey v5 on SP5200, not Rascal.
 
 Last full pod save:
 
-- `/home/frosty40/sota_rascal_pod_saves/sota_rascal_4x_shutdown_20260429_065632.tgz`
+- `~/sota_rascal_pod_saves/sota_rascal_4x_shutdown_20260429_065632.tgz`
 - SHA256: `c357f40a5b6296e3f782fbbf9913c3ba33682dfbef24c85e190e953892537c92`

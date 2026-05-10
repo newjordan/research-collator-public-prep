@@ -1,0 +1,27 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,Lucky V.3: SLOT_LR=0.04 — confirmed peak from sweep,,,experimental,2026-04-03T03:58:31+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+2,"Add Lucky V submission — 1.0875 BPB, 15.5MB",,,neural,2026-04-03T04:50:02+00:00,,,,commit_message,,,1,git:parameter-golf-lab
+3,X1_ctrl_5flat_1loop_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+4,H3_dim192_s1_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+5,M4_marco_dim128_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+6,K2_7f_marco_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+7,J1_s5_dim128_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+8,K1_7f_dim64_s3_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+9,K0_7f_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+10,M1_marco_dim32_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+11,H1_dim96_s1_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+12,J2_s3_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+13,H2_dim128_s1_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+14,H0_dim64_s1_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+15,M2_marco_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+16,X0_ctrl_7flat_2loop_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+17,K4_9f_marco_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+18,M3_marco_dim64_s5_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+19,J3_s3_dim128_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+20,J0_s5_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+21,M0_marco_dim16_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+22,K3_9f_dim64_s444_20260403_111723.log,,,experimental,2026-04-03T11:17:23+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+23,Ouroboros,,,experimental,2026-04-03T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+24,"Add Ouroboros crawler research (non-record) — 1.1364 BPB, 15.05MB",,,experimental,2026-04-03T17:35:28Z,,,,commit_message,,,2,git:parameter-golf-lab
+25,Add Dark Horse: Helix on PR #1296's competitive baseline,,,experimental,2026-04-03T21:30:08Z,,,,commit_message,,,3,git:parameter-golf-lab
+26,Dark Horse: Helix on Lucky IV with cheap MLP crawler,,,experimental,2026-04-03T22:00:06Z,,,,commit_message,,,3,git:parameter-golf-lab

@@ -1,0 +1,955 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Experimental Research Report</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .category-action,
+    .test-runs-table td a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+    }
+    .category-action::before,
+    .test-runs-table td a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .category-action:hover,
+    .category-action:focus-visible,
+    .test-runs-table td a:hover,
+    .test-runs-table td a:focus-visible {
+        background: var(--rule-hi);
+        color: var(--bg);
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-panel a,
+    .log-panel a.category-action {
+        border-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+    }
+    .log-panel a::before,
+    .log-panel a.category-action::before {
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible,
+    .log-panel a.category-action:hover,
+    .log-panel a.category-action:focus-visible {
+        border-bottom-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    </style></head><body><h1><span class="h1-title"><a class="h1-home" href="../index.html" aria-label="Open landing page"><img class="h1-mark" src="../assets/frosted_flake.png" alt=""></a><span>EXPERIMENTAL RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="../report_144.html#reader=categories/experimental.html">BACK TO MASTER SHEET</a><span class="h1-date">CAMPAIGN</span></span></h1>
+<div class="report-header"><div class="rh-row"><span class="rh-key">CATEGORY</span><span class="rh-dots"></span><span class="rh-val">EXPERIMENTAL</span></div><div class="rh-row"><span class="rh-key">DATES</span><span class="rh-dots"></span><span class="rh-val">2026-03-18 TO 2026-05-01</span></div><div class="rh-row"><span class="rh-key">WINDOWS</span><span class="rh-dots"></span><span class="rh-val">4 ACTIVE / 4 TOTAL</span></div><div class="rh-row"><span class="rh-key">ACTIVE DAYS</span><span class="rh-dots"></span><span class="rh-val">33</span></div><div class="rh-row"><span class="rh-key">DATAPOINTS</span><span class="rh-dots"></span><span class="rh-val">33</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">PRIMARY METRICS</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 100% (33)"><span class="alloc-seg-exp" style="width:100.00%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 100% (33)</span></span></span></div></div>
+<h2>SECTION 1.0 — BI-WEEKLY TRAJECTORY</h2>
+<aside class="day-summary"><div class="ds-key">CATEGORY SUMMARY</div><div class="ds-body"><p>This page rolls up <strong>33 experimental category datapoints</strong> across <strong>33 active research days</strong> (2026-03-20 → 2026-04-29), grouped into <strong>4 of 4 two-week windows</strong>. Each datapoint is the best valid experimental row for its date on that day's preferred metric.</p><p>Metrics used: <strong>VAL_BPB (×33)</strong>. BPB-style and kernel-ratio metrics are never plotted on the same y-axis. Each window's chart panel covers at most two research weeks so progress stays readable inside the panel.</p></div></aside>
+<h3>WINDOW 01 · 2026-03-18 TO 2026-03-31</h3>
+<figure><img src='../assets/chart_assets_categories_experimental_window-01_2026-03-18_to_2026-03-31_val_bpb.png' alt='EXPERIMENTAL window 01 val_bpb'/></figure>
+<table class='test-runs-table'><thead><tr><th>#</th><th>DATE</th><th>METRIC</th><th>BEST</th><th>ROWS</th><th>TITLE</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>2026-03-20</td><td>VAL_BPB</td><td>1.1428</td><td>7</td><td>Add int5-MLP mixed quant, zstd compression, magnitude pruning, and seq ramp</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-20 <a class='category-action' href='../2026-03-20.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1428</div><div class='log-meta'><strong>category rows on date</strong>: 7 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Add int5-MLP mixed quant, zstd compression, magnitude pruning, and seq ramp</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>80e4ec5</code></div></div></td></tr>
+<tr><td><strong>2</strong></td><td>2026-03-21</td><td>VAL_BPB</td><td>1.1210</td><td>19</td><td>Add XSA last 3 layers to #254 SOTA clone</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-21 <a class='category-action' href='../2026-03-21.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1210</div><div class='log-meta'><strong>category rows on date</strong>: 19 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Add XSA last 3 layers to #254 SOTA clone</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>64ff1ad</code></div></div></td></tr>
+<tr><td><strong>3</strong></td><td>2026-03-22</td><td>VAL_BPB</td><td>1.1223</td><td>12</td><td>Log depth + TTT results: 1.1223 BPB (12L+TTT20ep+SAM)</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-22 <a class='category-action' href='../2026-03-22.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1223</div><div class='log-meta'><strong>category rows on date</strong>: 12 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Log depth + TTT results: 1.1223 BPB (12L+TTT20ep+SAM)</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>10fa041</code></div></div></td></tr>
+<tr><td><strong>4</strong></td><td>2026-03-23</td><td>VAL_BPB</td><td>1.0672</td><td>18</td><td>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-23 <a class='category-action' href='../2026-03-23.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0672</div><div class='log-meta'><strong>category rows on date</strong>: 18 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>6d4772c</code></div></div></td></tr>
+<tr><td><strong>5</strong></td><td>2026-03-24</td><td>VAL_BPB</td><td>1.1190</td><td>4</td><td>three-seed leaderboard variant: 1.1190 BPB (seed 2045), mean 1.1195</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-24 <a class='category-action' href='../2026-03-24.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1190</div><div class='log-meta'><strong>category rows on date</strong>: 4 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: three-seed leaderboard variant: 1.1190 BPB (seed 2045), mean 1.1195</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>896c325</code></div></div></td></tr>
+<tr><td><strong>6</strong></td><td>2026-03-25</td><td>VAL_BPB</td><td>1.1190</td><td>15</td><td>f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_025620.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-25 <a class='category-action' href='../2026-03-25.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1190</div><div class='log-meta'><strong>category rows on date</strong>: 15 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_025620.log</div><div class='log-meta'><strong>source</strong>: parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>d36bdec</code> - Podracing: add submission.json, training logs, README</div></div></td></tr>
+<tr><td><strong>7</strong></td><td>2026-03-26</td><td>VAL_BPB</td><td>1.1189</td><td>22</td><td>cubric n-gram mixer.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-26 <a class='category-action' href='../2026-03-26.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1189</div><div class='log-meta'><strong>category rows on date</strong>: 22 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: cubric n-gram mixer.log</div><div class='log-meta'><strong>source</strong>: open_parameter_golf_junkyard</div><div class='log-meta'><strong>commit</strong>: <code>475a62d</code> - Add 2x2 ablation grid script for cubric × per-order centers</div></div></td></tr>
+<tr><td><strong>8</strong></td><td>2026-03-27</td><td>VAL_BPB</td><td>1.1129</td><td>18</td><td>instructed-recurrence crawler: Instructed Recurrence — content-derived loop instructions for shared crawler</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-27 <a class='category-action' href='../2026-03-27.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1129</div><div class='log-meta'><strong>category rows on date</strong>: 18 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: instructed-recurrence crawler: Instructed Recurrence — content-derived loop instructions for shared crawler</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>63c27e1</code></div></div></td></tr>
+<tr><td><strong>9</strong></td><td>2026-03-28</td><td>VAL_BPB</td><td>1.1524</td><td>17</td><td>crawler-only ngram export body.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-28 <a class='category-action' href='../2026-03-28.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1524</div><div class='log-meta'><strong>category rows on date</strong>: 17 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: crawler-only ngram export body.log</div><div class='log-meta'><strong>source</strong>: open_parameter_golf_junkyard</div><div class='log-meta'><strong>commit</strong>: <code>a7d53c8</code> - crawler-only ngram export body: SKIP_GPTQ only — restored from known-good e3ba281</div></div></td></tr>
+<tr><td><strong>10</strong></td><td>2026-03-29</td><td>VAL_BPB</td><td>1.1106</td><td>16</td><td>recurrent green-branch prototype.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-29 <a class='category-action' href='../2026-03-29.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1106</div><div class='log-meta'><strong>category rows on date</strong>: 16 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: recurrent green-branch prototype.log</div><div class='log-meta'><strong>source</strong>: open_parameter_golf_junkyard</div><div class='log-meta'><strong>commit</strong>: <code>aa30c72</code> - Let recurrent green-branch prototype runner honor loader overrides</div></div></td></tr>
+<tr><td><strong>11</strong></td><td>2026-03-30</td><td>VAL_BPB</td><td>1.1091</td><td>20</td><td>recurrent green-branch prototype.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-30 <a class='category-action' href='../2026-03-30.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1091</div><div class='log-meta'><strong>category rows on date</strong>: 20 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: recurrent green-branch prototype.log</div><div class='log-meta'><strong>source</strong>: open_parameter_golf_junkyard</div><div class='log-meta'><strong>commit</strong>: <code>c94de0a</code> - 11L GQA U-Net body: recurrent green-branch prototype v1 + Coprime Loader — 3-seed base quality submission</div></div></td></tr>
+<tr><td><strong>12</strong></td><td>2026-03-31</td><td>VAL_BPB</td><td>1.1099</td><td>3</td><td>Add two-track lab structure: neural/ and crawler/</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 01 · 2026-03-18 → 2026-03-31</div><div class='log-meta'><strong>date</strong>: 2026-03-31 <a class='category-action' href='../2026-03-31.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1099</div><div class='log-meta'><strong>category rows on date</strong>: 3 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Add two-track lab structure: neural/ and crawler/</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>1d9edb8</code></div></div></td></tr>
+</tbody></table>
+<h3>WINDOW 02 · 2026-04-01 TO 2026-04-14</h3>
+<figure><img src='../assets/chart_assets_categories_experimental_window-02_2026-04-01_to_2026-04-14_val_bpb.png' alt='EXPERIMENTAL window 02 val_bpb'/></figure>
+<table class='test-runs-table'><thead><tr><th>#</th><th>DATE</th><th>METRIC</th><th>BEST</th><th>ROWS</th><th>TITLE</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>2026-04-01</td><td>VAL_BPB</td><td>1.1439</td><td>6</td><td>slot_f_seed300_20260401_172030.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-01 <a class='category-action' href='../2026-04-01.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1439</div><div class='log-meta'><strong>category rows on date</strong>: 6 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: slot_f_seed300_20260401_172030.log</div><div class='log-meta'><strong>source</strong>: parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>cd8825d</code> - 11L GQA U-Net body III SLOT: add seed300 run log (2026-04-01 17:20)</div></div></td></tr>
+<tr><td><strong>2</strong></td><td>2026-04-02</td><td>VAL_BPB</td><td>1.1051</td><td>21</td><td>neural: SLOT-tuned transformer body sequential+SLOT seed444 log — 1.10514 BPB (size busted)</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-02 <a class='category-action' href='../2026-04-02.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1051</div><div class='log-meta'><strong>category rows on date</strong>: 21 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: neural: SLOT-tuned transformer body sequential+SLOT seed444 log — 1.10514 BPB (size busted)</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>e39955d</code></div></div></td></tr>
+<tr><td><strong>3</strong></td><td>2026-04-03</td><td>VAL_BPB</td><td>1.0875</td><td>23</td><td>SLOT-tuned transformer body V.3: SLOT_LR=0.04 — confirmed peak from sweep</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-03 <a class='category-action' href='../2026-04-03.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0875</div><div class='log-meta'><strong>category rows on date</strong>: 23 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: SLOT-tuned transformer body V.3: SLOT_LR=0.04 — confirmed peak from sweep</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>dadc3a0</code></div></div></td></tr>
+<tr><td><strong>4</strong></td><td>2026-04-04</td><td>VAL_BPB</td><td>1.0854</td><td>2</td><td>Update SLOT-tuned transformer body V: SKIP_GPTQ=1 fix — 1.0854 BPB (seed 444)</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-04 <a class='category-action' href='../2026-04-04.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0854</div><div class='log-meta'><strong>category rows on date</strong>: 2 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Update SLOT-tuned transformer body V: SKIP_GPTQ=1 fix — 1.0854 BPB (seed 444)</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>8b6f58b</code></div></div></td></tr>
+<tr><td><strong>5</strong></td><td>2026-04-05</td><td>VAL_BPB</td><td>1.1413</td><td>3</td><td>train_seed300.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-05 <a class='category-action' href='../2026-04-05.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1413</div><div class='log-meta'><strong>category rows on date</strong>: 3 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: train_seed300.log</div><div class='log-meta'><strong>source</strong>: open_parameter_golf_junkyard</div><div class='log-meta'><strong>commit</strong>: <code>1521d9f</code> - 10k-vocab CaseOps loop body: add 10k vocab tooling for reviewer verification</div></div></td></tr>
+<tr><td><strong>6</strong></td><td>2026-04-06</td><td>VAL_BPB</td><td>1.1094</td><td>6</td><td>Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-06 <a class='category-action' href='../2026-04-06.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1094</div><div class='log-meta'><strong>category rows on date</strong>: 6 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>e19406b</code></div></div></td></tr>
+<tr><td><strong>7</strong></td><td>2026-04-07</td><td>VAL_BPB</td><td>1.1057</td><td>6</td><td>train_seed444.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-07 <a class='category-action' href='../2026-04-07.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1057</div><div class='log-meta'><strong>category rows on date</strong>: 6 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: train_seed444.log</div><div class='log-meta'><strong>source</strong>: parameter-golf-lab</div><div class='log-meta'><strong>public evidence</strong>: <a class='category-action' href='https://raw.githubusercontent.com/newjordan/parameter-golf/33abaef90d4af5db8ad39b08c8cd14bcf8abf1b0/neural/experiments/2026-04-07_Midnight_12L/train_seed444.log' download>download file</a></div><div class='log-meta'><strong>commit</strong>: <code>33abaef</code> - Record 12L GQA mixed-bit tower 12L seed=444: 1.10568 BPB, 15.63MB</div><div class='log-meta'><strong>file path</strong>: <code>neural/experiments/2026-04-07_Midnight_12L/train_seed444.log</code></div></div></td></tr>
+<tr><td><strong>8</strong></td><td>2026-04-08</td><td>VAL_BPB</td><td>1.1057</td><td>5</td><td>train_seed444.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-08 <a class='category-action' href='../2026-04-08.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1057</div><div class='log-meta'><strong>category rows on date</strong>: 5 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: train_seed444.log</div><div class='log-meta'><strong>source</strong>: sota_nueral</div><div class='log-meta'><strong>commit</strong>: <code>ab15b6b</code> - Add 10-arm quant gap ablation series + Tier 4 concept scaffolds</div></div></td></tr>
+<tr><td><strong>9</strong></td><td>2026-04-09</td><td>VAL_BPB</td><td>1.3177</td><td>9</td><td>A07_screen_s444_20260409_024421.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-09 <a class='category-action' href='../2026-04-09.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.3177</div><div class='log-meta'><strong>category rows on date</strong>: 9 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: A07_screen_s444_20260409_024421.log</div><div class='log-meta'><strong>source</strong>: sota_nueral</div><div class='log-meta'><strong>commit</strong>: <code>9449130</code> - Save all raw pod logs from 4xH100 session (2026-04-09)</div></div></td></tr>
+<tr><td><strong>10</strong></td><td>2026-04-10</td><td>VAL_BPB</td><td>1.0742</td><td>11</td><td>train_seed4_4h.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-10 <a class='category-action' href='../2026-04-10.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0742</div><div class='log-meta'><strong>category rows on date</strong>: 11 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: train_seed4_4h.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>public evidence</strong>: <a class='category-action' href='https://raw.githubusercontent.com/newjordan/parameter-golf/514ddec1d947b5061df6e3653a9566560840141f/records/track_10min_16mb/2026-04-10_Nightcrawler_Cubed_8xH100/train_seed4_4h.log' download>download file</a></div><div class='log-meta'><strong>commit</strong>: <code>514ddec</code> - Add multi-crawler descendant submission — 1.0742 BPB (4h), 1.1354 BPB (10min), 14.2MB</div><div class='log-meta'><strong>file path</strong>: <code>records/track_10min_16mb/2026-04-10_Nightcrawler_Cubed_8xH100/train_seed4_4h.log</code></div></div></td></tr>
+<tr><td><strong>11</strong></td><td>2026-04-11</td><td>VAL_BPB</td><td>1.0742</td><td>1</td><td>Add multi-crawler descendant submission — 1.0742 BPB (4h), 1.1354 BPB (10min), 14.2MB</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-11 <a class='category-action' href='../2026-04-11.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0742</div><div class='log-meta'><strong>category rows on date</strong>: 1 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Add multi-crawler descendant submission — 1.0742 BPB (4h), 1.1354 BPB (10min), 14.2MB</div><div class='log-meta'><strong>source</strong>: git:parameter-golf-lab</div><div class='log-meta'><strong>commit</strong>: <code>514ddec</code></div></div></td></tr>
+<tr><td><strong>12</strong></td><td>2026-04-14</td><td>VAL_BPB</td><td>1.0900</td><td>2</td><td>Fix bank quantization and quant-escape evaluation bug</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 02 · 2026-04-01 → 2026-04-14</div><div class='log-meta'><strong>date</strong>: 2026-04-14 <a class='category-action' href='../2026-04-14.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0900</div><div class='log-meta'><strong>category rows on date</strong>: 2 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: Fix bank quantization and quant-escape evaluation bug</div><div class='log-meta'><strong>source</strong>: git:sota_crawler</div><div class='log-meta'><strong>commit</strong>: <code>8277064</code></div></div></td></tr>
+</tbody></table>
+<h3>WINDOW 03 · 2026-04-15 TO 2026-04-28</h3>
+<figure><img src='../assets/chart_assets_categories_experimental_window-03_2026-04-15_to_2026-04-28_val_bpb.png' alt='EXPERIMENTAL window 03 val_bpb'/></figure>
+<table class='test-runs-table'><thead><tr><th>#</th><th>DATE</th><th>METRIC</th><th>BEST</th><th>ROWS</th><th>TITLE</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>2026-04-15</td><td>VAL_BPB</td><td>2.8923</td><td>1</td><td>train_seed4.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-15 <a class='category-action' href='../2026-04-15.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 2.8923</div><div class='log-meta'><strong>category rows on date</strong>: 1 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: train_seed4.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>public evidence</strong>: <a class='category-action' href='https://raw.githubusercontent.com/newjordan/parameter-golf/4fa046dd7b99cb40d6b564450f0dadad0f660948/crawler/TON-E/artifacts/seed_4/train_seed4.log' download>download file</a></div><div class='log-meta'><strong>commit</strong>: <code>4fa046d</code> - rhythm recurrence: add RWKV-style recurrence body + stacked 4loop-anchor launchers, log sink+fused fail</div><div class='log-meta'><strong>file path</strong>: <code>crawler/TON-E/artifacts/seed_4/train_seed4.log</code></div></div></td></tr>
+<tr><td><strong>2</strong></td><td>2026-04-16</td><td>VAL_BPB</td><td>2.8013</td><td>1</td><td>run_4x_2k_20260416_v3_tanhfix.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-16 <a class='category-action' href='../2026-04-16.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 2.8013</div><div class='log-meta'><strong>category rows on date</strong>: 1 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: run_4x_2k_20260416_v3_tanhfix.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>commit</strong>: <code>67ab894</code> - Vortex split-head crawler scale gate: clean serial T×depth sweeps + FWD_NUM_STAGES=3 champion</div></div></td></tr>
+<tr><td><strong>3</strong></td><td>2026-04-17</td><td>VAL_BPB</td><td>1.4229</td><td>126</td><td>run_4x_20min_20260417T041230Z.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-17 <a class='category-action' href='../2026-04-17.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.4229</div><div class='log-meta'><strong>category rows on date</strong>: 126 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: run_4x_20min_20260417T041230Z.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>public evidence</strong>: <a class='category-action' href='https://raw.githubusercontent.com/newjordan/parameter-golf/e608f889e153075385b22b9605ee2af3c07e80e6/whale_logs/run_4x_20min_20260417T041230Z.log' download>download file</a></div><div class='log-meta'><strong>commit</strong>: <code>e608f88</code> - Vortex sweep launchers (v5-v17) + dim-576 attention-kernel body log archive</div><div class='log-meta'><strong>file path</strong>: <code>whale_logs/run_4x_20min_20260417T041230Z.log</code></div></div></td></tr>
+<tr><td><strong>4</strong></td><td>2026-04-18</td><td>VAL_BPB</td><td>1.8641</td><td>157</td><td>it400_wu50_wd300.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-18 <a class='category-action' href='../2026-04-18.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.8641</div><div class='log-meta'><strong>category rows on date</strong>: 157 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: it400_wu50_wd300.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>commit</strong>: <code>e9a2b74</code> - Vortex v22-v51 sweep suite + kernel single-knob probe (v51)</div></div></td></tr>
+<tr><td><strong>5</strong></td><td>2026-04-22</td><td>VAL_BPB</td><td>1.9961</td><td>2</td><td>best40m_20260422T035333Z.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-22 <a class='category-action' href='../2026-04-22.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.9961</div><div class='log-meta'><strong>category rows on date</strong>: 2 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: best40m_20260422T035333Z.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>commit</strong>: <code>bdf8741</code> - blessed_dim-576 attention-kernel body: stabilize hybrid compile dispatch for flat 2x head-to-head</div></div></td></tr>
+<tr><td><strong>6</strong></td><td>2026-04-23</td><td>VAL_BPB</td><td>1.0810</td><td>2</td><td>SP8192 + 3-Layer Recurrence + Parallel Residuals + QK-Gain 5.25 + Legal Score-First TTT</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-23 <a class='category-action' href='../2026-04-23.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.0810</div><div class='log-meta'><strong>category rows on date</strong>: 2 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: SP8192 + 3-Layer Recurrence + Parallel Residuals + QK-Gain 5.25 + Legal Score-First TTT</div><div class='log-meta'><strong>source</strong>: SOTA_FINAL</div><div class='log-meta'><strong>commit</strong>: <code>a33d695</code> - Add reboot baseline for blessed dim-576 attention-kernel body</div></div></td></tr>
+<tr><td><strong>7</strong></td><td>2026-04-24</td><td>VAL_BPB</td><td>1.3225</td><td>177</td><td>tail_fused_seed16180.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-24 <a class='category-action' href='../2026-04-24.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.3225</div><div class='log-meta'><strong>category rows on date</strong>: 177 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: tail_fused_seed16180.log</div><div class='log-meta'><strong>source</strong>: sota_crawler</div><div class='log-meta'><strong>commit</strong>: <code>bdf8741</code> - blessed_dim-576 attention-kernel body: stabilize hybrid compile dispatch for flat 2x head-to-head</div></div></td></tr>
+<tr><td><strong>8</strong></td><td>2026-04-28</td><td>VAL_BPB</td><td>1.1364</td><td>1</td><td>9-flat plus 1-crawler loop body</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 03 · 2026-04-15 → 2026-04-28</div><div class='log-meta'><strong>date</strong>: 2026-04-28 <a class='category-action' href='../2026-04-28.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.1364</div><div class='log-meta'><strong>category rows on date</strong>: 1 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: 9-flat plus 1-crawler loop body</div><div class='log-meta'><strong>source</strong>: sota_rascal</div><div class='log-meta'><strong>public evidence</strong>: <a class='category-action' href='https://raw.githubusercontent.com/newjordan/rascal/bff195bb6ede66fdfb4e4838b055a6ea1a22de0e/quarantine/2026-04-28_tokenizer_provenance/misc_experiments/recursion_research/ouroboros_4k/submission.json' download>download file</a></div><div class='log-meta'><strong>commit</strong>: <code>bff195b</code> - publish 11L GQA U-Net body lab snapshot</div><div class='log-meta'><strong>file path</strong>: <code>quarantine/2026-04-28_tokenizer_provenance/misc_experiments/recursion_research/ouroboros_4k/submission.json</code></div></div></td></tr>
+</tbody></table>
+<h3>WINDOW 04 · 2026-04-29 TO 2026-05-01</h3>
+<figure><img src='../assets/chart_assets_categories_experimental_window-04_2026-04-29_to_2026-05-01_val_bpb.png' alt='EXPERIMENTAL window 04 val_bpb'/></figure>
+<table class='test-runs-table'><thead><tr><th>#</th><th>DATE</th><th>METRIC</th><th>BEST</th><th>ROWS</th><th>TITLE</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>2026-04-29</td><td>VAL_BPB</td><td>1.2205</td><td>1</td><td>9-flat plus 1-crawler loop body.log</td><td class='open-cell'><details class='log-toggle'><summary>provenance</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='7'><div class='log-panel'><div class='log-meta'><strong>category datapoint</strong></div><div class='log-meta'><strong>category</strong>: experimental</div><div class='log-meta'><strong>window</strong>: 04 · 2026-04-29 → 2026-05-01</div><div class='log-meta'><strong>date</strong>: 2026-04-29 <a class='category-action' href='../2026-04-29.html'>open daily report</a></div><div class='log-meta'><strong>metric</strong>: VAL_BPB (<code>val_bpb</code>)</div><div class='log-meta'><strong>best valid value</strong>: 1.2205</div><div class='log-meta'><strong>category rows on date</strong>: 1 (best value shown above)</div><div class='log-meta'><strong>row title</strong>: 9-flat plus 1-crawler loop body.log</div><div class='log-meta'><strong>source</strong>: sota_rascal</div><div class='log-meta'><strong>commit</strong>: <code>bff195b</code> - publish 11L GQA U-Net body lab snapshot</div></div></td></tr>
+</tbody></table>
+<h2>SECTION 1.5 — ARCHITECTURE / TEST SURFACES</h2>
+<table class='bpb-table'><thead><tr><th>architecture / test surface</th><th>rows</th><th>days</th><th>best VAL_BPB</th><th>median</th><th>range</th><th>first</th><th>last</th></tr></thead><tbody>
+<tr><td>CRAWLER-SAFE TRAIN/EVAL SURFACE</td><td>299</td><td>10</td><td>1.0900</td><td>1.8995</td><td>1.0900 - 2.8923</td><td><a class='category-action' href='../2026-03-30.html'>2026-03-30</a></td><td><a class='category-action' href='../2026-04-18.html'>2026-04-18</a></td></tr>
+<tr><td>FUSED RECURRENCE MEGAKERNEL</td><td>169</td><td>3</td><td>1.3148</td><td>2.0709</td><td>1.3148 - 2.4697</td><td><a class='category-action' href='../2026-04-22.html'>2026-04-22</a></td><td><a class='category-action' href='../2026-04-24.html'>2026-04-24</a></td></tr>
+<tr><td>LEADERBOARD TRANSFORMER VARIANTS</td><td>38</td><td>6</td><td>1.0672</td><td>1.1204</td><td>1.0672 - 1.4138</td><td><a class='category-action' href='../2026-03-21.html'>2026-03-21</a></td><td><a class='category-action' href='../2026-03-31.html'>2026-03-31</a></td></tr>
+<tr><td>SPLIT-HEAD CRAWLER SCALE GATE</td><td>35</td><td>3</td><td>1.2503</td><td>1.9217</td><td>1.2503 - 2.1172</td><td><a class='category-action' href='../2026-04-02.html'>2026-04-02</a></td><td><a class='category-action' href='../2026-04-04.html'>2026-04-04</a></td></tr>
+<tr><td>CRAWLER ABLATION CONTROL SET</td><td>21</td><td>7</td><td>1.0897</td><td>1.8996</td><td>1.0897 - 2.6474</td><td><a class='category-action' href='../2026-03-21.html'>2026-03-21</a></td><td><a class='category-action' href='../2026-04-24.html'>2026-04-24</a></td></tr>
+<tr><td>INSTRUCTED CRAWLER RECURRENCE FAMILY</td><td>20</td><td>1</td><td>1.1189</td><td>1.1196</td><td>1.1189 - 1.1410</td><td><a class='category-action' href='../2026-03-26.html'>2026-03-26</a></td><td><a class='category-action' href='../2026-03-26.html'>2026-03-26</a></td></tr>
+<tr><td>TRITON/MODEL CO-DESIGN BODY</td><td>16</td><td>2</td><td>1.1091</td><td>1.1233</td><td>1.1091 - 1.1440</td><td><a class='category-action' href='../2026-03-29.html'>2026-03-29</a></td><td><a class='category-action' href='../2026-03-30.html'>2026-03-30</a></td></tr>
+<tr><td>WIDENED CRAWLER BOTTLENECK</td><td>15</td><td>3</td><td>1.0742</td><td>1.1368</td><td>1.0742 - 1.1768</td><td><a class='category-action' href='../2026-04-01.html'>2026-04-01</a></td><td><a class='category-action' href='../2026-04-11.html'>2026-04-11</a></td></tr>
+<tr><td>LOOP-INSTRUCTED DELTANET CRAWLER BODY</td><td>14</td><td>2</td><td>1.1532</td><td>1.2774</td><td>1.1532 - 1.4976</td><td><a class='category-action' href='../2026-03-28.html'>2026-03-28</a></td><td><a class='category-action' href='../2026-03-29.html'>2026-03-29</a></td></tr>
+<tr><td>12L GQA MIXED-BIT TOWER</td><td>11</td><td>4</td><td>1.0916</td><td>1.1058</td><td>1.0916 - 1.4327</td><td><a class='category-action' href='../2026-04-07.html'>2026-04-07</a></td><td><a class='category-action' href='../2026-04-14.html'>2026-04-14</a></td></tr>
+<tr><td>SLOT-TUNED TRANSFORMER BODY</td><td>11</td><td>5</td><td>1.0854</td><td>1.1420</td><td>1.0854 - 1.1457</td><td><a class='category-action' href='../2026-04-01.html'>2026-04-01</a></td><td><a class='category-action' href='../2026-04-05.html'>2026-04-05</a></td></tr>
+<tr><td>CRAWLER-ONLY NGRAM EXPORT BODY</td><td>8</td><td>2</td><td>1.1230</td><td>1.1814</td><td>1.1230 - 1.5100</td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td><td><a class='category-action' href='../2026-03-28.html'>2026-03-28</a></td></tr>
+<tr><td>RECURRENT GREEN-BRANCH PROTOTYPE</td><td>8</td><td>1</td><td>1.1713</td><td>1.3639</td><td>1.1713 - 1.4111</td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td></tr>
+<tr><td>11L GQA U-NET BODY</td><td>7</td><td>3</td><td>1.1364</td><td>1.1442</td><td>1.1364 - 1.2205</td><td><a class='category-action' href='../2026-03-30.html'>2026-03-30</a></td><td><a class='category-action' href='../2026-04-29.html'>2026-04-29</a></td></tr>
+<tr><td>CRAWLER PLUS CUBRIC N-GRAM STACK</td><td>7</td><td>2</td><td>1.1824</td><td>1.1874</td><td>1.1824 - 1.5236</td><td><a class='category-action' href='../2026-03-29.html'>2026-03-29</a></td><td><a class='category-action' href='../2026-03-30.html'>2026-03-30</a></td></tr>
+<tr><td>PROGRESSIVE MLP AND FRACTAL CADENCE TESTS</td><td>7</td><td>4</td><td>1.1428</td><td>1.5020</td><td>1.1428 - 2.6276</td><td><a class='category-action' href='../2026-03-20.html'>2026-03-20</a></td><td><a class='category-action' href='../2026-04-24.html'>2026-04-24</a></td></tr>
+<tr><td>9-FLAT PLUS 1-CRAWLER LOOP BODY</td><td>5</td><td>3</td><td>1.1364</td><td>1.1364</td><td>1.1364 - 1.2451</td><td><a class='category-action' href='../2026-04-02.html'>2026-04-02</a></td><td><a class='category-action' href='../2026-04-06.html'>2026-04-06</a></td></tr>
+<tr><td>TTT8 STRIDE-32 TEST FAMILY</td><td>5</td><td>2</td><td>1.1301</td><td>1.1307</td><td>1.1301 - 1.1313</td><td><a class='category-action' href='../2026-03-21.html'>2026-03-21</a></td><td><a class='category-action' href='../2026-03-22.html'>2026-03-22</a></td></tr>
+<tr><td>COMPACT TRANSFORMER RECIPE</td><td>5</td><td>1</td><td>1.1686</td><td>1.1725</td><td>1.1686 - 1.1877</td><td><a class='category-action' href='../2026-03-20.html'>2026-03-20</a></td><td><a class='category-action' href='../2026-03-20.html'>2026-03-20</a></td></tr>
+<tr><td>COMPRESSION PACKAGING EXPERIMENT</td><td>5</td><td>2</td><td>1.1094</td><td>1.1102</td><td>1.1094 - 1.1442</td><td><a class='category-action' href='../2026-04-06.html'>2026-04-06</a></td><td><a class='category-action' href='../2026-04-07.html'>2026-04-07</a></td></tr>
+<tr><td>FLOW-INSTRUCTION CRAWLER HYBRID</td><td>4</td><td>1</td><td>1.1129</td><td>1.6313</td><td>1.1129 - 2.0817</td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td></tr>
+<tr><td>CROSS-SEQUENCE ATTENTION VARIANT</td><td>3</td><td>1</td><td>1.1208</td><td>1.1208</td><td>1.1208 - 2.0644</td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td></tr>
+<tr><td>POST-TRAINING QUANTIZATION CALIBRATION</td><td>3</td><td>3</td><td>1.1206</td><td>1.1959</td><td>1.1206 - 1.2840</td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td><td><a class='category-action' href='../2026-03-31.html'>2026-03-31</a></td></tr>
+<tr><td>RECURSIVE WEIGHT-SHARING TRANSFORMER</td><td>3</td><td>2</td><td>1.1478</td><td>1.1478</td><td>1.1478 - 1.1478</td><td><a class='category-action' href='../2026-03-22.html'>2026-03-22</a></td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td></tr>
+<tr><td>STATE-SPACE TTT VARIANT</td><td>3</td><td>3</td><td>1.1201</td><td>1.1223</td><td>1.1201 - 1.1303</td><td><a class='category-action' href='../2026-03-21.html'>2026-03-21</a></td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td></tr>
+<tr><td>CUBRIC RACING VARIANT</td><td>2</td><td>1</td><td>1.1200</td><td>1.1201</td><td>1.1200 - 1.1202</td><td><a class='category-action' href='../2026-03-25.html'>2026-03-25</a></td><td><a class='category-action' href='../2026-03-25.html'>2026-03-25</a></td></tr>
+<tr><td>ENTROPY-SHIFTED N-GRAM WEIGHTING</td><td>2</td><td>1</td><td>1.1193</td><td>1.1194</td><td>1.1193 - 1.1194</td><td><a class='category-action' href='../2026-03-26.html'>2026-03-26</a></td><td><a class='category-action' href='../2026-03-26.html'>2026-03-26</a></td></tr>
+<tr><td>HYBRID GATEDDELTANET-ATTENTION BODY</td><td>2</td><td>1</td><td>1.2020</td><td>2.0321</td><td>1.2020 - 2.8623</td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td></tr>
+<tr><td>TTT-ONLY MODEL TEST</td><td>1</td><td>1</td><td>1.1240</td><td>1.1240</td><td>1.1240 - 1.1240</td><td><a class='category-action' href='../2026-03-22.html'>2026-03-22</a></td><td><a class='category-action' href='../2026-03-22.html'>2026-03-22</a></td></tr>
+<tr><td>DIM-576 ATTENTION-KERNEL BODY</td><td>1</td><td>1</td><td>1.4229</td><td>1.4229</td><td>1.4229 - 1.4229</td><td><a class='category-action' href='../2026-04-17.html'>2026-04-17</a></td><td><a class='category-action' href='../2026-04-17.html'>2026-04-17</a></td></tr>
+<tr><td>MIXED-PRECISION QUANTIZATION VARIANT</td><td>1</td><td>1</td><td>1.1428</td><td>1.1428</td><td>1.1428 - 1.1428</td><td><a class='category-action' href='../2026-03-20.html'>2026-03-20</a></td><td><a class='category-action' href='../2026-03-20.html'>2026-03-20</a></td></tr>
+<tr><td>PARALLEL RESIDUAL TRANSFORMER VARIANT</td><td>1</td><td>1</td><td>1.0810</td><td>1.0810</td><td>1.0810 - 1.0810</td><td><a class='category-action' href='../2026-04-23.html'>2026-04-23</a></td><td><a class='category-action' href='../2026-04-23.html'>2026-04-23</a></td></tr>
+<tr><td>REGULARIZATION/CONTROL SWEEP</td><td>1</td><td>1</td><td>1.3635</td><td>1.3635</td><td>1.3635 - 1.3635</td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td><td><a class='category-action' href='../2026-03-27.html'>2026-03-27</a></td></tr>
+<tr><td>SLIDING-WINDOW EVALUATION VARIANT</td><td>1</td><td>1</td><td>1.1377</td><td>1.1377</td><td>1.1377 - 1.1377</td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td><td><a class='category-action' href='../2026-03-23.html'>2026-03-23</a></td></tr>
+</tbody></table>
+<section class="architecture-recipe" aria-label="Architecture recipe"><div class="ar-kicker">ARCHITECTURE RECIPE</div><div class="ar-cards"><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-SAFE TRAIN/EVAL SURFACE</span><span class="ar-count">x299</span></div><p class="ar-summary">Crawler-safe training/eval surface around a widened shared-crawler stack with final int6 and int8 checks.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · model_dim=512 · num_heads=8 · num_kv_heads=4 · shared crawler block · looped crawler passes</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash · XSA · RoPE · crawler loop rope scales · instruction bottleneck</span></div><div class="ar-line"><span class="ar-key">QUANT / EVAL</span><span class="ar-val">int6 roundtrip · int6 sliding-window eval · int8 zlib roundtrip · 8xH100 · 600s wallclock</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">INSTRUCTED CRAWLER RECURRENCE FAMILY</span><span class="ar-count">x20</span></div><p class="ar-summary">Crawler-oriented recurrence experiments that tested instruction-conditioned loop behavior and DeltaNet-adjacent crawler variants.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">shared crawler recurrence path · content-derived loop instructions · crawler loop rope scaling · DeltaNet crawler recurrence variants</span></div><div class="ar-line"><span class="ar-key">TEST SURFACE</span><span class="ar-val">GB10 micro probes · H100/runpod follow-up logs · commit-level architecture entries · crawler branch retained as the strongest follow-on direction</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">WIDENED CRAWLER BOTTLENECK</span><span class="ar-count">x15</span></div><p class="ar-summary">Widened crawler bottleneck body: 5 flat blocks, 1 shared crawler block, 5 flat blocks.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">MODEL_DIM=512 · NUM_FLAT_LAYERS=5 · NUM_CRAWLER_LAYERS=1 · CRAWLER_LOOPS=3 · USE_CRAWLER=1 · num_heads=8 · num_kv_heads=4</span></div><div class="ar-line"><span class="ar-key">CRAWLER</span><span class="ar-val">CRAWLER_MLP_MULT=6.0 · INST_DIM=32 · CRAWLER_QUANT_INT8=1 · CRAWLER_LOOP_ROPE_SCALES=9,1,1 · CRAWLER_TAP_DIM=32 · CRAWLER_TAP_LAYERS=all</span></div><div class="ar-line"><span class="ar-key">PACKAGING</span><span class="ar-val">BIGRAM_VOCAB_SIZE=2048 · XSA_LAST_N=11 · ROPE_DIMS=16 · SKIP_EMA=1 · SKIP_GPTQ=1 · MTP_NUM_HEADS=0</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">LOOP-INSTRUCTED DELTANET CRAWLER BODY</span><span class="ar-count">x14</span></div><p class="ar-summary">Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments.</p><div class="ar-line"><span class="ar-key">BASE BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · mlp_mult=3.0 · BigramHash 2048x128 · XSA last_n=11 · rope_dims=16</span></div><div class="ar-line"><span class="ar-key">CRAWLER BODY</span><span class="ar-val">flat transformer blocks around shared crawler block · crawler_mlp_mult=4.0 default · inst_dim=32 · loop instruction projection · crawler_loop_rope_scales=1,1,1 default · optional DeltaNet memory</span></div><div class="ar-line"><span class="ar-key">QUANT PATH</span><span class="ar-val">loop-aware GPTQ option · crawler Hessian collection · EMA / no-EMA ablations · int6 sliding-window export path</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">12L GQA MIXED-BIT TOWER</span><span class="ar-count">x11</span></div><p class="ar-summary">12-layer GQA tower: 8/4 GQA, RoPE-16, Bigram 2048, XSA on the last 11 layers, and mixed-bit packaging.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">num_layers=12 · num_heads=8 · num_kv_heads=4 · rope_dims=16 · xsa_last_n=11 · BigramHash vocab=2048</span></div><div class="ar-line"><span class="ar-key">QUANT / EVAL</span><span class="ar-val">attention int5 · mlp int6 · aux int6 · embed int8 · other int8 · Brotli artifact · 16 MB artifact cap</span></div><div class="ar-line"><span class="ar-key">RUN SHAPE</span><span class="ar-val">8xH100 · train_seq_len=2048 · eval_seq_len=2048 · 600s wallclock</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-ONLY NGRAM EXPORT BODY</span><span class="ar-count">x8</span></div><p class="ar-summary">Crawler body with the fast ngram finish: crawler architecture retained, CPU-heavy phrase/regime paths removed.</p><div class="ar-line"><span class="ar-key">MODEL BODY</span><span class="ar-val">crawler-only instructed-recurrence body · DELTA_NET_HEADS=0 · model_dim=512 · num_heads=8 · num_kv_heads=4 · int6+zstd target under 11 MB</span></div><div class="ar-line"><span class="ar-key">EVAL FINISH</span><span class="ar-val">ngram9 eval stack · NGRAM_DIRICHLET=1 · remove NGRAM_CHUNK_TOKENS=65536 · remove PHRASE_CACHE · remove REGIME_TRACKER</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">RECURRENT GREEN-BRANCH PROTOTYPE</span><span class="ar-count">x8</span></div><p class="ar-summary">Fast prototype line around green-branch recurrence, complement mixing, and residual/value-routing variants before later crawler consolidation.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">green-branch recurrent path · value-residual variants · complement-mix alpha variants · high-speed prototype iteration</span></div><div class="ar-line"><span class="ar-key">SWEEPS</span><span class="ar-val">remote fast A/B runs · synthetic branch variants · green v7 follow-up · warmdown and SWA schedule probes</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">11L GQA U-NET BODY</span><span class="ar-count">x7</span></div><p class="ar-summary">11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · head_dim=64 · mlp_mult=3.0 · tie_embeddings=1</span></div><div class="ar-line"><span class="ar-key">STRUCTURE</span><span class="ar-val">encoder_layers=5 · decoder_layers=6 · skip_weights=5 · GQA attention · RMSNorm · relu_sq MLP · Muon matrix optimizer path</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash vocab=2048 dim=128 · XSA last_n=11 · rope_dims=16 · VE dim=128 layers=9,10 · SmearGate · logit_softcap=30</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">9-FLAT + 1-CRAWLER LOOP BODY</span><span class="ar-count">x5</span></div><p class="ar-summary">9-flat plus 1-crawler loop body: flat U-Net context around a shared crawler block fired twice.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · model_dim=512 · num_heads=8 · num_kv_heads=4 · NUM_FLAT_LAYERS=9 · NUM_CRAWLER_LAYERS=1 · CRAWLER_LOOPS=2 · USE_CRAWLER=1</span></div><div class="ar-line"><span class="ar-key">CRAWLER</span><span class="ar-val">CRAWLER_MLP_MULT=6.0 · INST_DIM=32 · CRAWLER_MLP_CHOKE_DIM=0 · CRAWLER_LOOP_ROPE_SCALES=9,1,1 · CRAWLER_MLP_LEAKY_SLOPE=0.5</span></div><div class="ar-line"><span class="ar-key">PACKAGING</span><span class="ar-val">LOOP_AWARE_GPTQ=1 · BigramHash 2048x128 · XSA last_n=11 · rope_dims=16 · VE dim=128 layers=9,10</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">HYBRID GATEDDELTANET-ATTENTION BODY</span><span class="ar-count">x2</span></div><p class="ar-summary">Hybrid GreenRod branch combining GatedDeltaNet-style memory with attention-body changes as part of the March 27 exploratory campaign.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">GatedDeltaNet-attention hybrid · X1 experimental branch · H100/runpod measurement path</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">DIM-576 ATTENTION-KERNEL BODY</span><span class="ar-count">x1</span></div><p class="ar-summary">A 12-layer dim-576 model body plus the custom attention-kernel benchmark shape used against FA3.</p><div class="ar-line"><span class="ar-key">MODEL BODY</span><span class="ar-val">num_layers=12 · model_dim=576 · embedding_dim=576 · matrix_bits=5 · xsa_last_n=11 · parallel_residual_start=8 · model_params=48551136</span></div><div class="ar-line"><span class="ar-key">KERNEL SHAPE</span><span class="ar-val">batch=2 · seq_len=2048 · q_heads=8 · kv_heads=4 · head_dim=64 · custom attention path compared directly to FA3</span></div><div class="ar-line"><span class="ar-key">PROMOTED KERNEL</span><span class="ar-val">DQ=128,64,8,5 · DKDV=128,64,8,3 · DKDV_MAXNREG=256 · QMR=1984 for 2x primary · QMR=1664 single-GPU anchor</span></div></article></div></section>
+<h2>SECTION 2.0 — CATEGORY DAILY DATAPOINTS</h2>
+<div class='lazy-test-shell'><button class='lazy-test-load' type='button' data-lazy-fragment='../fragments/category_experimental_full_table.html' data-target='category-experimental-full-table' data-load-label='load full table' data-hide-label='hide full table' data-loading-label='loading full table' data-error-label='table load failed'>load full table</button><div id='category-experimental-full-table' class='lazy-test-target' hidden></div></div><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

@@ -1,0 +1,61 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,Add ClownCar_IV: GPTQ bypass + state dtype fix,,,experimental,2026-03-27T02:34:41+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+2,ratrod_green_s1337_20260327_030907.log,,,experimental,2026-03-27T03:09:07+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+3,bio_local_myelin_20260327_032513.log,,,experimental,2026-03-27T03:25:13+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+4,myelin_s1337_20260327_032513.log,,,experimental,2026-03-27T03:25:13+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+5,ratrod_green_s1337_20260327_033112.log,,,experimental,2026-03-27T03:31:12+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+6,ab_rope16_s1337_20260327_040615.log,,,experimental,2026-03-27T04:06:15+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+7,ab_rope24_s1337_20260327_041731.log,,,experimental,2026-03-27T04:17:31+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+8,Add ClownCar_VII: loop-aware 2-phase GPTQ + no EMA,,,experimental,2026-03-27T04:25:54+00:00,,,,commit_message,,,3,git:parameter-golf-lab
+9,ratrod_v4_hsmtp_s1337_20260327_043706.log,,,experimental,2026-03-27T04:37:06+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+10,SMK-01_rust_on.log,,,experimental,2026-03-27T04:44:31+00:00,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+11,SMK-02_delta0.log,,,experimental,2026-03-27T04:44:46+00:00,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+12,SMK-03_no_crawler_int8.log,,,experimental,2026-03-27T04:45:33+00:00,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+13,SMK-04_inst0.log,,,experimental,2026-03-27T04:46:21+00:00,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+14,ab_vr_off_s1337_20260327_045426.log,,,experimental,2026-03-27T04:54:26+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+15,ab_vr_on_s1337_20260327_050751.log,,,experimental,2026-03-27T05:07:51+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+16,ratrod_v5_syn2_s1337_20260327_053015.log,,,experimental,2026-03-27T05:30:15+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+17,ratrod_fastab_A_v1_s1337_20260327_054845.log,,,experimental,2026-03-27T05:48:45+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+18,ratrod_fastab_B_v1_plus_value_residual_s1337_20260327_054845.log,,,experimental,2026-03-27T05:48:45+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+19,sweep_warmdown_3500_s1337_20260327_060812.log,,,experimental,2026-03-27T06:08:12+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+20,sweep_warmdown_5000_s1337_20260327_060812.log,,,experimental,2026-03-27T06:08:12+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+21,sweep_warmdown_2000_s1337_20260327_060812.log,,,experimental,2026-03-27T06:08:12+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+22,sweep_swa_100_s1337_20260327_062114.log,,,experimental,2026-03-27T06:21:14+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+23,sweep_swa_50_s1337_20260327_062114.log,,,experimental,2026-03-27T06:21:14+00:00,8×H100,,,log_step_best,,,1,open_parameter_golf_junkyard
+24,astrocyte_s1337_h512_20260327_064618.log,,,experimental,2026-03-27T06:46:18+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+25,bio_local_astrocyte_20260327_064618.log,,,experimental,2026-03-27T06:46:18+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+26,ab_siphon_off_s1337_20260327_072055.log,,,experimental,2026-03-27T07:20:55+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+27,FX-Wing: Instructed Recurrence — content-derived loop instructions for shared crawler,,,experimental,2026-03-27T07:30:01Z,,,,commit_message,,,3,git:parameter-golf-lab
+28,ab_siphon_on_s1337_20260327_073138.log,,,experimental,2026-03-27T07:31:38+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+29,baseline_s1337_20260327_074433.log,,,experimental,2026-03-27T07:44:33+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+30,tornado_s1337_c4_kl0.1_20260327_075441.log,,,experimental,2026-03-27T07:54:41+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+31,theta_gamma_s1337_c4_kl0.1_20260327_080237.log,,,experimental,2026-03-27T08:02:37+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+32,fxwing_launch_nocompile_20260327_081321.log,,,experimental,2026-03-27T08:13:21+00:00,8×H100,,,log_final_eval,,,1,open_parameter_golf_junkyard
+33,fxwing_s1337_20260327_081322.log,,,experimental,2026-03-27T08:13:22+00:00,8×H100,,,log_final_eval,,,1,open_parameter_golf_junkyard
+34,arm0_baseline__no_tornado.log,,,experimental,2026-03-27T08:21:08Z,1×GB10,,,log_step_best,,,1,parameter-golf-lab
+35,Add green v7: v6 + COMPLEMENT_ALPHA=0.5,,,experimental,2026-03-27T08:23:23Z,,,,commit_message,,,3,git:parameter-golf-lab
+36,ratrod_green_v7_s1337_20260327_082407.log,,,experimental,2026-03-27T08:24:07+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+37,bio_local_clonal_selection_20260327_100525.log,,,experimental,2026-03-27T10:05:25+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+38,clonal_selection_s1337_k96_b64_20260327_100526.log,,,experimental,2026-03-27T10:05:26+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+39,fxwing_micro_s1337_20260327_121316.log,,,experimental,2026-03-27T12:13:16+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+40,fxwing_s1337_20260327_134149.log,,,experimental,2026-03-27T13:41:49+00:00,1×H100 (vast.ai),,,log_final_eval,,,1,open_parameter_golf_junkyard
+41,Medusa: DeltaNet (DELTA_NET_HEADS=4) + Loop-Aware GPTQ + Late-Start EMA,,,experimental,2026-03-27T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+42,fxwing_s1337_20260327_184333.log,,,experimental,2026-03-27T18:43:33+00:00,1×H100 (vast.ai),,,log_final_eval,,,1,open_parameter_golf_junkyard
+43,remote_run_nongdn_v4.log,,,experimental,2026-03-27T19:43:24+00:00,1×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+44,remote_proxy_ab_v8_run2.log,,,experimental,2026-03-27T19:43:24+00:00,1×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+45,fxwdelta_s1337_20260327_201048.log,,,experimental,2026-03-27T20:10:48+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+46,cambrian_s1337_dl2_20260327_204623.log,,,experimental,2026-03-27T20:46:23+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+47,cambrian_s1337_dl2_20260327_205546.log,,,experimental,2026-03-27T20:55:46+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+48,cambrian_s1337_dl2_20260327_210440.log,,,experimental,2026-03-27T21:04:40+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+49,greenrod_x1_s1337_20260327_213511.log,,,experimental,2026-03-27T21:35:11+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+50,cambrian_s1337_dl2_20260327_214531.log,,,experimental,2026-03-27T21:45:31+00:00,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+51,gdn_base.log,,,experimental,2026-03-27T21:55:12Z,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+52,cambrian_s1337_dl2_20260327_215516.log,,,experimental,2026-03-27T21:55:16+00:00,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+53,gdn_myelin.log,,,experimental,2026-03-27T22:04:15Z,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+54,cambrian_s1337_dl2_20260327_220420.log,,,experimental,2026-03-27T22:04:20+00:00,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+55,gdn_circadian.log,,,experimental,2026-03-27T22:13:22Z,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+56,cambrian_s1337_dl2_20260327_221327.log,,,experimental,2026-03-27T22:13:27+00:00,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+57,cambrian_bio_sweep_agent_final.log,,,experimental,2026-03-27T22:17:40Z,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+58,gdn_clonal.log,,,experimental,2026-03-27T22:17:40Z,8×H100 (vast.ai),,,log_step_best,,,1,open_parameter_golf_junkyard
+59,clowncar_s1337_20260327_231130.log,,,experimental,2026-03-27T23:11:30+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+60,clowncar_s1337_20260327_235158.log,,,experimental,2026-03-27T23:51:58+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard

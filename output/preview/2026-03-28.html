@@ -1,0 +1,870 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-03-28 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-03-28.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-03-28</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 77 of 496 · 4 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-03-28 | 4 | 33 |</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-03-28&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 496,&#10;  &quot;render_records&quot;: 77,&#10;  &quot;test_rows&quot;: 33,&#10;  &quot;warnings&quot;: 4&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>42 commits on 2026-03-28</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>4aa704b2</span> <span class='commit-time'>05:52:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add short exit-only unravel A/B harness</span></li><li class='commit-item'><span class='commit-hash'>4aa704b2</span> <span class='commit-time'>05:52:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add short exit-only unravel A/B harness</span></li><li class='commit-item'><span class='commit-hash'>4aa704b2</span> <span class='commit-time'>05:52:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add short exit-only unravel A/B harness</span></li><li class='commit-item'><span class='commit-hash'>9d1be624</span> <span class='commit-time'>06:15:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: copy of loop-instructed DeltaNet crawler body (winning 1.0366 config)</span></li><li class='commit-item'><span class='commit-hash'>9d1be624</span> <span class='commit-time'>06:15:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: copy of loop-instructed DeltaNet crawler body (winning 1.0366 config)</span></li><li class='commit-item'><span class='commit-hash'>9d1be624</span> <span class='commit-time'>06:15:55</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: copy of loop-instructed DeltaNet crawler body (winning 1.0366 config)</span></li><li class='commit-item'><span class='commit-hash'>4b1c51cf</span> <span class='commit-time'>06:32:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: force finish-only A/B and add one-command launcher</span></li><li class='commit-item'><span class='commit-hash'>4b1c51cf</span> <span class='commit-time'>06:32:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: force finish-only A/B and add one-command launcher</span></li><li class='commit-item'><span class='commit-hash'>4b1c51cf</span> <span class='commit-time'>06:32:59</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: force finish-only A/B and add one-command launcher</span></li><li class='commit-item'><span class='commit-hash'>d2f47e2d</span> <span class='commit-time'>06:34:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix state dtype cast (new_state.to(dtype))</span></li><li class='commit-item'><span class='commit-hash'>d2f47e2d</span> <span class='commit-time'>06:34:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix state dtype cast (new_state.to(dtype))</span></li><li class='commit-item'><span class='commit-hash'>d2f47e2d</span> <span class='commit-time'>06:34:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix state dtype cast (new_state.to(dtype))</span></li><li class='commit-item'><span class='commit-hash'>0c383231</span> <span class='commit-time'>06:42:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add additional-only unravel check runner</span></li><li class='commit-item'><span class='commit-hash'>0c383231</span> <span class='commit-time'>06:42:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add additional-only unravel check runner</span></li><li class='commit-item'><span class='commit-hash'>0c383231</span> <span class='commit-time'>06:42:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: add additional-only unravel check runner</span></li><li class='commit-item'><span class='commit-hash'>d74538fa</span> <span class='commit-time'>07:01:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: frozen SOTA config snapshot</span></li><li class='commit-item'><span class='commit-hash'>d74538fa</span> <span class='commit-time'>07:01:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: frozen SOTA config snapshot</span></li><li class='commit-item'><span class='commit-hash'>d74538fa</span> <span class='commit-time'>07:01:03</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: frozen SOTA config snapshot</span></li><li class='commit-item'><span class='commit-hash'>9fa4fecd</span> <span class='commit-time'>07:18:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: DeltaNet projections → CastedLinear for QAT coverage</span></li><li class='commit-item'><span class='commit-hash'>9fa4fecd</span> <span class='commit-time'>07:18:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: DeltaNet projections → CastedLinear for QAT coverage</span></li><li class='commit-item'><span class='commit-hash'>9fa4fecd</span> <span class='commit-time'>07:18:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: DeltaNet projections → CastedLinear for QAT coverage</span></li><li class='commit-item'><span class='commit-hash'>d7fbe3d1</span> <span class='commit-time'>13:32:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: AR Self-Gen GPTQ + XSA-all + BigramHash 3072×112 — val_bpb 1.11473 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>d7fbe3d1</span> <span class='commit-time'>13:32:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: AR Self-Gen GPTQ + XSA-all + BigramHash 3072×112 — val_bpb 1.11473 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>d7fbe3d1</span> <span class='commit-time'>13:32:13</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record: AR Self-Gen GPTQ + XSA-all + BigramHash 3072×112 — val_bpb 1.11473 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>0ce12a69</span> <span class='commit-time'>15:39:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Records: fill loop-instructed DeltaNet crawler body known results (seeds 300, 1337)</span></li><li class='commit-item'><span class='commit-hash'>0ce12a69</span> <span class='commit-time'>15:39:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Records: fill loop-instructed DeltaNet crawler body known results (seeds 300, 1337)</span></li><li class='commit-item'><span class='commit-hash'>0ce12a69</span> <span class='commit-time'>15:39:34</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Records: fill loop-instructed DeltaNet crawler body known results (seeds 300, 1337)</span></li><li class='commit-item'><span class='commit-hash'>a4a5447c</span> <span class='commit-time'>15:59:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body Unstable README with known results</span></li><li class='commit-item'><span class='commit-hash'>a4a5447c</span> <span class='commit-time'>15:59:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body Unstable README with known results</span></li><li class='commit-item'><span class='commit-hash'>a4a5447c</span> <span class='commit-time'>15:59:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body Unstable README with known results</span></li><li class='commit-item'><span class='commit-hash'>5f731b38</span> <span class='commit-time'>16:03:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body 3-seed complete — seed 42=0.8104 BPB (best), mean=0.9984, std=0.1724</span></li><li class='commit-item'><span class='commit-hash'>5f731b38</span> <span class='commit-time'>16:03:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body 3-seed complete — seed 42=0.8104 BPB (best), mean=0.9984, std=0.1724</span></li><li class='commit-item'><span class='commit-hash'>5f731b38</span> <span class='commit-time'>16:03:55</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Records: loop-instructed DeltaNet crawler body 3-seed complete — seed 42=0.8104 BPB (best), mean=0.9984, std=0.1724</span></li><li class='commit-item'><span class='commit-hash'>d9299177</span> <span class='commit-time'>21:36:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 4ep LeakyReLU legal TTT submission</span></li><li class='commit-item'><span class='commit-hash'>d9299177</span> <span class='commit-time'>21:36:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 4ep LeakyReLU legal TTT submission</span></li><li class='commit-item'><span class='commit-hash'>f627fa33</span> <span class='commit-time'>22:07:43</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Updated train_jepa_ssm.py to save SIGReg to the checkpoint, as on a checkpoint load before a new random SIGReg would be generated based on the seed.</span></li><li class='commit-item'><span class='commit-hash'>37df3009</span> <span class='commit-time'>23:32:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: DeltaNet crawler, 0.9984 mean BPB, 0.8104 best seed (seed 42)</span></li><li class='commit-item'><span class='commit-hash'>79f45ae7</span> <span class='commit-time'>23:57:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix GPTQ training-data access after wallclock cap</span></li><li class='commit-item'><span class='commit-hash'>79f45ae7</span> <span class='commit-time'>23:57:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix GPTQ training-data access after wallclock cap</span></li><li class='commit-item'><span class='commit-hash'>79f45ae7</span> <span class='commit-time'>23:57:56</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: fix GPTQ training-data access after wallclock cap</span></li><li class='commit-item'><span class='commit-hash'>37975042</span> <span class='commit-time'>00:52:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: Unstable S2 — legal resubmission of PR #1028 (GPTQ timing fix)</span></li><li class='commit-item'><span class='commit-hash'>99d34869</span> <span class='commit-time'>00:55:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update seed 300 log + exact results in submission.json/README</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-03-28</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">011</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">33 unique  (17 valid / 14 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">LOOP-INSTRUCTED DELTANET CRAWLER BODY (×25)  ·  CRAWLER-ONLY NGRAM EXPORT BODY (×7)  ·  LEADERBOARD TRANSFORMER VARIANTS (×1)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 91% (30) / NEURAL 9% (3)"><span class="alloc-seg-exp" style="width:90.91%"></span><span class="alloc-seg-neu" style="width:9.09%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 91% (30)</span><span class="alloc-sep">/</span><span class="alloc-text-neu">NEURAL 9% (3)</span></span></span></div></div>
+
+<section class="architecture-recipe" aria-label="Architecture recipe"><div class="ar-kicker">ARCHITECTURE RECIPE</div><div class="ar-cards"><article class="ar-card"><div class="ar-head"><span class="ar-name">LOOP-INSTRUCTED DELTANET CRAWLER BODY</span><span class="ar-count">x25</span></div><p class="ar-summary">Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments.</p><div class="ar-line"><span class="ar-key">BASE BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · mlp_mult=3.0 · BigramHash 2048x128 · XSA last_n=11 · rope_dims=16</span></div><div class="ar-line"><span class="ar-key">CRAWLER BODY</span><span class="ar-val">flat transformer blocks around shared crawler block · crawler_mlp_mult=4.0 default · inst_dim=32 · loop instruction projection · crawler_loop_rope_scales=1,1,1 default · optional DeltaNet memory</span></div><div class="ar-line"><span class="ar-key">QUANT PATH</span><span class="ar-val">loop-aware GPTQ option · crawler Hessian collection · EMA / no-EMA ablations · int6 sliding-window export path</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-ONLY NGRAM EXPORT BODY</span><span class="ar-count">x7</span></div><p class="ar-summary">Crawler body with the fast ngram finish: crawler architecture retained, CPU-heavy phrase/regime paths removed.</p><div class="ar-line"><span class="ar-key">MODEL BODY</span><span class="ar-val">crawler-only instructed-recurrence body · DELTA_NET_HEADS=0 · model_dim=512 · num_heads=8 · num_kv_heads=4 · int6+zstd target under 11 MB</span></div><div class="ar-line"><span class="ar-key">EVAL FINISH</span><span class="ar-val">ngram9 eval stack · NGRAM_DIRICHLET=1 · remove NGRAM_CHUNK_TOKENS=65536 · remove PHRASE_CACHE · remove REGIME_TRACKER</span></div></article></div></section>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>LOOP-INSTRUCTED DELTANET CRAWLER BODY (x23): Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments. Specs: num_layers=11; model_dim=512; vocab_size=1024; num_heads=8; num_kv_heads=4; mlp_mult=3.0.</span> <span>CRAWLER-ONLY NGRAM EXPORT BODY (x7): Crawler body with the fast ngram finish: crawler architecture retained, CPU-heavy phrase/regime paths removed. Specs: model_dim=512; num_heads=8; num_kv_heads=4; ngram9 eval stack; NGRAM_DIRICHLET=1; remove NGRAM_CHUNK_TOKENS=65536.</span></p><p><strong>Neural work:</strong> <span>LOOP-INSTRUCTED DELTANET CRAWLER BODY (x2): Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments. Specs: num_layers=11; model_dim=512; vocab_size=1024; num_heads=8; num_kv_heads=4; mlp_mult=3.0.</span> <span>LEADERBOARD TRANSFORMER VARIANTS (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p>Day 011 measured <strong>33 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>17 valid</strong> rows and <strong>14 TTT leakage</strong> readings excluded. Techniques to copy/reference: <strong>flat transformer blocks around shared crawler block; loop instruction projection; optional DeltaNet memory; loop-aware GPTQ option; crawler Hessian collection; EMA / no-EMA ablations; int6 sliding-window export path; ngram9 eval stack</strong>.</p><p>No new personal best. Best valid of the day = <strong>1.1524</strong> (crawler-only ngram export body.log); best-before-today = <strong>1.0672</strong> still stands. 2 crash-class outliers (4.15, 4.10) excluded.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-03-28_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-03-28 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-28_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-03-28_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-03-28 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-28_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>LOOP-INSTRUCTED DELTANET CRAWLER BODY</td><td>12</td><td>1.1532</td><td>1.2774</td><td>1.4976</td><td><a class='bpb-download-action' href='architecture-run-files/archives/21_medusa.zip' download>download</a></td></tr>
+<tr><td>CRAWLER-ONLY NGRAM EXPORT BODY</td><td>5</td><td>1.1524</td><td>1.1815</td><td>1.2168</td><td><a class='bpb-download-action' href='architecture-run-files/archives/07_clowncar.zip' download>download</a></td></tr>
+<tr><td>ALL VALID</td><td>17</td><td>1.1524</td><td>1.2365</td><td>1.4976</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 30</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>00:06</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body s42 baseline</td><td>1.1815</td><td>OK</td><td>↑10.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0001_details_cb3ca2a049b2.html' data-target='row-detail-2026-03-28-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-1' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>2</strong></td><td>00:19</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body s123</td><td>1.1813</td><td>OK</td><td>↑10.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0002_details_b324bab93ed5.html' data-target='row-detail-2026-03-28-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-2' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>4</strong></td><td>02:14</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td><code>1.0427</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0004_details_50d4e23412d9.html' data-target='row-detail-2026-03-28-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-4' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>5</strong></td><td>02:36</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>1.1905</td><td>OK</td><td>↑11.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0005_details_2636c1c6c084.html' data-target='row-detail-2026-03-28-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-5' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>6</strong></td><td>02:47</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>4.1035</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0006_details_b03e61b2b2d9.html' data-target='row-detail-2026-03-28-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-6' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>7</strong></td><td>02:51</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>1.1524</td><td>OK</td><td>↑8.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0007_details_c79f09bb77de.html' data-target='row-detail-2026-03-28-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>03:25</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>1.2168</td><td>OK</td><td>↑14.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0008_details_e0d16f89e7ec.html' data-target='row-detail-2026-03-28-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>03:55</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.4976</td><td>OK</td><td>↑40.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0009_details_43c1c38200dc.html' data-target='row-detail-2026-03-28-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>04:34</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.1879</td><td>OK</td><td>↑11.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0010_details_80fa5146efd6.html' data-target='row-detail-2026-03-28-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-10' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>11</strong></td><td>04:54</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0366</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0011_details_4e00728bca22.html' data-target='row-detail-2026-03-28-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>05:40</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2365</td><td>OK</td><td>↑15.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0012_details_1d2bd9ddb9ae.html' data-target='row-detail-2026-03-28-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-12' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>05:59</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2780</td><td>OK</td><td>↑19.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0013_details_7e47ac31754a.html' data-target='row-detail-2026-03-28-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-13' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>14</strong></td><td>05:59</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2775</td><td>OK</td><td>↑19.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0014_details_5071a21f2721.html' data-target='row-detail-2026-03-28-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-14' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>15</strong></td><td>05:59</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>4.1506</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0015_details_3d602b4a719e.html' data-target='row-detail-2026-03-28-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-15' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>16</strong></td><td>06:10</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2774</td><td>OK</td><td>↑19.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0016_details_305eb0c2a18a.html' data-target='row-detail-2026-03-28-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>06:10</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2774</td><td>OK</td><td>↑19.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0017_details_d3dfd8e1116a.html' data-target='row-detail-2026-03-28-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>06:10</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2774</td><td>OK</td><td>↑19.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0018_details_c4b285fd683e.html' data-target='row-detail-2026-03-28-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-18' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>19</strong></td><td>06:16</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>0.9578</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0019_details_18d1b8308f09.html' data-target='row-detail-2026-03-28-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-19' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>20</strong></td><td>06:34</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0047</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0020_details_9c5a0ba288f6.html' data-target='row-detail-2026-03-28-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-20' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>21</strong></td><td>06:34</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0047</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0021_details_25f839fe21ea.html' data-target='row-detail-2026-03-28-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-21' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>22</strong></td><td>06:34</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0047</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0022_details_283ef6e3ae65.html' data-target='row-detail-2026-03-28-22' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-22' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>24</strong></td><td>06:43</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0047</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0024_details_97dd46ecf8fa.html' data-target='row-detail-2026-03-28-24' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-24' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>25</strong></td><td>06:43</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.3797</td><td>OK</td><td>↑29.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0025_details_abf4bf6e069b.html' data-target='row-detail-2026-03-28-25' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-25' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>26</strong></td><td>06:43</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0047</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0026_details_f8af50756518.html' data-target='row-detail-2026-03-28-26' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-26' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>27</strong></td><td>06:46</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.3797</td><td>OK</td><td>↑29.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0027_details_353f250011f1.html' data-target='row-detail-2026-03-28-27' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-27' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>28</strong></td><td>06:50</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>1.0463</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0028_details_ae50e007fe94.html' data-target='row-detail-2026-03-28-28' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-28' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>30</strong></td><td>07:20</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.1532</td><td>OK</td><td>↑8.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0030_details_51bb1a23dc7d.html' data-target='row-detail-2026-03-28-30' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-30' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>31</strong></td><td>07:37</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td>1.2269</td><td>OK</td><td>↑15.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0031_details_9d36f6733fdb.html' data-target='row-detail-2026-03-28-31' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-31' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>32</strong></td><td>15:42</td><td>8×H100 (runpod)</td><td>loop-instructed DeltaNet crawler body.log</td><td><code>0.8104</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0032_details_85968f58d500.html' data-target='row-detail-2026-03-28-32' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-32' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>33</strong></td><td>16:03</td><td>—</td><td>Records: loop-instructed DeltaNet crawler body 3-seed complete — seed 42=0.81…</td><td><code>0.8104</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0033_details_9174ec2e1916.html' data-target='row-detail-2026-03-28-33' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-33' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table>
+
+<h3>NEURAL TEST RUNS — 3</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr class="invalid"><td><strong>3</strong></td><td>00:52</td><td>—</td><td>Add loop-instructed DeltaNet crawler body: Unstable S2 — legal resubmission o…</td><td><code>0.8822</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0003_details_437c5e61a7a7.html' data-target='row-detail-2026-03-28-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-3' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>23</strong></td><td>06:34</td><td>—</td><td>Add loop-instructed DeltaNet crawler body: fix state dtype cast (new_state.to…</td><td><code>0.9578</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0023_details_d4fbad5675b5.html' data-target='row-detail-2026-03-28-23' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-23' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>29</strong></td><td>07:01</td><td>—</td><td>Add loop-instructed DeltaNet crawler body: frozen SOTA config snapshot (×3)</td><td><code>0.6557</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-28_row0029_details_51bbc68f43b2.html' data-target='row-detail-2026-03-28-29' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-28-29' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

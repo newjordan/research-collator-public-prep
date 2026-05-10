@@ -1,0 +1,5 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,"Raphe_II: val_bpb 0.85018 (3-seed mean), 16.0MB legal",,,experimental,2026-04-27T00:40:37+00:00,,,,commit_message,,,1,git:parameter-golf-lab
+2,"Mikey: val_bpb 0.87980 (3-seed mean), 15.6MB legal",,,experimental,2026-04-27T16:20:34Z,,,,commit_message,,,1,git:parameter-golf-lab
+3,"Donnie: val_bpb 0.87480 (3-seed mean), 14.9MB legal",,,experimental,2026-04-27T17:59:02Z,,,,commit_message,,,1,git:parameter-golf-lab
+4,"Leo: val_bpb 0.85330 (3-seed mean), 14.8MB legal",,,experimental,2026-04-27T20:54:36Z,,,,commit_message,,,1,git:parameter-golf-lab

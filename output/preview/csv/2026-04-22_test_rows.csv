@@ -1,0 +1,5 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,d72_hybrid_a_probe_dq_128_64_8_2_dkdv_128_64_8_3_mr_256_qmr_2048_20260421_054937,,,kernel,2026-04-22T05:53:09+00:00,H100,,,unknown,,,1,SOTA_FINAL
+2,blessed_whale_anchor,,,kernel,2026-04-22T18:23:46+00:00,,,,unknown,,,2,SOTA_FINAL
+3,blessed_whale_hybrid_b1952_anchor,,,kernel,2026-04-22T18:23:47+00:00,,,,unknown,,,2,SOTA_FINAL
+4,blessed_whale_fallback_anchor,,,kernel,2026-04-22T18:23:47+00:00,,,,unknown,,,2,SOTA_FINAL

@@ -1,0 +1,870 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-04-06 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-04-06.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-04-06</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 460 of 2087 · 1 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-04-06 | 1 | 33 |</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-04-06&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 2087,&#10;  &quot;render_records&quot;: 460,&#10;  &quot;test_rows&quot;: 33,&#10;  &quot;warnings&quot;: 1&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>191 commits on 2026-04-06</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>3f1e8149</span> <span class='commit-time'>08:16:10</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Non-record: Parallel Residuals + Hessian-Aware SDClip (3-seed mean 1.08354 BPB)</span></li><li class='commit-item'><span class='commit-hash'>3f1e8149</span> <span class='commit-time'>08:16:10</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Non-record: Parallel Residuals + Hessian-Aware SDClip (3-seed mean 1.08354 BPB)</span></li><li class='commit-item'><span class='commit-hash'>3f1e8149</span> <span class='commit-time'>08:16:10</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Non-record: Parallel Residuals + Hessian-Aware SDClip (3-seed mean 1.08354 BPB)</span></li><li class='commit-item'><span class='commit-hash'>4b577913</span> <span class='commit-time'>08:23:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix LaTeX rendering</span></li><li class='commit-item'><span class='commit-hash'>4b577913</span> <span class='commit-time'>08:23:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix LaTeX rendering</span></li><li class='commit-item'><span class='commit-hash'>4b577913</span> <span class='commit-time'>08:23:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix LaTeX rendering</span></li><li class='commit-item'><span class='commit-hash'>cd04a8b7</span> <span class='commit-time'>11:27:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: SP8192 + QK-Gain 5 + Legal Score-First TTT — val_bpb 1.08279 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>cd04a8b7</span> <span class='commit-time'>11:27:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: SP8192 + QK-Gain 5 + Legal Score-First TTT — val_bpb 1.08279 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>cd04a8b7</span> <span class='commit-time'>11:27:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record: SP8192 + QK-Gain 5 + Legal Score-First TTT — val_bpb 1.08279 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>0e5b0788</span> <span class='commit-time'>14:27:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 11L GQA U-Net body II mixed-int lab + test_lab launch surface</span></li><li class='commit-item'><span class='commit-hash'>0e5b0788</span> <span class='commit-time'>14:27:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 11L GQA U-Net body II mixed-int lab + test_lab launch surface</span></li><li class='commit-item'><span class='commit-hash'>0e5b0788</span> <span class='commit-time'>14:27:07</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 11L GQA U-Net body II mixed-int lab + test_lab launch surface</span></li><li class='commit-item'><span class='commit-hash'>9b1ac893</span> <span class='commit-time'>14:40:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix test_lab launch scripts: walk up to find data/ at repo root</span></li><li class='commit-item'><span class='commit-hash'>9b1ac893</span> <span class='commit-time'>14:40:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix test_lab launch scripts: walk up to find data/ at repo root</span></li><li class='commit-item'><span class='commit-hash'>9b1ac893</span> <span class='commit-time'>14:40:35</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix test_lab launch scripts: walk up to find data/ at repo root</span></li><li class='commit-item'><span class='commit-hash'>0e2019aa</span> <span class='commit-time'>14:55:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 4xGPU control run: baseline quant policy (all int6, other=8)</span></li><li class='commit-item'><span class='commit-hash'>0e2019aa</span> <span class='commit-time'>14:55:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 4xGPU control run: baseline quant policy (all int6, other=8)</span></li><li class='commit-item'><span class='commit-hash'>0e2019aa</span> <span class='commit-time'>14:55:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 4xGPU control run: baseline quant policy (all int6, other=8)</span></li><li class='commit-item'><span class='commit-hash'>ee20240e</span> <span class='commit-time'>15:02:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SplitHead QuantFix combo launchers</span></li><li class='commit-item'><span class='commit-hash'>ee20240e</span> <span class='commit-time'>15:02:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SplitHead QuantFix combo launchers</span></li><li class='commit-item'><span class='commit-hash'>ee20240e</span> <span class='commit-time'>15:02:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add SplitHead QuantFix combo launchers</span></li><li class='commit-item'><span class='commit-hash'>3864434b</span> <span class='commit-time'>15:27:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 5-arm ablation sweep on 11L GQA U-Net body II mixed-int baseline</span></li><li class='commit-item'><span class='commit-hash'>3864434b</span> <span class='commit-time'>15:27:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 5-arm ablation sweep on 11L GQA U-Net body II mixed-int baseline</span></li><li class='commit-item'><span class='commit-hash'>3864434b</span> <span class='commit-time'>15:27:21</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 5-arm ablation sweep on 11L GQA U-Net body II mixed-int baseline</span></li><li class='commit-item'><span class='commit-hash'>3f285a5b</span> <span class='commit-time'>15:27:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Relax env preflight checks for modern torch/cuda and FA3 imports</span></li><li class='commit-item'><span class='commit-hash'>3f285a5b</span> <span class='commit-time'>15:27:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Relax env preflight checks for modern torch/cuda and FA3 imports</span></li><li class='commit-item'><span class='commit-hash'>3f285a5b</span> <span class='commit-time'>15:27:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Relax env preflight checks for modern torch/cuda and FA3 imports</span></li><li class='commit-item'><span class='commit-hash'>18041725</span> <span class='commit-time'>16:09:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 9-flat plus 1-crawler loop body 3-arm ablation sweep for 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>18041725</span> <span class='commit-time'>16:09:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 9-flat plus 1-crawler loop body 3-arm ablation sweep for 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>18041725</span> <span class='commit-time'>16:09:44</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 9-flat plus 1-crawler loop body 3-arm ablation sweep for 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>be1d225f</span> <span class='commit-time'>16:15:43</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix arms A+C: call torchrun directly instead of broken run.sh chain</span></li><li class='commit-item'><span class='commit-hash'>be1d225f</span> <span class='commit-time'>16:15:43</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix arms A+C: call torchrun directly instead of broken run.sh chain</span></li><li class='commit-item'><span class='commit-hash'>be1d225f</span> <span class='commit-time'>16:15:43</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix arms A+C: call torchrun directly instead of broken run.sh chain</span></li><li class='commit-item'><span class='commit-hash'>ade7f828</span> <span class='commit-time'>17:12:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add megarascal kernel fusion speed ablation (4x GPU) + gated attention gate</span></li><li class='commit-item'><span class='commit-hash'>ade7f828</span> <span class='commit-time'>17:12:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add megarascal kernel fusion speed ablation (4x GPU) + gated attention gate</span></li><li class='commit-item'><span class='commit-hash'>ade7f828</span> <span class='commit-time'>17:12:00</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add megarascal kernel fusion speed ablation (4x GPU) + gated attention gate</span></li><li class='commit-item'><span class='commit-hash'>879a31d2</span> <span class='commit-time'>17:13:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>split-head crawler scale gate: gate script for SplitHead architecture isolation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>879a31d2</span> <span class='commit-time'>17:13:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>split-head crawler scale gate: gate script for SplitHead architecture isolation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>879a31d2</span> <span class='commit-time'>17:13:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>split-head crawler scale gate: gate script for SplitHead architecture isolation on 4xGPU</span></li><li class='commit-item'><span class='commit-hash'>8cdfe832</span> <span class='commit-time'>17:15:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>9-flat plus 1-crawler loop body ablation sweep results (seed=300, 4xGPU, 600s)</span></li><li class='commit-item'><span class='commit-hash'>8cdfe832</span> <span class='commit-time'>17:15:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>9-flat plus 1-crawler loop body ablation sweep results (seed=300, 4xGPU, 600s)</span></li><li class='commit-item'><span class='commit-hash'>8cdfe832</span> <span class='commit-time'>17:15:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>9-flat plus 1-crawler loop body ablation sweep results (seed=300, 4xGPU, 600s)</span></li><li class='commit-item'><span class='commit-hash'>b8ac0071</span> <span class='commit-time'>17:29:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log gated attention ablation result: DEAD, no signal on 11L GQA U-Net body II</span></li><li class='commit-item'><span class='commit-hash'>b8ac0071</span> <span class='commit-time'>17:29:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log gated attention ablation result: DEAD, no signal on 11L GQA U-Net body II</span></li><li class='commit-item'><span class='commit-hash'>b8ac0071</span> <span class='commit-time'>17:29:27</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log gated attention ablation result: DEAD, no signal on 11L GQA U-Net body II</span></li><li class='commit-item'><span class='commit-hash'>ce2abb99</span> <span class='commit-time'>17:33:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log full 11L GQA U-Net body II ablation sweep results + update pipeline</span></li><li class='commit-item'><span class='commit-hash'>ce2abb99</span> <span class='commit-time'>17:33:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log full 11L GQA U-Net body II ablation sweep results + update pipeline</span></li><li class='commit-item'><span class='commit-hash'>ce2abb99</span> <span class='commit-time'>17:33:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log full 11L GQA U-Net body II ablation sweep results + update pipeline</span></li><li class='commit-item'><span class='commit-hash'>05fb1d33</span> <span class='commit-time'>17:35:48</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>9-flat plus 1-crawler loop body stacked test + reorganize experiments into crawler/</span></li><li class='commit-item'><span class='commit-hash'>05fb1d33</span> <span class='commit-time'>17:35:48</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>9-flat plus 1-crawler loop body stacked test + reorganize experiments into crawler/</span></li><li class='commit-item'><span class='commit-hash'>05fb1d33</span> <span class='commit-time'>17:35:48</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>9-flat plus 1-crawler loop body stacked test + reorganize experiments into crawler/</span></li><li class='commit-item'><span class='commit-hash'>f4b86cf7</span> <span class='commit-time'>17:45:06</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body III: mixed-int (attn=5, embed=8) + Brotli compression packaging compression packaging-11 + byte-shuffle</span></li><li class='commit-item'><span class='commit-hash'>f4b86cf7</span> <span class='commit-time'>17:45:06</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body III: mixed-int (attn=5, embed=8) + Brotli compression packaging compression packaging-11 + byte-shuffle</span></li><li class='commit-item'><span class='commit-hash'>f4b86cf7</span> <span class='commit-time'>17:45:06</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body III: mixed-int (attn=5, embed=8) + Brotli compression packaging compression packaging-11 + byte-shuffle</span></li><li class='commit-item'><span class='commit-hash'>01a805b5</span> <span class='commit-time'>17:48:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add isolated megarascal arm C (fused norm+MLP) script</span></li><li class='commit-item'><span class='commit-hash'>01a805b5</span> <span class='commit-time'>17:48:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add isolated megarascal arm C (fused norm+MLP) script</span></li><li class='commit-item'><span class='commit-hash'>01a805b5</span> <span class='commit-time'>17:48:04</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add isolated megarascal arm C (fused norm+MLP) script</span></li><li class='commit-item'><span class='commit-hash'>dab953d7</span> <span class='commit-time'>18:08:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: full run with all improvements + mixed-bit quant</span></li><li class='commit-item'><span class='commit-hash'>dab953d7</span> <span class='commit-time'>18:08:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: full run with all improvements + mixed-bit quant</span></li><li class='commit-item'><span class='commit-hash'>dab953d7</span> <span class='commit-time'>18:08:55</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: full run with all improvements + mixed-bit quant</span></li><li class='commit-item'><span class='commit-hash'>b1dd5442</span> <span class='commit-time'>18:10:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: fix to 8xH100 production run + enable loop-aware GPTQ</span></li><li class='commit-item'><span class='commit-hash'>b1dd5442</span> <span class='commit-time'>18:10:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: fix to 8xH100 production run + enable loop-aware GPTQ</span></li><li class='commit-item'><span class='commit-hash'>b1dd5442</span> <span class='commit-time'>18:10:28</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>9-flat plus 1-crawler loop body II: fix to 8xH100 production run + enable loop-aware GPTQ</span></li><li class='commit-item'><span class='commit-hash'>75fe2e85</span> <span class='commit-time'>18:49:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body III: SLOT-tuned transformer body V base (SLOT stripped) + mixed-int + Brotli compression packaging compression packaging</span></li><li class='commit-item'><span class='commit-hash'>75fe2e85</span> <span class='commit-time'>18:49:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body III: SLOT-tuned transformer body V base (SLOT stripped) + mixed-int + Brotli compression packaging compression packaging</span></li><li class='commit-item'><span class='commit-hash'>75fe2e85</span> <span class='commit-time'>18:49:56</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body III: SLOT-tuned transformer body V base (SLOT stripped) + mixed-int + Brotli compression packaging compression packaging</span></li><li class='commit-item'><span class='commit-hash'>404c999d</span> <span class='commit-time'>19:06:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>E2E TTT ablation: 4-arm gate for both 9-flat plus 1-crawler loop body and split-head crawler scale gate</span></li><li class='commit-item'><span class='commit-hash'>404c999d</span> <span class='commit-time'>19:06:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>E2E TTT ablation: 4-arm gate for both 9-flat plus 1-crawler loop body and split-head crawler scale gate</span></li><li class='commit-item'><span class='commit-hash'>404c999d</span> <span class='commit-time'>19:06:21</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>E2E TTT ablation: 4-arm gate for both 9-flat plus 1-crawler loop body and split-head crawler scale gate</span></li><li class='commit-item'><span class='commit-hash'>a897d16f</span> <span class='commit-time'>19:09:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SSM/TTT concept PR 3-arm ablation suite</span></li><li class='commit-item'><span class='commit-hash'>a897d16f</span> <span class='commit-time'>19:09:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SSM/TTT concept PR 3-arm ablation suite</span></li><li class='commit-item'><span class='commit-hash'>a897d16f</span> <span class='commit-time'>19:09:25</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add SSM/TTT concept PR 3-arm ablation suite</span></li><li class='commit-item'><span class='commit-hash'>4673d531</span> <span class='commit-time'>19:20:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body III v2: vault baseline + Brotli compression packaging compression packaging + mixed-int ONLY</span></li><li class='commit-item'><span class='commit-hash'>4673d531</span> <span class='commit-time'>19:20:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body III v2: vault baseline + Brotli compression packaging compression packaging + mixed-int ONLY</span></li><li class='commit-item'><span class='commit-hash'>4673d531</span> <span class='commit-time'>19:20:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body III v2: vault baseline + Brotli compression packaging compression packaging + mixed-int ONLY</span></li><li class='commit-item'><span class='commit-hash'>0e2627a8</span> <span class='commit-time'>19:24:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>9-flat plus 1-crawler loop body III: rebuild on correct BWX 9F base (CRAWLER_LOOPS=3)</span></li><li class='commit-item'><span class='commit-hash'>0e2627a8</span> <span class='commit-time'>19:24:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>9-flat plus 1-crawler loop body III: rebuild on correct BWX 9F base (CRAWLER_LOOPS=3)</span></li><li class='commit-item'><span class='commit-hash'>0e2627a8</span> <span class='commit-time'>19:24:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>9-flat plus 1-crawler loop body III: rebuild on correct BWX 9F base (CRAWLER_LOOPS=3)</span></li><li class='commit-item'><span class='commit-hash'>96e4e8ee</span> <span class='commit-time'>19:31:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>TTT ablation: fix 9-flat plus 1-crawler loop body arms to use BWX 9F base (NUM_FLAT_LAYERS=9)</span></li><li class='commit-item'><span class='commit-hash'>96e4e8ee</span> <span class='commit-time'>19:31:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>TTT ablation: fix 9-flat plus 1-crawler loop body arms to use BWX 9F base (NUM_FLAT_LAYERS=9)</span></li><li class='commit-item'><span class='commit-hash'>96e4e8ee</span> <span class='commit-time'>19:31:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>TTT ablation: fix 9-flat plus 1-crawler loop body arms to use BWX 9F base (NUM_FLAT_LAYERS=9)</span></li><li class='commit-item'><span class='commit-hash'>94a24d77</span> <span class='commit-time'>19:51:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix 11L GQA U-Net body III loader defaults and add ranked edge queue</span></li><li class='commit-item'><span class='commit-hash'>94a24d77</span> <span class='commit-time'>19:51:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix 11L GQA U-Net body III loader defaults and add ranked edge queue</span></li><li class='commit-item'><span class='commit-hash'>94a24d77</span> <span class='commit-time'>19:51:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix 11L GQA U-Net body III loader defaults and add ranked edge queue</span></li><li class='commit-item'><span class='commit-hash'>e31287e2</span> <span class='commit-time'>20:06:48</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>split-head crawler scale gate: record HAB3 gate results (seed 444) and mark fail</span></li><li class='commit-item'><span class='commit-hash'>e31287e2</span> <span class='commit-time'>20:06:48</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>split-head crawler scale gate: record HAB3 gate results (seed 444) and mark fail</span></li><li class='commit-item'><span class='commit-hash'>e31287e2</span> <span class='commit-time'>20:06:48</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>split-head crawler scale gate: record HAB3 gate results (seed 444) and mark fail</span></li><li class='commit-item'><span class='commit-hash'>c479f9ff</span> <span class='commit-time'>20:48:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>TTT ablation: disable torch.compile when TTT is enabled</span></li><li class='commit-item'><span class='commit-hash'>c479f9ff</span> <span class='commit-time'>20:48:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>TTT ablation: disable torch.compile when TTT is enabled</span></li><li class='commit-item'><span class='commit-hash'>c479f9ff</span> <span class='commit-time'>20:48:13</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>TTT ablation: disable torch.compile when TTT is enabled</span></li><li class='commit-item'><span class='commit-hash'>75e9e415</span> <span class='commit-time'>21:02:17</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Initial import of sota_nueral workspace</span></li><li class='commit-item'><span class='commit-hash'>44b960c5</span> <span class='commit-time'>21:20:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 11L GQA U-Net body IV clean runner and guarded test_lab launchers</span></li><li class='commit-item'><span class='commit-hash'>44b960c5</span> <span class='commit-time'>21:20:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 11L GQA U-Net body IV clean runner and guarded test_lab launchers</span></li><li class='commit-item'><span class='commit-hash'>44b960c5</span> <span class='commit-time'>21:20:03</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 11L GQA U-Net body IV clean runner and guarded test_lab launchers</span></li><li class='commit-item'><span class='commit-hash'>8a7c2369</span> <span class='commit-time'>21:22:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV test_lab wrapper paths under neural/</span></li><li class='commit-item'><span class='commit-hash'>8a7c2369</span> <span class='commit-time'>21:22:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV test_lab wrapper paths under neural/</span></li><li class='commit-item'><span class='commit-hash'>8a7c2369</span> <span class='commit-time'>21:22:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV test_lab wrapper paths under neural/</span></li><li class='commit-item'><span class='commit-hash'>4c36850c</span> <span class='commit-time'>21:24:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV train script path for neural workspace layout</span></li><li class='commit-item'><span class='commit-hash'>4c36850c</span> <span class='commit-time'>21:24:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV train script path for neural workspace layout</span></li><li class='commit-item'><span class='commit-hash'>4c36850c</span> <span class='commit-time'>21:24:13</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix 11L GQA U-Net body IV train script path for neural workspace layout</span></li><li class='commit-item'><span class='commit-hash'>bbb58449</span> <span class='commit-time'>21:29:01</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Add test_lab launcher for PR_sidelane 8x linked sweep</span></li><li class='commit-item'><span class='commit-hash'>e7cb028a</span> <span class='commit-time'>21:35:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Pin 11L GQA U-Net body III launcher to neural/experiments path</span></li><li class='commit-item'><span class='commit-hash'>e7cb028a</span> <span class='commit-time'>21:35:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Pin 11L GQA U-Net body III launcher to neural/experiments path</span></li><li class='commit-item'><span class='commit-hash'>e7cb028a</span> <span class='commit-time'>21:35:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Pin 11L GQA U-Net body III launcher to neural/experiments path</span></li><li class='commit-item'><span class='commit-hash'>b015909c</span> <span class='commit-time'>21:35:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log resolved 11L GQA U-Net body III training script path at startup</span></li><li class='commit-item'><span class='commit-hash'>b015909c</span> <span class='commit-time'>21:35:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log resolved 11L GQA U-Net body III training script path at startup</span></li><li class='commit-item'><span class='commit-hash'>b015909c</span> <span class='commit-time'>21:35:52</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log resolved 11L GQA U-Net body III training script path at startup</span></li><li class='commit-item'><span class='commit-hash'>e14f33a7</span> <span class='commit-time'>21:37:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Harden 11L GQA U-Net body III launcher defaults and disable legacy TTT/SLOT env drift</span></li><li class='commit-item'><span class='commit-hash'>e14f33a7</span> <span class='commit-time'>21:37:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Harden 11L GQA U-Net body III launcher defaults and disable legacy TTT/SLOT env drift</span></li><li class='commit-item'><span class='commit-hash'>e14f33a7</span> <span class='commit-time'>21:37:45</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Harden 11L GQA U-Net body III launcher defaults and disable legacy TTT/SLOT env drift</span></li><li class='commit-item'><span class='commit-hash'>05b877be</span> <span class='commit-time'>22:04:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Promote legacy 11L GQA U-Net body III runner2778 to canonical neural path</span></li><li class='commit-item'><span class='commit-hash'>05b877be</span> <span class='commit-time'>22:04:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Promote legacy 11L GQA U-Net body III runner2778 to canonical neural path</span></li><li class='commit-item'><span class='commit-hash'>05b877be</span> <span class='commit-time'>22:04:04</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Promote legacy 11L GQA U-Net body III runner2778 to canonical neural path</span></li><li class='commit-item'><span class='commit-hash'>a5d5a4db</span> <span class='commit-time'>22:08:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: hard-skip ttt eval when disabled</span></li><li class='commit-item'><span class='commit-hash'>a5d5a4db</span> <span class='commit-time'>22:08:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: hard-skip ttt eval when disabled</span></li><li class='commit-item'><span class='commit-hash'>a5d5a4db</span> <span class='commit-time'>22:08:38</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: hard-skip ttt eval when disabled</span></li><li class='commit-item'><span class='commit-hash'>92797205</span> <span class='commit-time'>22:26:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: add PR_sidelane 8x linked launcher</span></li><li class='commit-item'><span class='commit-hash'>92797205</span> <span class='commit-time'>22:26:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: add PR_sidelane 8x linked launcher</span></li><li class='commit-item'><span class='commit-hash'>92797205</span> <span class='commit-time'>22:26:05</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: add PR_sidelane 8x linked launcher</span></li><li class='commit-item'><span class='commit-hash'>bb6cfaac</span> <span class='commit-time'>22:35:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>11L GQA U-Net body: add mixed+Brotli compression packaging compression packaging exporter and checkpoint eval mode</span></li><li class='commit-item'><span class='commit-hash'>bb6cfaac</span> <span class='commit-time'>22:35:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>11L GQA U-Net body: add mixed+Brotli compression packaging compression packaging exporter and checkpoint eval mode</span></li><li class='commit-item'><span class='commit-hash'>bb6cfaac</span> <span class='commit-time'>22:35:31</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>11L GQA U-Net body: add mixed+Brotli compression packaging compression packaging exporter and checkpoint eval mode</span></li><li class='commit-item'><span class='commit-hash'>743cd9a0</span> <span class='commit-time'>23:00:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: make PR_sidelane launcher path-portable</span></li><li class='commit-item'><span class='commit-hash'>743cd9a0</span> <span class='commit-time'>23:00:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: make PR_sidelane launcher path-portable</span></li><li class='commit-item'><span class='commit-hash'>743cd9a0</span> <span class='commit-time'>23:00:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: make PR_sidelane launcher path-portable</span></li><li class='commit-item'><span class='commit-hash'>ad970d97</span> <span class='commit-time'>23:00:56</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Add checkpoint-only 11L GQA U-Net body III GPTQ export launcher</span></li><li class='commit-item'><span class='commit-hash'>5419a792</span> <span class='commit-time'>23:03:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 11L GQA U-Net body III checkpoint-only GPTQ export runner</span></li><li class='commit-item'><span class='commit-hash'>5419a792</span> <span class='commit-time'>23:03:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 11L GQA U-Net body III checkpoint-only GPTQ export runner</span></li><li class='commit-item'><span class='commit-hash'>5419a792</span> <span class='commit-time'>23:03:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add 11L GQA U-Net body III checkpoint-only GPTQ export runner</span></li><li class='commit-item'><span class='commit-hash'>7a8d0b43</span> <span class='commit-time'>23:05:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler: add SSM/long-context research scaffolding and fix TTT eval grad path</span></li><li class='commit-item'><span class='commit-hash'>7a8d0b43</span> <span class='commit-time'>23:05:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler: add SSM/long-context research scaffolding and fix TTT eval grad path</span></li><li class='commit-item'><span class='commit-hash'>7a8d0b43</span> <span class='commit-time'>23:05:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler: add SSM/long-context research scaffolding and fix TTT eval grad path</span></li><li class='commit-item'><span class='commit-hash'>3a96606a</span> <span class='commit-time'>23:06:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Handle skip_weights shape drift when loading INIT_MODEL_PATH</span></li><li class='commit-item'><span class='commit-hash'>3a96606a</span> <span class='commit-time'>23:06:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Handle skip_weights shape drift when loading INIT_MODEL_PATH</span></li><li class='commit-item'><span class='commit-hash'>3a96606a</span> <span class='commit-time'>23:06:03</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Handle skip_weights shape drift when loading INIT_MODEL_PATH</span></li><li class='commit-item'><span class='commit-hash'>54d741c4</span> <span class='commit-time'>23:09:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler/ttt: log strike-1 and strike-2 gate outcomes</span></li><li class='commit-item'><span class='commit-hash'>6b540cd3</span> <span class='commit-time'>23:09:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add guarded checkpoint-export launcher for 11L GQA U-Net body</span></li><li class='commit-item'><span class='commit-hash'>7af85b4f</span> <span class='commit-time'>23:09:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add guarded checkpoint-export launcher for 11L GQA U-Net body</span></li><li class='commit-item'><span class='commit-hash'>6b540cd3</span> <span class='commit-time'>23:09:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add guarded checkpoint-export launcher for 11L GQA U-Net body</span></li><li class='commit-item'><span class='commit-hash'>6b540cd3</span> <span class='commit-time'>23:09:09</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add guarded checkpoint-export launcher for 11L GQA U-Net body</span></li><li class='commit-item'><span class='commit-hash'>4057e51c</span> <span class='commit-time'>00:40:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Normalize INIT_MODEL_PATH keys for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>4057e51c</span> <span class='commit-time'>00:40:24</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Normalize INIT_MODEL_PATH keys for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>4057e51c</span> <span class='commit-time'>00:40:24</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Normalize INIT_MODEL_PATH keys for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>b95eb6a2</span> <span class='commit-time'>00:43:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add auto checkpoint finder for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>b95eb6a2</span> <span class='commit-time'>00:43:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add auto checkpoint finder for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>b95eb6a2</span> <span class='commit-time'>00:43:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add auto checkpoint finder for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>9ac7f48f</span> <span class='commit-time'>00:56:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add bounded quant sweep script for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>9ac7f48f</span> <span class='commit-time'>00:56:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add bounded quant sweep script for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>9ac7f48f</span> <span class='commit-time'>00:56:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add bounded quant sweep script for runner2778 export</span></li><li class='commit-item'><span class='commit-hash'>793a34b8</span> <span class='commit-time'>01:10:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Make runner2778 quant sweep quality-gated and safer</span></li><li class='commit-item'><span class='commit-hash'>793a34b8</span> <span class='commit-time'>01:10:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Make runner2778 quant sweep quality-gated and safer</span></li><li class='commit-item'><span class='commit-hash'>793a34b8</span> <span class='commit-time'>01:10:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Make runner2778 quant sweep quality-gated and safer</span></li><li class='commit-item'><span class='commit-hash'>cf1fde3d</span> <span class='commit-time'>01:10:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: auto-bootstrap linked 8x sweep runner</span></li><li class='commit-item'><span class='commit-hash'>cf1fde3d</span> <span class='commit-time'>01:10:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: auto-bootstrap linked 8x sweep runner</span></li><li class='commit-item'><span class='commit-hash'>cf1fde3d</span> <span class='commit-time'>01:10:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: auto-bootstrap linked 8x sweep runner</span></li><li class='commit-item'><span class='commit-hash'>7af63f2f</span> <span class='commit-time'>01:25:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler/ttt: fix DDP forward_logits access in TTT eval</span></li><li class='commit-item'><span class='commit-hash'>9cd8ac4c</span> <span class='commit-time'>01:52:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: vendor linked 8x sweep files in-repo</span></li><li class='commit-item'><span class='commit-hash'>9cd8ac4c</span> <span class='commit-time'>01:52:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: vendor linked 8x sweep files in-repo</span></li><li class='commit-item'><span class='commit-hash'>9cd8ac4c</span> <span class='commit-time'>01:52:04</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: vendor linked 8x sweep files in-repo</span></li><li class='commit-item'><span class='commit-hash'>c98641c9</span> <span class='commit-time'>02:09:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler/ttt: avoid sliding-eval OOM by scoping grads to inner TTT step</span></li><li class='commit-item'><span class='commit-hash'>3dc57271</span> <span class='commit-time'>02:28:32</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add pinned 1.110 baseline file and one-shot runner</span></li><li class='commit-item'><span class='commit-hash'>4e235817</span> <span class='commit-time'>02:28:32</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add pinned 1.110 baseline file and one-shot runner</span></li><li class='commit-item'><span class='commit-hash'>3dc57271</span> <span class='commit-time'>02:28:32</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add pinned 1.110 baseline file and one-shot runner</span></li><li class='commit-item'><span class='commit-hash'>3dc57271</span> <span class='commit-time'>02:28:32</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add pinned 1.110 baseline file and one-shot runner</span></li><li class='commit-item'><span class='commit-hash'>683cd344</span> <span class='commit-time'>03:14:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: add V1 non-ngram longctx submission lane</span></li><li class='commit-item'><span class='commit-hash'>683cd344</span> <span class='commit-time'>03:14:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: add V1 non-ngram longctx submission lane</span></li><li class='commit-item'><span class='commit-hash'>683cd344</span> <span class='commit-time'>03:14:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: add V1 non-ngram longctx submission lane</span></li><li class='commit-item'><span class='commit-hash'>5039df4e</span> <span class='commit-time'>03:20:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: make V1 runner wallclock-profile driven</span></li><li class='commit-item'><span class='commit-hash'>5039df4e</span> <span class='commit-time'>03:20:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: make V1 runner wallclock-profile driven</span></li><li class='commit-item'><span class='commit-hash'>5039df4e</span> <span class='commit-time'>03:20:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: make V1 runner wallclock-profile driven</span></li><li class='commit-item'><span class='commit-hash'>e189c9f3</span> <span class='commit-time'>04:02:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: add v1.2 non-ngram longctx runner with Brotli compression packaging compression packaging enforcement</span></li><li class='commit-item'><span class='commit-hash'>e189c9f3</span> <span class='commit-time'>04:02:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: add v1.2 non-ngram longctx runner with Brotli compression packaging compression packaging enforcement</span></li><li class='commit-item'><span class='commit-hash'>e189c9f3</span> <span class='commit-time'>04:02:31</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: add v1.2 non-ngram longctx runner with Brotli compression packaging compression packaging enforcement</span></li><li class='commit-item'><span class='commit-hash'>d77e9afe</span> <span class='commit-time'>04:27:54</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging-capable 11L GQA U-Net body II experiment (2026-04-06)</span></li><li class='commit-item'><span class='commit-hash'>85fea3dc</span> <span class='commit-time'>04:32:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging-capable 11L GQA U-Net body II experiment (2026-04-06)</span></li><li class='commit-item'><span class='commit-hash'>85fea3dc</span> <span class='commit-time'>04:32:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging-capable 11L GQA U-Net body II experiment (2026-04-06)</span></li><li class='commit-item'><span class='commit-hash'>85fea3dc</span> <span class='commit-time'>04:32:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging-capable 11L GQA U-Net body II experiment (2026-04-06)</span></li><li class='commit-item'><span class='commit-hash'>dd7d4dc9</span> <span class='commit-time'>04:34:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix nounset crash in Brotli compression packaging compression packaging run.sh — use export for env vars</span></li><li class='commit-item'><span class='commit-hash'>dd7d4dc9</span> <span class='commit-time'>04:34:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix nounset crash in Brotli compression packaging compression packaging run.sh — use export for env vars</span></li><li class='commit-item'><span class='commit-hash'>dd7d4dc9</span> <span class='commit-time'>04:34:44</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix nounset crash in Brotli compression packaging compression packaging run.sh — use export for env vars</span></li><li class='commit-item'><span class='commit-hash'>46301afb</span> <span class='commit-time'>04:34:45</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Fix nounset crash in Brotli compression packaging compression packaging run.sh — use export for env vars</span></li><li class='commit-item'><span class='commit-hash'>2615b89f</span> <span class='commit-time'>04:36:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>test_lab: add v1.3 non-ngram Brotli compression packaging compression packaging depth/schedule sweep</span></li><li class='commit-item'><span class='commit-hash'>2615b89f</span> <span class='commit-time'>04:36:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>test_lab: add v1.3 non-ngram Brotli compression packaging compression packaging depth/schedule sweep</span></li><li class='commit-item'><span class='commit-hash'>2615b89f</span> <span class='commit-time'>04:36:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>test_lab: add v1.3 non-ngram Brotli compression packaging compression packaging depth/schedule sweep</span></li><li class='commit-item'><span class='commit-hash'>1b15aaf6</span> <span class='commit-time'>04:51:34</span> <span class='commit-repo'>sota_nueral</span> <span class='commit-subject'>Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</span></li><li class='commit-item'><span class='commit-hash'>e19406b3</span> <span class='commit-time'>04:51:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</span></li><li class='commit-item'><span class='commit-hash'>e19406b3</span> <span class='commit-time'>04:51:51</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</span></li><li class='commit-item'><span class='commit-hash'>e19406b3</span> <span class='commit-time'>04:51:51</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record Brotli compression packaging compression packaging 8xH100 seed=444 run: 1.10942 BPB, 15.42MB (-135KB vs zstd)</span></li><li class='commit-item'><span class='commit-hash'>31b910b2</span> <span class='commit-time'>04:55:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging + mixed-int experiment (attn=5, mlp=6, embed=8)</span></li><li class='commit-item'><span class='commit-hash'>31b910b2</span> <span class='commit-time'>04:55:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging + mixed-int experiment (attn=5, mlp=6, embed=8)</span></li><li class='commit-item'><span class='commit-hash'>31b910b2</span> <span class='commit-time'>04:55:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add Brotli compression packaging compression packaging + mixed-int experiment (attn=5, mlp=6, embed=8)</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-04-06</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">020</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">33 unique  (7 valid / 1 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">OTHER (×13)  ·  JEPA (×6)  ·  COMPRESSION PACKAGING EXPERIMENT (×4)  ·  STATE-SPACE TTT VARIANT (×3)  ·  LEADERBOARD TRANSFORMER VARIANTS (×3)  ·  9-FLAT PLUS 1-CRAWLER LOOP BODY (×2)  ·  +2 MORE (×2)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 94% (31) / NEURAL 6% (2)"><span class="alloc-seg-exp" style="width:93.94%"></span><span class="alloc-seg-neu" style="width:6.06%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 94% (31)</span><span class="alloc-sep">/</span><span class="alloc-text-neu">NEURAL 6% (2)</span></span></span></div></div>
+
+<section class="architecture-recipe" aria-label="Architecture recipe"><div class="ar-kicker">ARCHITECTURE RECIPE</div><div class="ar-cards"><article class="ar-card"><div class="ar-head"><span class="ar-name">9-FLAT + 1-CRAWLER LOOP BODY</span><span class="ar-count">x2</span></div><p class="ar-summary">9-flat plus 1-crawler loop body: flat U-Net context around a shared crawler block fired twice.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · model_dim=512 · num_heads=8 · num_kv_heads=4 · NUM_FLAT_LAYERS=9 · NUM_CRAWLER_LAYERS=1 · CRAWLER_LOOPS=2 · USE_CRAWLER=1</span></div><div class="ar-line"><span class="ar-key">CRAWLER</span><span class="ar-val">CRAWLER_MLP_MULT=6.0 · INST_DIM=32 · CRAWLER_MLP_CHOKE_DIM=0 · CRAWLER_LOOP_ROPE_SCALES=9,1,1 · CRAWLER_MLP_LEAKY_SLOPE=0.5</span></div><div class="ar-line"><span class="ar-key">PACKAGING</span><span class="ar-val">LOOP_AWARE_GPTQ=1 · BigramHash 2048x128 · XSA last_n=11 · rope_dims=16 · VE dim=128 layers=9,10</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">11L GQA U-NET BODY</span><span class="ar-count">x1</span></div><p class="ar-summary">11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · head_dim=64 · mlp_mult=3.0 · tie_embeddings=1</span></div><div class="ar-line"><span class="ar-key">STRUCTURE</span><span class="ar-val">encoder_layers=5 · decoder_layers=6 · skip_weights=5 · GQA attention · RMSNorm · relu_sq MLP · Muon matrix optimizer path</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash vocab=2048 dim=128 · XSA last_n=11 · rope_dims=16 · VE dim=128 layers=9,10 · SmearGate · logit_softcap=30</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-SAFE TRAIN/EVAL SURFACE</span><span class="ar-count">x1</span></div><p class="ar-summary">Crawler-safe training/eval surface around a widened shared-crawler stack with final int6 and int8 checks.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">vocab_size=1024 · model_dim=512 · num_heads=8 · num_kv_heads=4 · shared crawler block · looped crawler passes</span></div><div class="ar-line"><span class="ar-key">FEATURES</span><span class="ar-val">BigramHash · XSA · RoPE · crawler loop rope scales · instruction bottleneck</span></div><div class="ar-line"><span class="ar-key">QUANT / EVAL</span><span class="ar-val">int6 roundtrip · int6 sliding-window eval · int8 zlib roundtrip · 8xH100 · 600s wallclock</span></div></article></div></section>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>JEPA (x6): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>COMPRESSION PACKAGING EXPERIMENT (x4): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>STATE-SPACE TTT VARIANT (x3): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p><strong>Neural work:</strong> <span>11L GQA U-NET BODY (x1): 11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate. Specs: num_layers=11; model_dim=512; vocab_size=1024; num_heads=8; num_kv_heads=4; head_dim=64.</span></p><p>Day 020 measured <strong>33 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>7 valid</strong> rows and <strong>1 TTT leakage</strong> reading excluded. Techniques to copy/reference: <strong>BigramHash 2048x128; SmearGate; BigramHash; XSA; RoPE; crawler loop rope scales; instruction bottleneck; int6 roundtrip</strong>.</p><p>No new personal best. Best valid of the day = <strong>1.1094</strong> (Record Brotli compression packaging compression packaging 8x); best-before-today = <strong>1.0672</strong> still stands. 25 crash-class outliers (4.15, 4.15) excluded.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-04-06_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-04-06 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-04-06_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-04-06_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-04-06 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-04-06_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>COMPRESSION PACKAGING EXPERIMENT</td><td>5</td><td>1.1094</td><td>1.1102</td><td>1.1442</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>9-FLAT PLUS 1-CRAWLER LOOP BODY</td><td>2</td><td>1.1618</td><td>1.2035</td><td>1.2451</td><td><a class='bpb-download-action' href='architecture-run-files/archives/28_ouroboros.zip' download>download</a></td></tr>
+<tr><td>ALL VALID</td><td>7</td><td>1.1094</td><td>1.1430</td><td>1.2451</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 31</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>3</strong></td><td>04:51</td><td>—</td><td>Record Brotli compression packaging compression packaging 8xH100 seed=444 run…</td><td>1.1094</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0003_details_67e03f36e98f.html' data-target='row-detail-2026-04-06-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-3' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>4</strong></td><td>13:46</td><td>8×H100</td><td>Brotli compression packaging compression packaging.log</td><td>1.1102</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0004_details_0f6720413644.html' data-target='row-detail-2026-04-06-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-4' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>5</strong></td><td>13:46</td><td>8×H100</td><td>proven_seed444.log</td><td>1.1442</td><td>OK</td><td>↑7.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0005_details_99135c597523.html' data-target='row-detail-2026-04-06-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-5' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>6</strong></td><td>13:46</td><td>8×H100</td><td>Brotli compression packaging compression packaging.log</td><td>1.1430</td><td>OK</td><td>↑7.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0006_details_b7b59d314ab9.html' data-target='row-detail-2026-04-06-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-6' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>7</strong></td><td>13:46</td><td>4×H100</td><td>9-flat plus 1-crawler loop body.log</td><td>1.1618</td><td>OK</td><td>↑8.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0007_details_099e7fa6b7fc.html' data-target='row-detail-2026-04-06-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>17:47</td><td>4×H100</td><td>stacked_s444_20260406_174738.log</td><td>1.2451</td><td>OK</td><td>↑16.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0008_details_7b662e63a132.html' data-target='row-detail-2026-04-06-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>18:54</td><td>1×GB10</td><td>10_jepa_proxy_distill_light.log (×3)</td><td>3.6501</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0009_details_80a2411aa2b4.html' data-target='row-detail-2026-04-06-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>18:55</td><td>1×GB10</td><td>11_jepa_proxy_distill_mid.log (×3)</td><td>3.6969</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0010_details_216d5c954362.html' data-target='row-detail-2026-04-06-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-10' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>11</strong></td><td>18:56</td><td>1×GB10</td><td>12_jepa_proxy_distill_plus_corr.log (×3)</td><td>3.7129</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0011_details_75bf38042be8.html' data-target='row-detail-2026-04-06-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>19:02</td><td>1×GB10</td><td>10_diff_proxy_dtg_gate.log (×2)</td><td>3.6737</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0012_details_f980af4076c1.html' data-target='row-detail-2026-04-06-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-12' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>19:03</td><td>1×GB10</td><td>11_diff_proxy_dtg_plus_ve.log (×2)</td><td>3.7153</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0013_details_eb0b85cbc438.html' data-target='row-detail-2026-04-06-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-13' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>14</strong></td><td>19:03</td><td>1×GB10</td><td>12_diff_proxy_high_temp_distill.log (×2)</td><td>3.7348</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0014_details_76f9bcaaabb5.html' data-target='row-detail-2026-04-06-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-14' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>15</strong></td><td>19:05</td><td>1×GB10</td><td>10_hnet_proxy_bigram_dense.log</td><td>4.1406</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0015_details_abeb04b1416e.html' data-target='row-detail-2026-04-06-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-15' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>16</strong></td><td>19:08</td><td>1×GB10</td><td>10_ssm_proxy_crawler_loops4.log</td><td>4.1395</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0016_details_f854a79c3ba2.html' data-target='row-detail-2026-04-06-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>19:11</td><td>1×GB10</td><td>11_longctx_2k.log (×2)</td><td>4.1458</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0017_details_f7f96095860a.html' data-target='row-detail-2026-04-06-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>19:14</td><td>1×GB10</td><td>12_longctx_ttt_proxy.log (×3)</td><td>4.1458</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0018_details_6ef0bcf7cf55.html' data-target='row-detail-2026-04-06-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-18' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>19</strong></td><td>19:15</td><td>1×GB10</td><td>00_control.log (×15)</td><td>3.6457</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details><details class='log-toggle'><summary>training_log 4</summary></details><details class='log-toggle'><summary>training_log 5</summary></details><details class='log-toggle'><summary>training_log 6</summary></details><details class='log-toggle'><summary>training_log 7</summary></details><details class='log-toggle'><summary>training_log 8</summary></details><details class='log-toggle'><summary>training_log 9</summary></details><details class='log-toggle'><summary>training_log 10</summary></details><details class='log-toggle'><summary>training_log 11</summary></details><details class='log-toggle'><summary>training_log 12</summary></details><details class='log-toggle'><summary>training_log 13</summary></details><details class='log-toggle'><summary>training_log 14</summary></details><details class='log-toggle'><summary>training_log 15</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0019_details_f61cbdd4d944.html' data-target='row-detail-2026-04-06-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-19' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>20</strong></td><td>19:15</td><td>1×GB10</td><td>10_rlm_adapter_rank2.log (×2)</td><td>3.6670</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0020_details_a53dfce14060.html' data-target='row-detail-2026-04-06-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-20' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>21</strong></td><td>19:16</td><td>1×GB10</td><td>11_rlm_adapter_rank4.log (×2)</td><td>3.7059</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0021_details_6ee9ff6039cc.html' data-target='row-detail-2026-04-06-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-21' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>22</strong></td><td>19:17</td><td>1×GB10</td><td>12_rlm_adapter_rank8_sparseproxy.log (×2)</td><td>3.7125</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0022_details_82dd435d0edf.html' data-target='row-detail-2026-04-06-22' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-22' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>23</strong></td><td>19:21</td><td>1×GB10</td><td>11_hnet_proxy_phrase_cache.log (×2)</td><td>4.1395</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0023_details_f8a41611191c.html' data-target='row-detail-2026-04-06-23' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-23' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>24</strong></td><td>19:23</td><td>1×GB10</td><td>12_hnet_proxy_combo.log (×3)</td><td>3.6714</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0024_details_f0d01078d41c.html' data-target='row-detail-2026-04-06-24' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-24' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>25</strong></td><td>19:55</td><td>1×GB10</td><td>13_jepa_proxy_alpha005_densehash.log (×2)</td><td>3.6681</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0025_details_2685e9a3a6de.html' data-target='row-detail-2026-04-06-25' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-25' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>26</strong></td><td>19:56</td><td>1×GB10</td><td>14_jepa_proxy_alpha005_densehash_vr.log</td><td>3.6805</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0026_details_11b251cb2c36.html' data-target='row-detail-2026-04-06-26' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-26' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>27</strong></td><td>19:58</td><td>1×GB10</td><td>15_jepa_proxy_alpha010_densehash.log</td><td>3.6690</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0027_details_8e9b5bea53d2.html' data-target='row-detail-2026-04-06-27' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-27' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>28</strong></td><td>20:00</td><td>1×GB10</td><td>13_diff_proxy_mtp_tiny_densehash.log</td><td>3.6867</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0028_details_ddd20e932647.html' data-target='row-detail-2026-04-06-28' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-28' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>29</strong></td><td>20:01</td><td>1×GB10</td><td>14_diff_proxy_mtp_tiny.log</td><td>3.6708</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0029_details_a7502822ef12.html' data-target='row-detail-2026-04-06-29' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-29' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>30</strong></td><td>20:03</td><td>1×GB10</td><td>15_diff_proxy_mtp_ultratiny_dtg.log</td><td>3.7055</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0030_details_694e77dd13c6.html' data-target='row-detail-2026-04-06-30' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-30' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>31</strong></td><td>20:15</td><td>1×GB10</td><td>16_diff_proxy_denoise_complement_densehash.log (×2)</td><td>3.6688</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0031_details_dfe9fa879792.html' data-target='row-detail-2026-04-06-31' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-31' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>32</strong></td><td>20:18</td><td>1×GB10</td><td>13_rlm_adapter_densehash.log (×2)</td><td>3.6619</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0032_details_6cc9a8ee76a6.html' data-target='row-detail-2026-04-06-32' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-32' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>33</strong></td><td>20:37</td><td>1×GB10</td><td>13_longctx_ttt_densehash.log</td><td>4.1397</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0033_details_ce90736ac128.html' data-target='row-detail-2026-04-06-33' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-33' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table>
+
+<h3>NEURAL TEST RUNS — 2</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>02:39</td><td>—</td><td>11L GQA U-Net body (×2)</td><td>1.1099</td><td>OK</td><td>↑4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0001_details_1ff743cbeb59.html' data-target='row-detail-2026-04-06-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-1' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>2</strong></td><td>04:03</td><td>—</td><td>FILL_IN_NAME (×2)</td><td><code>0.0000</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-06_row0002_details_35d0f0574852.html' data-target='row-detail-2026-04-06-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-06-2' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

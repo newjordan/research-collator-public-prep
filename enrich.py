@@ -470,7 +470,7 @@ def walk_codex_session(session_path: str) -> dict | None:
 # ---------- main -------------------------------------------------------------
 
 def main():
-    cfg = yaml.safe_load(open("/home/frosty40/research_collator/config.yaml"))
+    cfg = yaml.safe_load(open("~/research_collator/config.yaml"))
     db = cfg["sqlite_path"]
     conn = sqlite3.connect(db)
 

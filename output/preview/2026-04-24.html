@@ -1,0 +1,1152 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-04-24 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-04-24.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-04-24</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-clean'>val_bpb · 767 of 894 · 0 warnings</summary><div class='audit-body'><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-04-24&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 894,&#10;  &quot;render_records&quot;: 767,&#10;  &quot;test_rows&quot;: 177,&#10;  &quot;warnings&quot;: 0&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>3 commits on 2026-04-24</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>f47b26c5</span> <span class='commit-time'>15:35:32</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update leaderboard with recent record submissions</span></li><li class='commit-item'><span class='commit-hash'>a33d6953</span> <span class='commit-time'>19:43:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add reboot baseline for blessed dim-576 attention-kernel body</span></li><li class='commit-item'><span class='commit-hash'>a33d6953</span> <span class='commit-time'>19:43:22</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add reboot baseline for blessed dim-576 attention-kernel body</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-04-24</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">038</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">177 unique  (177 valid / 0 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">FUSED RECURRENCE MEGAKERNEL (×166)  ·  CRAWLER ABLATION CONTROL SET (×10)  ·  PROGRESSIVE MLP AND FRACTAL CADENCE TESTS (×1)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 100% (177)"><span class="alloc-seg-exp" style="width:100.00%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 100% (177)</span></span></span></div></div>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>FUSED RECURRENCE MEGAKERNEL (x166): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>CRAWLER ABLATION CONTROL SET (x10): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>PROGRESSIVE MLP AND FRACTAL CADENCE TESTS (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p>Day 038 measured <strong>177 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>177 valid</strong> rows and <strong>0 TTT leakage</strong> readings excluded.</p><p>No new personal best. Best valid of the day = <strong>1.3225</strong> (tail_fused_seed16180.log); best-before-today = <strong>1.0672</strong> still stands.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-04-24_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-04-24 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-04-24_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-04-24_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-04-24 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-04-24_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>FUSED RECURRENCE MEGAKERNEL</td><td>166</td><td>1.3225</td><td>2.0744</td><td>2.4697</td><td><a class='bpb-download-action' href='architecture-run-files/archives/41_vortexhelix-megahelix.zip' download>download</a></td></tr>
+<tr><td>CRAWLER ABLATION CONTROL SET</td><td>10</td><td>1.8947</td><td>2.0303</td><td>2.4027</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>PROGRESSIVE MLP AND FRACTAL CADENCE TESTS</td><td>1</td><td>1.9665</td><td>1.9665</td><td>1.9665</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>ALL VALID</td><td>177</td><td>1.3225</td><td>2.0709</td><td>2.4697</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 177</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>00:03</td><td>1×GB10</td><td>steps5.log</td><td>2.1153</td><td>OK</td><td>↑98.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0001_details_24b92b3465b8.html' data-target='row-detail-2026-04-24-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-1' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>2</strong></td><td>00:03</td><td>1×GB10</td><td>steps7.log</td><td>2.1130</td><td>OK</td><td>↑98.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0002_details_da8a75569fc6.html' data-target='row-detail-2026-04-24-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-2' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>3</strong></td><td>00:05</td><td>1×GB10</td><td>chaos_d2_p0_long_seed65535.log</td><td>1.8682</td><td>OK</td><td>↑75.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0003_details_ba195bde6110.html' data-target='row-detail-2026-04-24-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-3' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>4</strong></td><td>00:14</td><td>1×GB10</td><td>tail_baseline_seed16180.log</td><td>2.4027</td><td>OK</td><td>↑125.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0004_details_445d0e31bece.html' data-target='row-detail-2026-04-24-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-4' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>5</strong></td><td>00:30</td><td>1×GB10</td><td>chaos_d2_p0_long_seed88888.log</td><td>1.8756</td><td>OK</td><td>↑75.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0005_details_0ba5e4383283.html' data-target='row-detail-2026-04-24-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-5' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>6</strong></td><td>00:53</td><td>1×GB10</td><td>seed42_attn0p25.log</td><td>2.1253</td><td>OK</td><td>↑99.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0006_details_16ae2b424fc7.html' data-target='row-detail-2026-04-24-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-6' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>7</strong></td><td>00:54</td><td>1×GB10</td><td>seed2025_attn0p25.log</td><td>2.1174</td><td>OK</td><td>↑98.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0007_details_a4109676f25b.html' data-target='row-detail-2026-04-24-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>01:04</td><td>1×GB10</td><td>qk045.log</td><td>2.1116</td><td>OK</td><td>↑97.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0008_details_07a3ccdd6835.html' data-target='row-detail-2026-04-24-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>01:04</td><td>1×GB10</td><td>qk055.log</td><td>2.1117</td><td>OK</td><td>↑97.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0009_details_144ab4575a94.html' data-target='row-detail-2026-04-24-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>01:18</td><td>1×GB10</td><td>seed42_qk0p35.log</td><td>2.1257</td><td>OK</td><td>↑99.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0010_details_a5368f7c99ff.html' data-target='row-detail-2026-04-24-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-10' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>11</strong></td><td>01:19</td><td>1×GB10</td><td>seed42_qk0p45.log</td><td>2.1253</td><td>OK</td><td>↑99.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0011_details_e0a01b978818.html' data-target='row-detail-2026-04-24-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>01:19</td><td>1×GB10</td><td>seed2025_qk0p35.log</td><td>2.1157</td><td>OK</td><td>↑98.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0012_details_cbfc9ec1b01a.html' data-target='row-detail-2026-04-24-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-12' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>01:20</td><td>1×GB10</td><td>seed2025_qk0p45.log</td><td>2.1173</td><td>OK</td><td>↑98.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0013_details_3b2a35e29835.html' data-target='row-detail-2026-04-24-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-13' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>14</strong></td><td>01:24</td><td>1×GB10</td><td>seed1337_attn0p25.log</td><td>2.1126</td><td>OK</td><td>↑98.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0014_details_1d1c24fa2eaa.html' data-target='row-detail-2026-04-24-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-14' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>15</strong></td><td>01:40</td><td>1×GB10</td><td>seed42_attn0p15.log</td><td>2.1214</td><td>OK</td><td>↑98.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0015_details_4b3bbb2b8aa5.html' data-target='row-detail-2026-04-24-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-15' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>16</strong></td><td>01:41</td><td>1×GB10</td><td>seed42_attn0p20.log</td><td>2.1250</td><td>OK</td><td>↑99.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0016_details_d545da70beed.html' data-target='row-detail-2026-04-24-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>01:41</td><td>1×GB10</td><td>seed2025_attn0p15.log</td><td>2.1164</td><td>OK</td><td>↑98.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0017_details_2fa5f9817a35.html' data-target='row-detail-2026-04-24-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>01:42</td><td>1×GB10</td><td>seed2025_attn0p20.log</td><td>2.1154</td><td>OK</td><td>↑98.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0018_details_95b59e78529a.html' data-target='row-detail-2026-04-24-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-18' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>19</strong></td><td>01:49</td><td>1×GB10</td><td>seed1337_attn0p15.log</td><td>2.0683</td><td>OK</td><td>↑93.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0019_details_e120acc35012.html' data-target='row-detail-2026-04-24-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-19' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>20</strong></td><td>01:50</td><td>1×GB10</td><td>seed1337_attn0p20.log</td><td>2.0671</td><td>OK</td><td>↑93.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0020_details_ffbce95fe688.html' data-target='row-detail-2026-04-24-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-20' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>21</strong></td><td>01:52</td><td>1×GB10</td><td>seed42_scalar0p015.log</td><td>2.1241</td><td>OK</td><td>↑99.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0021_details_1d31f508edd0.html' data-target='row-detail-2026-04-24-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-21' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>22</strong></td><td>01:53</td><td>1×GB10</td><td>seed42_scalar0p020.log</td><td>2.1256</td><td>OK</td><td>↑99.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0022_details_dee31cc17df4.html' data-target='row-detail-2026-04-24-22' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-22' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>23</strong></td><td>01:53</td><td>1×GB10</td><td>seed2025_scalar0p015.log</td><td>2.1173</td><td>OK</td><td>↑98.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0023_details_f38805e1b0d3.html' data-target='row-detail-2026-04-24-23' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-23' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>24</strong></td><td>01:54</td><td>1×GB10</td><td>seed2025_scalar0p020.log</td><td>2.1156</td><td>OK</td><td>↑98.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0024_details_569867625463.html' data-target='row-detail-2026-04-24-24' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-24' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>25</strong></td><td>02:05</td><td>1×GB10</td><td>baseline200.log</td><td>2.0668</td><td>OK</td><td>↑93.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0025_details_da024c31742b.html' data-target='row-detail-2026-04-24-25' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-25' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>26</strong></td><td>02:05</td><td>1×GB10</td><td>chaos_d2_p0_long_seed4242.log (×3)</td><td>1.8514</td><td>OK</td><td>↑73.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0026_details_633e95b53f33.html' data-target='row-detail-2026-04-24-26' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-26' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>27</strong></td><td>02:07</td><td>1×GB10</td><td>qk040.log</td><td>2.1118</td><td>OK</td><td>↑97.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0027_details_b49bc12a6b91.html' data-target='row-detail-2026-04-24-27' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-27' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>28</strong></td><td>02:08</td><td>1×GB10</td><td>attn022.log</td><td>2.1137</td><td>OK</td><td>↑98.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0028_details_f1a2d1a53d72.html' data-target='row-detail-2026-04-24-28' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-28' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>29</strong></td><td>02:11</td><td>1×GB10</td><td>scalar015.log (×2)</td><td>2.1117</td><td>OK</td><td>↑97.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0029_details_70e6cb438759.html' data-target='row-detail-2026-04-24-29' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-29' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>30</strong></td><td>02:11</td><td>1×GB10</td><td>scalar020.log (×2)</td><td>2.1092</td><td>OK</td><td>↑97.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0030_details_3e2f24c80b2b.html' data-target='row-detail-2026-04-24-30' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-30' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>31</strong></td><td>02:12</td><td>1×GB10</td><td>scalar025.log</td><td>2.1119</td><td>OK</td><td>↑97.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0031_details_a99f53fa40be.html' data-target='row-detail-2026-04-24-31' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-31' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>32</strong></td><td>02:30</td><td>1×GB10</td><td>baseline_s42.log (×3)</td><td>2.0881</td><td>OK</td><td>↑95.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0032_details_a1757d4dd698.html' data-target='row-detail-2026-04-24-32' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-32' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>33</strong></td><td>02:31</td><td>1×GB10</td><td>qk030_s42.log (×2)</td><td>2.0297</td><td>OK</td><td>↑90.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0033_details_814f273d73c5.html' data-target='row-detail-2026-04-24-33' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-33' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>34</strong></td><td>02:32</td><td>1×GB10</td><td>baseline_s2025.log (×3)</td><td>2.0755</td><td>OK</td><td>↑94.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0034_details_0b07abf10f07.html' data-target='row-detail-2026-04-24-34' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-34' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>35</strong></td><td>02:33</td><td>1×GB10</td><td>qk030_s2025.log</td><td>2.0755</td><td>OK</td><td>↑94.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0035_details_80f7cb6f517c.html' data-target='row-detail-2026-04-24-35' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-35' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>36</strong></td><td>02:34</td><td>1×GB10</td><td>qk030_m045_s42.log</td><td>2.0932</td><td>OK</td><td>↑96.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0036_details_c1c1362773e0.html' data-target='row-detail-2026-04-24-36' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-36' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>37</strong></td><td>02:35</td><td>1×GB10</td><td>qk030_m050_s42.log</td><td>2.0921</td><td>OK</td><td>↑96.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0037_details_2c50ae92eaac.html' data-target='row-detail-2026-04-24-37' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-37' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>38</strong></td><td>02:36</td><td>1×GB10</td><td>qk030_m045_s2025.log</td><td>2.0781</td><td>OK</td><td>↑94.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0038_details_7ba4eb4a83f0.html' data-target='row-detail-2026-04-24-38' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-38' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>39</strong></td><td>02:37</td><td>1×GB10</td><td>qk030_m050_s2025.log</td><td>2.0793</td><td>OK</td><td>↑94.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0039_details_dae245014614.html' data-target='row-detail-2026-04-24-39' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-39' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>40</strong></td><td>02:45</td><td>1×GB10</td><td>chaos_d2_p0_long_seed51515.log (×3)</td><td>1.8651</td><td>OK</td><td>↑74.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0040_details_cf2b964b9e7e.html' data-target='row-detail-2026-04-24-40' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-40' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>41</strong></td><td>02:46</td><td>1×GB10</td><td>attn018_s42.log</td><td>2.0910</td><td>OK</td><td>↑95.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0041_details_3caef2eee24b.html' data-target='row-detail-2026-04-24-41' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-41' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>42</strong></td><td>02:48</td><td>1×GB10</td><td>attn018_s2025.log</td><td>2.0758</td><td>OK</td><td>↑94.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0042_details_8662d52555e7.html' data-target='row-detail-2026-04-24-42' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-42' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>43</strong></td><td>02:49</td><td>1×GB10</td><td>scalar015_s42.log</td><td>2.0900</td><td>OK</td><td>↑95.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0043_details_8d1304176d3f.html' data-target='row-detail-2026-04-24-43' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-43' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>44</strong></td><td>02:50</td><td>1×GB10</td><td>scalar015_s2025.log</td><td>2.0790</td><td>OK</td><td>↑94.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0044_details_fbf49274ce5e.html' data-target='row-detail-2026-04-24-44' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-44' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>45</strong></td><td>03:02</td><td>1×GB10</td><td>qk025_s2025.log</td><td>2.0709</td><td>OK</td><td>↑94.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0045_details_379235712122.html' data-target='row-detail-2026-04-24-45' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-45' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>46</strong></td><td>03:03</td><td>1×GB10</td><td>attn016_s42.log</td><td>2.0947</td><td>OK</td><td>↑96.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0046_details_64209e561f18.html' data-target='row-detail-2026-04-24-46' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-46' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>47</strong></td><td>03:04</td><td>1×GB10</td><td>attn016_s2025.log</td><td>2.0760</td><td>OK</td><td>↑94.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0047_details_3f1758822b56.html' data-target='row-detail-2026-04-24-47' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-47' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>48</strong></td><td>03:08</td><td>1×GB10</td><td>tail_baseline_seed4242.log</td><td>1.8961</td><td>OK</td><td>↑77.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0048_details_b7552cd6db84.html' data-target='row-detail-2026-04-24-48' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-48' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>49</strong></td><td>03:08</td><td>1×GB10</td><td>tail_fused_seed4242.log (×3)</td><td>1.3266</td><td>OK</td><td>↑24.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0049_details_2efb91d82a10.html' data-target='row-detail-2026-04-24-49' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-49' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>50</strong></td><td>03:14</td><td>1×GB10</td><td>qk030_s1337.log</td><td>1.9925</td><td>OK</td><td>↑86.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0050_details_dc4b3aecac00.html' data-target='row-detail-2026-04-24-50' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-50' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>51</strong></td><td>03:16</td><td>1×GB10</td><td>qk025_s1337.log</td><td>1.9939</td><td>OK</td><td>↑86.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0051_details_a395ad358f7b.html' data-target='row-detail-2026-04-24-51' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-51' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>52</strong></td><td>03:21</td><td>1×GB10</td><td>qk025_s42.log (×2)</td><td>2.0258</td><td>OK</td><td>↑89.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0052_details_aba45b5fca3a.html' data-target='row-detail-2026-04-24-52' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-52' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>53</strong></td><td>03:23</td><td>1×RTX 5090</td><td>tail_baseline_seed51515.log</td><td>1.8947</td><td>OK</td><td>↑77.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0053_details_12f8cda3e88c.html' data-target='row-detail-2026-04-24-53' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-53' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>54</strong></td><td>03:32</td><td>1×GB10</td><td>qk030_s2025_1k.log</td><td>1.9938</td><td>OK</td><td>↑86.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0054_details_9983f2c504a6.html' data-target='row-detail-2026-04-24-54' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-54' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>55</strong></td><td>03:37</td><td>1×GB10</td><td>qk025_s2025_1k.log</td><td>1.9943</td><td>OK</td><td>↑86.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0055_details_5c11740c4795.html' data-target='row-detail-2026-04-24-55' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-55' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>56</strong></td><td>04:20</td><td>1×GB10</td><td>tail_fused_seed51515.log (×3)</td><td>1.3321</td><td>OK</td><td>↑24.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0056_details_c2d35a4808f6.html' data-target='row-detail-2026-04-24-56' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-56' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>57</strong></td><td>04:56</td><td>1×GB10</td><td>tail_fused_fc1_seed51515.log</td><td>1.9384</td><td>OK</td><td>↑81.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0057_details_089c93d2d81d.html' data-target='row-detail-2026-04-24-57' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-57' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>58</strong></td><td>04:56</td><td>1×GB10</td><td>tail_fused_fc1_seed4242.log</td><td>1.9196</td><td>OK</td><td>↑79.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0058_details_9cdccabbdbc8.html' data-target='row-detail-2026-04-24-58' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-58' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>59</strong></td><td>05:24</td><td>1×GB10</td><td>queued.nohup.out (×2)</td><td>1.9961</td><td>OK</td><td>↑87.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0059_details_f761c5620efc.html' data-target='row-detail-2026-04-24-59' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-59' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>60</strong></td><td>05:49</td><td>1×GB10</td><td>tail_fused_prep_seed88888.log</td><td>1.4200</td><td>OK</td><td>↑33.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0060_details_129711e05be0.html' data-target='row-detail-2026-04-24-60' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-60' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>61</strong></td><td>05:55</td><td>1×GB10</td><td>tail_fused_seed7777.log</td><td>1.3260</td><td>OK</td><td>↑24.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0061_details_a1a970886a38.html' data-target='row-detail-2026-04-24-61' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-61' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>62</strong></td><td>06:06</td><td>1×GB10</td><td>baseline_full.log</td><td>1.9938</td><td>OK</td><td>↑86.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0062_details_bd9c681c309f.html' data-target='row-detail-2026-04-24-62' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-62' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>63</strong></td><td>06:19</td><td>1×GB10</td><td>tail_fused_qkprep_prep_seed4242.log</td><td>1.4153</td><td>OK</td><td>↑32.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0063_details_e4647819a5bc.html' data-target='row-detail-2026-04-24-63' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-63' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>64</strong></td><td>06:19</td><td>1×GB10</td><td>tail_fused_qkprep_seed4242.log</td><td>1.4209</td><td>OK</td><td>↑33.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0064_details_cdfabc13a0d3.html' data-target='row-detail-2026-04-24-64' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-64' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>65</strong></td><td>06:21</td><td>1×GB10</td><td>no_mlp.log (×2)</td><td>2.4697</td><td>OK</td><td>↑131.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0065_details_769af8d47448.html' data-target='row-detail-2026-04-24-65' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-65' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>66</strong></td><td>06:36</td><td>1×GB10</td><td>no_perturb.log</td><td>1.9653</td><td>OK</td><td>↑84.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0066_details_0be400077344.html' data-target='row-detail-2026-04-24-66' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-66' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>67</strong></td><td>06:51</td><td>1×GB10</td><td>attn_only.log</td><td>1.9682</td><td>OK</td><td>↑84.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0067_details_6d21b7e55fba.html' data-target='row-detail-2026-04-24-67' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-67' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>68</strong></td><td>07:06</td><td>1×GB10</td><td>chaos_only.log</td><td>1.8906</td><td>OK</td><td>↑77.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0068_details_abcc3e73cbad.html' data-target='row-detail-2026-04-24-68' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-68' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>69</strong></td><td>07:14</td><td>1×GB10</td><td>tail_fused_seed27182.log</td><td>1.3337</td><td>OK</td><td>↑25.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0069_details_6c99df4d8387.html' data-target='row-detail-2026-04-24-69' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-69' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>70</strong></td><td>07:21</td><td>1×GB10</td><td>fractal cadence test cadence test.log</td><td>1.9665</td><td>OK</td><td>↑84.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0070_details_45d3bcc15d75.html' data-target='row-detail-2026-04-24-70' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-70' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>71</strong></td><td>07:49</td><td>1×GB10</td><td>tail_fused_qkv_prep_seed51515.log</td><td>1.4126</td><td>OK</td><td>↑32.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0071_details_545d0c3ac8c5.html' data-target='row-detail-2026-04-24-71' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-71' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>72</strong></td><td>07:49</td><td>1×GB10</td><td>tail_fused_qkv_seed4242.log</td><td>1.4254</td><td>OK</td><td>↑33.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0072_details_ce6759864874.html' data-target='row-detail-2026-04-24-72' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-72' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>73</strong></td><td>09:15</td><td>1×GB10</td><td>tail_fused_qkv_seed8888.log</td><td>1.4764</td><td>OK</td><td>↑38.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0073_details_4ca40a006b35.html' data-target='row-detail-2026-04-24-73' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-73' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>74</strong></td><td>13:56</td><td>1×GB10</td><td>struct_baseline_s42.log</td><td>1.9746</td><td>OK</td><td>↑85.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0074_details_c78473d6d0eb.html' data-target='row-detail-2026-04-24-74' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-74' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>75</strong></td><td>14:01</td><td>1×GB10</td><td>tail_rnorm512_w8_s2_seed4242.log</td><td>1.4876</td><td>OK</td><td>↑39.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0075_details_8a4947afe538.html' data-target='row-detail-2026-04-24-75' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-75' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>76</strong></td><td>14:11</td><td>1×GB10</td><td>struct_best_s42.log</td><td>1.8987</td><td>OK</td><td>↑77.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0076_details_5a3df5d4395a.html' data-target='row-detail-2026-04-24-76' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-76' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>77</strong></td><td>14:16</td><td>1×GB10</td><td>tail_rnorm512_w4_s2_seed4242.log</td><td>1.4766</td><td>OK</td><td>↑38.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0077_details_2527345edb3c.html' data-target='row-detail-2026-04-24-77' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-77' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>78</strong></td><td>14:23</td><td>1×GB10</td><td>tail_fused_qkv_qkprep_seed4242.log</td><td>1.4118</td><td>OK</td><td>↑32.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0078_details_b77482d665d7.html' data-target='row-detail-2026-04-24-78' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-78' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>79</strong></td><td>14:26</td><td>1×GB10</td><td>struct_baseline_s1337.log</td><td>1.9118</td><td>OK</td><td>↑79.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0079_details_78850e3e9d36.html' data-target='row-detail-2026-04-24-79' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-79' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>80</strong></td><td>14:39</td><td>1×GB10</td><td>tail_fused_qkv_qkprep_prep_seed51515.log</td><td>1.4293</td><td>OK</td><td>↑33.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0080_details_9e7f704208d3.html' data-target='row-detail-2026-04-24-80' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-80' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>81</strong></td><td>14:42</td><td>1×GB10</td><td>struct_best_s1337.log</td><td>1.8993</td><td>OK</td><td>↑78.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0081_details_f16dfa435a2d.html' data-target='row-detail-2026-04-24-81' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-81' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>82</strong></td><td>14:44</td><td>1×GB10</td><td>tail_fused_block_entry_seed4242.log</td><td>1.4262</td><td>OK</td><td>↑33.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0082_details_fa9ecafad29c.html' data-target='row-detail-2026-04-24-82' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-82' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>83</strong></td><td>14:52</td><td>1×GB10</td><td>qk025.log</td><td>1.9147</td><td>OK</td><td>↑79.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0083_details_1dd410623f0d.html' data-target='row-detail-2026-04-24-83' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-83' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>84</strong></td><td>15:02</td><td>1×GB10</td><td>qk030.log (×2)</td><td>1.9106</td><td>OK</td><td>↑79.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0084_details_954b5de32b83.html' data-target='row-detail-2026-04-24-84' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-84' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>85</strong></td><td>15:12</td><td>1×GB10</td><td>qk035.log (×3)</td><td>1.9132</td><td>OK</td><td>↑79.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0085_details_02d99d703aae.html' data-target='row-detail-2026-04-24-85' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-85' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>86</strong></td><td>15:22</td><td>1×GB10</td><td>attn016.log</td><td>1.9126</td><td>OK</td><td>↑79.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0086_details_6c11268f2023.html' data-target='row-detail-2026-04-24-86' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-86' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>87</strong></td><td>15:32</td><td>1×GB10</td><td>attn018.log (×2)</td><td>1.9099</td><td>OK</td><td>↑79.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0087_details_da1b8c57f260.html' data-target='row-detail-2026-04-24-87' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-87' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>88</strong></td><td>15:42</td><td>1×GB10</td><td>attn020.log (×2)</td><td>1.9159</td><td>OK</td><td>↑79.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0088_details_4bfbfed5b79c.html' data-target='row-detail-2026-04-24-88' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-88' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>89</strong></td><td>15:52</td><td>1×GB10</td><td>matrix040.log (×2)</td><td>1.9115</td><td>OK</td><td>↑79.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0089_details_b08d4bffa3cd.html' data-target='row-detail-2026-04-24-89' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-89' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>90</strong></td><td>16:02</td><td>1×GB10</td><td>matrix045.log (×3)</td><td>1.9118</td><td>OK</td><td>↑79.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0090_details_37d7b3b8277d.html' data-target='row-detail-2026-04-24-90' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-90' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>91</strong></td><td>16:13</td><td>1×GB10</td><td>matrix050.log (×2)</td><td>1.9081</td><td>OK</td><td>↑78.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0091_details_d1d08db066a3.html' data-target='row-detail-2026-04-24-91' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-91' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>92</strong></td><td>16:53</td><td>1×GB10</td><td>best40m_seed2025.log</td><td>1.8632</td><td>OK</td><td>↑74.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0092_details_ea4cdbedeec7.html' data-target='row-detail-2026-04-24-92' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-92' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>93</strong></td><td>17:20</td><td>2×H100</td><td>chaos2g_seed2025.log</td><td>2.4018</td><td>OK</td><td>↑125.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0093_details_f3a4fbe3fd96.html' data-target='row-detail-2026-04-24-93' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-93' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>94</strong></td><td>17:33</td><td>1×GB10</td><td>best40m_seed42.log</td><td>1.8633</td><td>OK</td><td>↑74.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0094_details_64ff27f91a5b.html' data-target='row-detail-2026-04-24-94' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-94' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>95</strong></td><td>17:51</td><td>2×H100</td><td>chaos2g_seed42.log</td><td>2.4018</td><td>OK</td><td>↑125.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0095_details_59750ff30091.html' data-target='row-detail-2026-04-24-95' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-95' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>96</strong></td><td>17:52</td><td>1×GB10</td><td>chaos_d1_p0_seed2025.log</td><td>1.8942</td><td>OK</td><td>↑77.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0096_details_0f2d5b57d6b3.html' data-target='row-detail-2026-04-24-96' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-96' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>97</strong></td><td>18:07</td><td>1×GB10</td><td>chaos_d1_p1_seed2025.log</td><td>1.9137</td><td>OK</td><td>↑79.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0097_details_ac8aa9e3bf52.html' data-target='row-detail-2026-04-24-97' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-97' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>98</strong></td><td>18:20</td><td>1×GB10</td><td>chaos_d1_p0_seed42.log</td><td>1.9011</td><td>OK</td><td>↑78.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0098_details_0d8ee0b34b81.html' data-target='row-detail-2026-04-24-98' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-98' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>99</strong></td><td>18:22</td><td>1×GB10</td><td>chaos_d2_p0_seed2025.log</td><td>1.9073</td><td>OK</td><td>↑78.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0099_details_d7ab6245dfa2.html' data-target='row-detail-2026-04-24-99' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-99' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>100</strong></td><td>18:33</td><td>1×GB10</td><td>tail_fused_block_entry_cublas_seed16180.log</td><td>1.4260</td><td>OK</td><td>↑33.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0100_details_7b50c3acbb38.html' data-target='row-detail-2026-04-24-100' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-100' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>101</strong></td><td>18:35</td><td>1×GB10</td><td>chaos_d1_p1_seed42.log</td><td>1.9118</td><td>OK</td><td>↑79.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0101_details_5e0d512ac428.html' data-target='row-detail-2026-04-24-101' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-101' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>102</strong></td><td>18:37</td><td>1×GB10</td><td>chaos_d2_p1_seed2025.log</td><td>1.9368</td><td>OK</td><td>↑81.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0102_details_81529d8b1018.html' data-target='row-detail-2026-04-24-102' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-102' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>103</strong></td><td>18:50</td><td>1×GB10</td><td>chaos_d2_p0_seed42.log</td><td>1.9002</td><td>OK</td><td>↑78.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0103_details_fb886e343b58.html' data-target='row-detail-2026-04-24-103' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-103' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>104</strong></td><td>18:59</td><td>1×GB10</td><td>tail_fused_qkv_qkprep_seed16180.log</td><td>1.4229</td><td>OK</td><td>↑33.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0104_details_408211969c0c.html' data-target='row-detail-2026-04-24-104' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-104' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>105</strong></td><td>18:59</td><td>1×GB10</td><td>tail_fused_qkv_qkprep_prep_seed16180.log</td><td>1.4245</td><td>OK</td><td>↑33.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0105_details_085f96175e8b.html' data-target='row-detail-2026-04-24-105' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-105' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>106</strong></td><td>19:05</td><td>1×GB10</td><td>chaos_d2_p1_seed42.log</td><td>1.9327</td><td>OK</td><td>↑81.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0106_details_b5be936aebe0.html' data-target='row-detail-2026-04-24-106' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-106' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>107</strong></td><td>19:15</td><td>1×GB10</td><td>tail_rnorm1024_w2_s3_seed16180.log</td><td>1.4058</td><td>OK</td><td>↑31.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0107_details_529a29ed1436.html' data-target='row-detail-2026-04-24-107' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-107' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>108</strong></td><td>19:15</td><td>1×GB10</td><td>tail_rnorm2048_w8_s2_seed16180.log</td><td>1.4106</td><td>OK</td><td>↑32.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0108_details_1a2a8a8d2e64.html' data-target='row-detail-2026-04-24-108' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-108' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>109</strong></td><td>19:18</td><td>1×GB10</td><td>chaos_d1_p0_long_seed2025.log</td><td>1.8646</td><td>OK</td><td>↑74.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0109_details_07a55935dd35.html' data-target='row-detail-2026-04-24-109' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-109' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>110</strong></td><td>19:29</td><td>1×GB10</td><td>bs64_s4w8_allw4.nohup.out</td><td>2.1363</td><td>OK</td><td>↑100.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0110_details_af2ebe219c38.html' data-target='row-detail-2026-04-24-110' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-110' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>111</strong></td><td>19:30</td><td>1×GB10</td><td>tail_rnorm512_w8_s3_seed16180.log</td><td>1.4062</td><td>OK</td><td>↑31.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0111_details_e4688556ee0f.html' data-target='row-detail-2026-04-24-111' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-111' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>112</strong></td><td>19:30</td><td>1×GB10</td><td>tail_rnorm2048_w8_s3_seed16180.log</td><td>1.4120</td><td>OK</td><td>↑32.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0112_details_2e49dfded519.html' data-target='row-detail-2026-04-24-112' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-112' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>113</strong></td><td>19:36</td><td>1×GB10</td><td>lr20.log</td><td>2.1428</td><td>OK</td><td>↑100.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0113_details_340609238cb3.html' data-target='row-detail-2026-04-24-113' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-113' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>114</strong></td><td>19:36</td><td>1×GB10</td><td>chaos3.log</td><td>2.1302</td><td>OK</td><td>↑99.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0114_details_2e539c04ce34.html' data-target='row-detail-2026-04-24-114' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-114' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>115</strong></td><td>19:37</td><td>1×GB10</td><td>chaos0.log</td><td>2.1429</td><td>OK</td><td>↑100.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0115_details_08588d214cd7.html' data-target='row-detail-2026-04-24-115' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-115' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>116</strong></td><td>19:42</td><td>1×GB10</td><td>qk050.log</td><td>2.1324</td><td>OK</td><td>↑99.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0116_details_e806e1b57c9c.html' data-target='row-detail-2026-04-24-116' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-116' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>117</strong></td><td>19:46</td><td>1×RTX 4090</td><td>chaos_d1_p0_long_seed42.log</td><td>1.8663</td><td>OK</td><td>↑74.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0117_details_368e2a2a2a7a.html' data-target='row-detail-2026-04-24-117' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-117' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>118</strong></td><td>19:46</td><td>1×GB10</td><td>tail_rnorm512_w16_s3_seed16180.log</td><td>1.4015</td><td>OK</td><td>↑31.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0118_details_8666bbdf31f4.html' data-target='row-detail-2026-04-24-118' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-118' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>119</strong></td><td>19:46</td><td>1×GB10</td><td>tail_rnorm2048_w4_s3_seed16180.log</td><td>1.4112</td><td>OK</td><td>↑32.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0119_details_7f041d3c2726.html' data-target='row-detail-2026-04-24-119' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-119' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>120</strong></td><td>19:48</td><td>1×GB10</td><td>chaos3_qk060.nohup.out</td><td>2.1328</td><td>OK</td><td>↑99.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0120_details_239473adc889.html' data-target='row-detail-2026-04-24-120' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-120' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>121</strong></td><td>19:58</td><td>1×GB10</td><td>chaos_d2_p0_long_seed2025.log</td><td>1.8635</td><td>OK</td><td>↑74.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0121_details_1a03bdb8bf3a.html' data-target='row-detail-2026-04-24-121' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-121' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>122</strong></td><td>19:58</td><td>1×GB10</td><td>baseline.log (×3)</td><td>2.1305</td><td>OK</td><td>↑99.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0122_details_5fa5f1e91c2a.html' data-target='row-detail-2026-04-24-122' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-122' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>123</strong></td><td>19:58</td><td>1×GB10</td><td>perturb0.log</td><td>2.1349</td><td>OK</td><td>↑100.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0123_details_22ddd2b20b3f.html' data-target='row-detail-2026-04-24-123' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-123' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>124</strong></td><td>19:59</td><td>1×GB10</td><td>gate_attn.log</td><td>2.1372</td><td>OK</td><td>↑100.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0124_details_12c9c4d76707.html' data-target='row-detail-2026-04-24-124' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-124' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>125</strong></td><td>20:00</td><td>1×GB10</td><td>gate_attn_perturb0.log</td><td>2.1423</td><td>OK</td><td>↑100.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0125_details_dd17ac6baa48.html' data-target='row-detail-2026-04-24-125' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-125' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>126</strong></td><td>20:00</td><td>1×GB10</td><td>gate_attn_perturb0_attn05.log</td><td>2.1321</td><td>OK</td><td>↑99.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0126_details_22a3fb637d18.html' data-target='row-detail-2026-04-24-126' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-126' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>127</strong></td><td>20:01</td><td>1×GB10</td><td>tail_rnorm2048_w16_s3_seed16180.log</td><td>1.4078</td><td>OK</td><td>↑31.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0127_details_4beeca8c1b07.html' data-target='row-detail-2026-04-24-127' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-127' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>128</strong></td><td>20:01</td><td>1×GB10</td><td>tail_rnorm1024_w8_s5_seed16180.log</td><td>1.4082</td><td>OK</td><td>↑32.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0128_details_b0d994fa6f59.html' data-target='row-detail-2026-04-24-128' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-128' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>129</strong></td><td>20:08</td><td>1×GB10</td><td>seed42_depth3.log</td><td>2.1405</td><td>OK</td><td>↑100.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0129_details_38ab1a3746c6.html' data-target='row-detail-2026-04-24-129' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-129' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>130</strong></td><td>20:09</td><td>1×GB10</td><td>seed2025_depth3.log</td><td>2.1337</td><td>OK</td><td>↑99.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0130_details_8ec0c629c353.html' data-target='row-detail-2026-04-24-130' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-130' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>131</strong></td><td>20:09</td><td>1×GB10</td><td>seed42_depth4.log</td><td>2.1390</td><td>OK</td><td>↑100.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0131_details_d62a60686ae6.html' data-target='row-detail-2026-04-24-131' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-131' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>132</strong></td><td>20:10</td><td>1×GB10</td><td>seed2025_depth4.log</td><td>2.1367</td><td>OK</td><td>↑100.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0132_details_aecf3f14eaec.html' data-target='row-detail-2026-04-24-132' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-132' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>133</strong></td><td>20:13</td><td>1×GB10</td><td>attn05.log</td><td>2.1230</td><td>OK</td><td>↑98.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0133_details_7ff33345bf04.html' data-target='row-detail-2026-04-24-133' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-133' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>134</strong></td><td>20:13</td><td>1×GB10</td><td>skip05.log</td><td>2.1372</td><td>OK</td><td>↑100.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0134_details_d1bb7a630e7c.html' data-target='row-detail-2026-04-24-134' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-134' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>135</strong></td><td>20:14</td><td>1×GB10</td><td>skip00.log</td><td>2.1487</td><td>OK</td><td>↑101.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0135_details_485ac94f1b4f.html' data-target='row-detail-2026-04-24-135' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-135' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>136</strong></td><td>20:17</td><td>1×GB10</td><td>seed42_attn1p0.log</td><td>2.1399</td><td>OK</td><td>↑100.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0136_details_82f7a5cb7558.html' data-target='row-detail-2026-04-24-136' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-136' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>137</strong></td><td>20:18</td><td>1×GB10</td><td>seed2025_attn1p0.log</td><td>2.1355</td><td>OK</td><td>↑100.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0137_details_0db014cff69f.html' data-target='row-detail-2026-04-24-137' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-137' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>138</strong></td><td>20:20</td><td>1×GB10</td><td>tail_fused_mlp_resid_seed16180.log (×6)</td><td>1.4061</td><td>OK</td><td>↑31.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details><details class='log-toggle'><summary>training_log 4</summary></details><details class='log-toggle'><summary>training_log 5</summary></details><details class='log-toggle'><summary>training_log 6</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0138_details_6b74a4b13c69.html' data-target='row-detail-2026-04-24-138' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-138' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>139</strong></td><td>20:26</td><td>1×GB10</td><td>chaos_d2_p0_long_seed42.log</td><td>1.8663</td><td>OK</td><td>↑74.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0139_details_ab393fc23a58.html' data-target='row-detail-2026-04-24-139' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-139' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>140</strong></td><td>20:27</td><td>1×GB10</td><td>depth1.log</td><td>2.1208</td><td>OK</td><td>↑98.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0140_details_bd4fdabdb7aa.html' data-target='row-detail-2026-04-24-140' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-140' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>141</strong></td><td>20:27</td><td>1×GB10</td><td>depth2.log</td><td>2.1222</td><td>OK</td><td>↑98.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0141_details_80e5e6e0b7e2.html' data-target='row-detail-2026-04-24-141' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-141' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>142</strong></td><td>20:28</td><td>1×GB10</td><td>depth3.log</td><td>2.1232</td><td>OK</td><td>↑99.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0142_details_3506f3cb33d2.html' data-target='row-detail-2026-04-24-142' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-142' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>143</strong></td><td>20:29</td><td>1×GB10</td><td>depth4.log</td><td>2.1228</td><td>OK</td><td>↑98.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0143_details_32f75873c10b.html' data-target='row-detail-2026-04-24-143' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-143' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>144</strong></td><td>20:30</td><td>1×GB10</td><td>seed42_depth1.log</td><td>2.1284</td><td>OK</td><td>↑99.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0144_details_0eb97e49536f.html' data-target='row-detail-2026-04-24-144' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-144' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>145</strong></td><td>20:31</td><td>1×GB10</td><td>seed2025_depth1.log</td><td>2.1189</td><td>OK</td><td>↑98.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0145_details_0970307d28c6.html' data-target='row-detail-2026-04-24-145' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-145' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>146</strong></td><td>20:31</td><td>1×GB10</td><td>seed42_depth2.log</td><td>2.1271</td><td>OK</td><td>↑99.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0146_details_9bac9dec54a0.html' data-target='row-detail-2026-04-24-146' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-146' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>147</strong></td><td>20:32</td><td>1×GB10</td><td>seed2025_depth2.log</td><td>2.1235</td><td>OK</td><td>↑99.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0147_details_b0df117ce123.html' data-target='row-detail-2026-04-24-147' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-147' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>148</strong></td><td>20:44</td><td>1×GB10</td><td>chaos_d1_p0_long_seed1337.log</td><td>1.8659</td><td>OK</td><td>↑74.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0148_details_2a0277c66dd4.html' data-target='row-detail-2026-04-24-148' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-148' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>149</strong></td><td>20:45</td><td>1×GB10</td><td>tail_fused_seed16180.log (×70)</td><td>1.3225</td><td>OK</td><td>↑23.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details><details class='log-toggle'><summary>training_log 4</summary></details><details class='log-toggle'><summary>training_log 5</summary></details><details class='log-toggle'><summary>training_log 6</summary></details><details class='log-toggle'><summary>training_log 7</summary></details><details class='log-toggle'><summary>training_log 8</summary></details><details class='log-toggle'><summary>training_log 9</summary></details><details class='log-toggle'><summary>training_log 10</summary></details><details class='log-toggle'><summary>training_log 11</summary></details><details class='log-toggle'><summary>training_log 12</summary></details><details class='log-toggle'><summary>training_log 13</summary></details><details class='log-toggle'><summary>training_log 14</summary></details><details class='log-toggle'><summary>training_log 15</summary></details><details class='log-toggle'><summary>training_log 16</summary></details><details class='log-toggle'><summary>training_log 17</summary></details><details class='log-toggle'><summary>training_log 18</summary></details><details class='log-toggle'><summary>training_log 19</summary></details><details class='log-toggle'><summary>training_log 20</summary></details><details class='log-toggle'><summary>training_log 21</summary></details><details class='log-toggle'><summary>training_log 22</summary></details><details class='log-toggle'><summary>training_log 23</summary></details><details class='log-toggle'><summary>training_log 24</summary></details><details class='log-toggle'><summary>training_log 25</summary></details><details class='log-toggle'><summary>training_log 26</summary></details><details class='log-toggle'><summary>training_log 27</summary></details><details class='log-toggle'><summary>training_log 28</summary></details><details class='log-toggle'><summary>training_log 29</summary></details><details class='log-toggle'><summary>training_log 30</summary></details><details class='log-toggle'><summary>training_log 31</summary></details><details class='log-toggle'><summary>training_log 32</summary></details><details class='log-toggle'><summary>training_log 33</summary></details><details class='log-toggle'><summary>training_log 34</summary></details><details class='log-toggle'><summary>training_log 35</summary></details><details class='log-toggle'><summary>training_log 36</summary></details><details class='log-toggle'><summary>training_log 37</summary></details><details class='log-toggle'><summary>training_log 38</summary></details><details class='log-toggle'><summary>training_log 39</summary></details><details class='log-toggle'><summary>training_log 40</summary></details><details class='log-toggle'><summary>training_log 41</summary></details><details class='log-toggle'><summary>training_log 42</summary></details><details class='log-toggle'><summary>training_log 43</summary></details><details class='log-toggle'><summary>training_log 44</summary></details><details class='log-toggle'><summary>training_log 45</summary></details><details class='log-toggle'><summary>training_log 46</summary></details><details class='log-toggle'><summary>training_log 47</summary></details><details class='log-toggle'><summary>training_log 48</summary></details><details class='log-toggle'><summary>training_log 49</summary></details><details class='log-toggle'><summary>training_log 50</summary></details><details class='log-toggle'><summary>training_log 51</summary></details><details class='log-toggle'><summary>training_log 52</summary></details><details class='log-toggle'><summary>training_log 53</summary></details><details class='log-toggle'><summary>training_log 54</summary></details><details class='log-toggle'><summary>training_log 55</summary></details><details class='log-toggle'><summary>training_log 56</summary></details><details class='log-toggle'><summary>training_log 57</summary></details><details class='log-toggle'><summary>training_log 58</summary></details><details class='log-toggle'><summary>training_log 59</summary></details><details class='log-toggle'><summary>training_log 60</summary></details><details class='log-toggle'><summary>training_log 61</summary></details><details class='log-toggle'><summary>training_log 62</summary></details><details class='log-toggle'><summary>training_log 63</summary></details><details class='log-toggle'><summary>training_log 64</summary></details><details class='log-toggle'><summary>training_log 65</summary></details><details class='log-toggle'><summary>training_log 66</summary></details><details class='log-toggle'><summary>training_log 67</summary></details><details class='log-toggle'><summary>training_log 68</summary></details><details class='log-toggle'><summary>training_log 69</summary></details><details class='log-toggle'><summary>training_log 70</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0149_details_7eeca1e69998.html' data-target='row-detail-2026-04-24-149' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-149' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>150</strong></td><td>21:06</td><td>1×GB10</td><td>chaos_d1_p0_long_seed31415.log</td><td>1.8711</td><td>OK</td><td>↑75.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0150_details_1710017c1168.html' data-target='row-detail-2026-04-24-150' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-150' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>151</strong></td><td>21:22</td><td>1×GB10</td><td>seed1337_attn0p65.log</td><td>2.1248</td><td>OK</td><td>↑99.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0151_details_625b1491659a.html' data-target='row-detail-2026-04-24-151' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-151' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>152</strong></td><td>21:24</td><td>1×GB10</td><td>chaos_d2_p0_long_seed1337.log</td><td>1.8585</td><td>OK</td><td>↑74.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0152_details_89e20dfb4c6a.html' data-target='row-detail-2026-04-24-152' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-152' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>153</strong></td><td>21:24</td><td>1×GB10</td><td>seed42_attn0p35.log</td><td>2.1230</td><td>OK</td><td>↑98.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0153_details_d037b3513d44.html' data-target='row-detail-2026-04-24-153' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-153' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>154</strong></td><td>21:25</td><td>1×GB10</td><td>seed2025_attn0p35.log</td><td>2.1221</td><td>OK</td><td>↑98.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0154_details_90a639348c86.html' data-target='row-detail-2026-04-24-154' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-154' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>155</strong></td><td>21:42</td><td>1×GB10</td><td>qk060.log</td><td>2.1215</td><td>OK</td><td>↑98.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0155_details_f87317c96008.html' data-target='row-detail-2026-04-24-155' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-155' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>156</strong></td><td>21:43</td><td>1×GB10</td><td>qk075.log</td><td>2.1214</td><td>OK</td><td>↑98.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0156_details_ddb1bd132f12.html' data-target='row-detail-2026-04-24-156' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-156' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>157</strong></td><td>21:46</td><td>1×GB10</td><td>chaos_d2_p0_long_seed31415.log</td><td>1.8647</td><td>OK</td><td>↑74.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0157_details_412e825dfd95.html' data-target='row-detail-2026-04-24-157' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-157' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>158</strong></td><td>21:46</td><td>1×GB10</td><td>seed42_qk0p60.log</td><td>2.1282</td><td>OK</td><td>↑99.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0158_details_f50543b4d4f4.html' data-target='row-detail-2026-04-24-158' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-158' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>159</strong></td><td>21:48</td><td>1×GB10</td><td>seed2025_qk0p60.log</td><td>2.1201</td><td>OK</td><td>↑98.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0159_details_6414255f7f65.html' data-target='row-detail-2026-04-24-159' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-159' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>160</strong></td><td>21:50</td><td>1×GB10</td><td>seed1337_attn0p35.log</td><td>2.1185</td><td>OK</td><td>↑98.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0160_details_fbd204004c24.html' data-target='row-detail-2026-04-24-160' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-160' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>161</strong></td><td>21:51</td><td>1×GB10</td><td>seed1337_attn0p5.log</td><td>2.1186</td><td>OK</td><td>↑98.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0161_details_cfea540886e3.html' data-target='row-detail-2026-04-24-161' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-161' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>162</strong></td><td>21:53</td><td>1×GB10</td><td>seed42_attn0p5.log</td><td>2.1273</td><td>OK</td><td>↑99.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0162_details_0bd6f1353910.html' data-target='row-detail-2026-04-24-162' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-162' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>163</strong></td><td>21:54</td><td>1×GB10</td><td>seed2025_attn0p5.log</td><td>2.1194</td><td>OK</td><td>↑98.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0163_details_8bc6553fa04b.html' data-target='row-detail-2026-04-24-163' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-163' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>164</strong></td><td>22:00</td><td>1×GB10</td><td>scalar030.log</td><td>2.1175</td><td>OK</td><td>↑98.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0164_details_0a42e198efb8.html' data-target='row-detail-2026-04-24-164' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-164' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>165</strong></td><td>22:04</td><td>1×GB10</td><td>chaos_d1_p0_long_seed27182.log</td><td>1.8738</td><td>OK</td><td>↑75.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0165_details_2caa27ff9669.html' data-target='row-detail-2026-04-24-165' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-165' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>166</strong></td><td>22:29</td><td>1×GB10</td><td>chaos_d1_p0_long_seed16180.log</td><td>1.8645</td><td>OK</td><td>↑74.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0166_details_f3e979d03268.html' data-target='row-detail-2026-04-24-166' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-166' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>167</strong></td><td>22:44</td><td>1×GB10</td><td>chaos_d2_p0_long_seed27182.log</td><td>1.8662</td><td>OK</td><td>↑74.9%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0167_details_b1e9ef278182.html' data-target='row-detail-2026-04-24-167' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-167' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>168</strong></td><td>23:10</td><td>1×GB10</td><td>chaos_d2_p0_long_seed16180.log</td><td>1.8721</td><td>OK</td><td>↑75.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0168_details_e6e22c5a3df7.html' data-target='row-detail-2026-04-24-168' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-168' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>169</strong></td><td>23:24</td><td>1×GB10</td><td>matrix025.log</td><td>2.1251</td><td>OK</td><td>↑99.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0169_details_164d01ddfe5e.html' data-target='row-detail-2026-04-24-169' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-169' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>170</strong></td><td>23:25</td><td>1×GB10</td><td>matrix035.log</td><td>2.1170</td><td>OK</td><td>↑98.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0170_details_6087424a7129.html' data-target='row-detail-2026-04-24-170' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-170' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>171</strong></td><td>23:32</td><td>1×GB10</td><td>seed42_matrix0p035.log</td><td>2.1212</td><td>OK</td><td>↑98.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0171_details_2d30016483eb.html' data-target='row-detail-2026-04-24-171' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-171' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>172</strong></td><td>23:33</td><td>1×GB10</td><td>seed42_matrix0p045.log</td><td>2.1241</td><td>OK</td><td>↑99.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0172_details_fa21e6218577.html' data-target='row-detail-2026-04-24-172' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-172' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>173</strong></td><td>23:33</td><td>1×GB10</td><td>seed2025_matrix0p035.log</td><td>2.1181</td><td>OK</td><td>↑98.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0173_details_bbe1d635ffce.html' data-target='row-detail-2026-04-24-173' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-173' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>174</strong></td><td>23:34</td><td>1×GB10</td><td>seed2025_matrix0p045.log</td><td>2.1166</td><td>OK</td><td>↑98.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0174_details_16f9d5df1b10.html' data-target='row-detail-2026-04-24-174' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-174' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>175</strong></td><td>23:50</td><td>1×GB10</td><td>chaos_d2_p0_long_seed7777.log</td><td>1.8617</td><td>OK</td><td>↑74.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0175_details_08080565ad3e.html' data-target='row-detail-2026-04-24-175' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-175' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>176</strong></td><td>23:56</td><td>1×GB10</td><td>seed1337_matrix0p035.log</td><td>2.0733</td><td>OK</td><td>↑94.3%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0176_details_0e4e707cbfbb.html' data-target='row-detail-2026-04-24-176' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-176' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>177</strong></td><td>23:57</td><td>1×GB10</td><td>seed1337_matrix0p045.log</td><td>2.0668</td><td>OK</td><td>↑93.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-04-24_row0177_details_8be3faacce54.html' data-target='row-detail-2026-04-24-177' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-04-24-177' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

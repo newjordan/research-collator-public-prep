@@ -1,0 +1,1953 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Table of Contents</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    
+    body.toc-page {
+      position: relative;
+      isolation: isolate;
+      max-width: 1280px;
+      background: #050605;
+    }
+    body.toc-page::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(137,56,14,0.74), rgba(137,56,14,0.82)),
+        url('assets/toc_background_generated.png');
+      background-size: cover;
+      background-position: center top;
+      background-attachment: fixed;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
+    }
+    
+    :root {
+      --tone-filter: none;
+      --chrome-bg: #050605;
+      --chrome-fg: #8b3702;
+      --chrome-rule: #8b3702;
+      --chrome-bg-soft: #0c0907;
+    }
+    body.toc-page {
+      transform-origin: top center;
+    }
+    body.toc-page .toc-filtered {
+      position: relative;
+      z-index: 1;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
+      transform-origin: top center;
+    }
+    body.toc-page .toc-footer-background {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      z-index: 0;
+      width: min(42vw, 456px);
+      max-width: 58vh;
+      height: auto;
+      opacity: 0.85;
+      mix-blend-mode: darken;
+      pointer-events: none;
+      user-select: none;
+      filter: var(--tone-filter);
+      transition: filter 220ms ease;
+    }
+    body.toc-page .toc-back-top {
+      position: fixed;
+      left: 0;
+      bottom: 22px;
+      z-index: 10000;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 25px;
+      min-height: 76px;
+      padding: 8px 3px;
+      border: 1px solid var(--chrome-rule);
+      border-left: 0;
+      border-radius: 0;
+      background: var(--chrome-bg);
+      color: var(--chrome-fg);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      writing-mode: vertical-rl;
+      text-orientation: upright;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+    }
+    body.toc-page .toc-back-top:hover,
+    body.toc-page .toc-back-top:focus-visible {
+      background: var(--chrome-fg);
+      color: var(--chrome-bg);
+      outline: 1px solid var(--chrome-rule);
+      outline-offset: 2px;
+    }
+    body.toc-page .toc-latin-footer {
+      position: fixed;
+      left: 32px;
+      bottom: 7px;
+      z-index: 10000;
+      color: var(--rule-hi);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      pointer-events: none;
+      user-select: none;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: opacity 160ms linear, transform 160ms linear;
+    }
+    body.toc-page .toc-latin-footer.is-decoded {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    body.toc-page .palette-label {
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      padding: 4px 8px;
+      background: var(--chrome-bg);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+    body.toc-page .palette-switcher {
+      position: fixed;
+      top: 8px;
+      right: 24px;
+      z-index: 10000;
+      display: none;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+      max-width: min(80vw, 720px);
+      padding: 6px;
+      background: var(--chrome-bg);
+      border: 1px solid var(--chrome-rule);
+      font-family: var(--mono);
+    }
+    body.toc-page.debug .palette-label,
+    body.toc-page.debug .palette-switcher {
+      display: flex;
+    }
+    body.toc-page .palette-switcher span {
+      align-self: center;
+      padding: 0 4px 0 2px;
+      color: var(--chrome-fg);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+    body.toc-page .palette-switcher button {
+      padding: 5px 9px;
+      background: var(--chrome-bg-soft);
+      color: var(--chrome-fg);
+      border: 1px solid var(--chrome-rule);
+      border-radius: 0;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    body.toc-page .palette-switcher button:hover,
+    body.toc-page .palette-switcher button:focus-visible,
+    body.toc-page .palette-switcher button[aria-pressed="true"] {
+      background: var(--chrome-fg);
+      color: var(--chrome-bg);
+      outline: 0;
+    }
+    html,
+    body.toc-page,
+    body.toc-page * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    html::-webkit-scrollbar,
+    body.toc-page::-webkit-scrollbar,
+    body.toc-page *::-webkit-scrollbar {
+      width: 0 !important;
+      height: 0 !important;
+      display: none !important;
+    }
+    body.toc-page .toc-page-scrollbar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 16px;
+      height: 100vh;
+      background: var(--chrome-bg);
+      border-left: 1px solid var(--chrome-rule);
+      z-index: 9999;
+      pointer-events: auto;
+      cursor: pointer;
+      border-radius: 0 !important;
+      overflow: hidden;
+    }
+    body.toc-page .toc-page-scrollbar-thumb {
+      position: absolute;
+      left: 2px;
+      top: 0;
+      width: 12px;
+      height: 48px;
+      background: var(--chrome-fg);
+      border: 1px solid var(--chrome-bg);
+      border-radius: 0 !important;
+      clip-path: inset(0 0 0 0);
+      appearance: none;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    body.toc-page .toc-page-scrollbar-thumb.is-dragging {
+      cursor: grabbing;
+    }
+    body.toc-page .toc-kicker {
+      margin: -6px 0 18px;
+      color: var(--accent);
+      font-size: 10.5px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    body.toc-page .toc-reader {
+      display: grid;
+      gap: 26px;
+      margin: 18px 0 0;
+    }
+    body.toc-page .toc-reader-entry {
+      border-top: 1px solid var(--rule-hi);
+      padding-top: 14px;
+    }
+    body.toc-page .toc-reader-entry.is-collapsed .toc-reader-frame {
+      display: none;
+    }
+    body.toc-page .toc-reader-entry.is-collapsed .toc-reader-day-list {
+      display: none;
+    }
+    body.toc-page .toc-reader-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 9px 12px;
+      background: var(--rule-hi);
+      color: var(--bg);
+      font-size: 10.5px;
+      line-height: 1.4;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    body.toc-page .toc-reader-topline strong {
+      color: var(--bg);
+    }
+    body.toc-page .toc-action,
+    body.toc-page .test-runs-table td a,
+    body.toc-page .toc-reader-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 24px;
+      padding: 4px 8px;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      color: var(--bg);
+      cursor: pointer;
+      font-size: 10.5px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      list-style: none;
+      user-select: none;
+      border-radius: 0;
+    }
+    body.toc-page .toc-action::before,
+    body.toc-page .test-runs-table td a::before,
+    body.toc-page .toc-reader-toggle::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      flex: 0 0 auto;
+      background: var(--bg);
+    }
+    body.toc-page .toc-action:hover,
+    body.toc-page .toc-action:focus-visible,
+    body.toc-page .test-runs-table td a:hover,
+    body.toc-page .test-runs-table td a:focus-visible,
+    body.toc-page .toc-reader-toggle:hover,
+    body.toc-page .toc-reader-toggle:focus-visible {
+      background: var(--rule-hi);
+      color: var(--bg);
+      border-bottom-color: var(--rule-hi);
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
+    }
+    body.toc-page .test-runs-table th:last-child,
+    body.toc-page .test-runs-table td:last-child,
+    body.toc-page .test-runs-table .toc-action-cell {
+      text-align: right;
+      white-space: nowrap;
+    }
+    body.toc-page .test-runs-table td:last-child .toc-action,
+    body.toc-page .test-runs-table .toc-action-cell .toc-action {
+      justify-content: flex-start;
+    }
+    body.toc-page .toc-inline-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 20px;
+      margin: 0 3px;
+      padding: 3px 7px;
+      border: 1px solid var(--rule-hi);
+      border-radius: 0;
+      background: var(--bg);
+      color: var(--rule-hi);
+      font-size: 10px;
+      font-weight: 850;
+      line-height: 1;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    body.toc-page .toc-inline-action::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      background: var(--rule-hi);
+    }
+    body.toc-page .toc-inline-action:hover,
+    body.toc-page .toc-inline-action:focus-visible {
+      background: var(--rule-hi);
+      color: var(--bg);
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
+    }
+    body.toc-page .toc-inline-action:hover::before,
+    body.toc-page .toc-inline-action:focus-visible::before {
+      background: var(--bg);
+    }
+    body.toc-page .toc-calibration {
+      display: block;
+      margin: 14px 0 18px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+    body.toc-page .report-header + .toc-calibration {
+      margin-top: 0;
+    }
+    body.toc-page .report-header:has(+ .toc-calibration) {
+      margin-bottom: 0;
+    }
+    body.toc-page .toc-calibration > summary {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      min-height: 32px;
+      padding: 8px 10px;
+      border: 2px solid var(--rule-hi);
+      border-radius: 0;
+      background: transparent;
+      color: var(--chrome-fg);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      list-style: none;
+      user-select: none;
+      box-shadow: inset 0 0 0 1px var(--chrome-fg);
+      overflow: hidden;
+      opacity: 1;
+    }
+    body.toc-page .toc-calibration > summary::-webkit-details-marker {
+      display: none;
+    }
+    body.toc-page .toc-calibration > summary::marker {
+      content: "";
+    }
+    body.toc-page .toc-calibration > summary::before {
+      display: none;
+    }
+    body.toc-page .toc-calibration .toc-calibration-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      flex: 0 0 auto;
+      padding-right: 14px;
+      background: transparent;
+      color: var(--rule-hi);
+    }
+    body.toc-page .toc-calibration .toc-calibration-label::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      background: var(--rule-hi);
+    }
+    body.toc-page .toc-calibration .toc-calibration-stripes {
+      display: block;
+      flex: 1 1 auto;
+      align-self: stretch;
+      min-width: 140px;
+      margin: -6px 14px;
+      border-left: 1px solid var(--chrome-fg);
+      border-right: 1px solid var(--chrome-fg);
+      background: repeating-linear-gradient(
+        135deg,
+        transparent 0 18px,
+        var(--rule-hi) 18px 36px
+      );
+    }
+    body.toc-page .toc-calibration > summary::after {
+      content: "expand rules";
+      margin-left: auto;
+      color: var(--rule-hi);
+      background: transparent;
+      padding-left: 14px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+    body.toc-page .toc-calibration[open] > summary::after {
+      content: "collapse rules";
+    }
+    body.toc-page .toc-calibration > summary:hover,
+    body.toc-page .toc-calibration > summary:focus-visible {
+      outline: 1px solid var(--rule-hi);
+      outline-offset: 2px;
+    }
+    body.toc-page .toc-calibration .ds-body {
+      display: block;
+      grid-column: 1 / -1;
+      margin-top: 8px;
+      padding: 12px 14px;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      color: var(--chrome-fg);
+    }
+    body.toc-page .toc-calibration .ds-body p,
+    body.toc-page .toc-calibration .ds-body strong {
+      color: var(--chrome-fg);
+    }
+    body.toc-page .toc-calibration:not([open]) .ds-body {
+      display: none;
+    }
+    body.toc-page .toc-reader-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+      justify-content: flex-end;
+    }
+    body.toc-page .toc-reader-frame {
+      display: block;
+      width: 100%;
+      min-height: 720px;
+      border: 1px solid var(--rule-hi);
+      border-top: none;
+      background: var(--bg);
+    }
+    body.toc-page .toc-reader-day-list {
+      border: 1px solid var(--rule-hi);
+      border-top: none;
+      padding: 10px;
+      background: var(--bg);
+    }
+    body.toc-page .toc-webloader-intro {
+      min-height: 100vh;
+      width: 100vw;
+      display: grid;
+      place-items: start center;
+      margin: -32px calc(50% - 50vw) 0;
+      padding: 0;
+      border-bottom: 0;
+      overflow: visible;
+      background: #050605;
+    }
+    body.toc-page .toc-webloader-intro iframe {
+      display: block;
+      width: 85vw;
+      max-width: none;
+      aspect-ratio: 1053 / 1494;
+      height: auto;
+      border: 0;
+      background: #050605;
+    }
+    body.toc-page .toc-webloader-cover,
+    body.toc-page .toc-webloader-page2 {
+      min-height: 100vh;
+      width: 100vw;
+      display: grid;
+      place-items: start center;
+      margin: 0 calc(50% - 50vw) 36px;
+      padding: 0;
+      border-bottom: 1px solid var(--rule-hi);
+      overflow: visible;
+      background: #050605;
+    }
+    body.toc-page .toc-image-stage {
+      position: relative;
+      width: 85vw;
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      line-height: 0;
+    }
+    body.toc-page .toc-webloader-cover {
+      margin-top: -32px;
+      border-bottom: 0;
+    }
+    body.toc-page .toc-webloader-cover img,
+    body.toc-page .toc-webloader-page2 img {
+      display: block;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      border: 1px solid var(--rule-hi);
+      background: var(--rule-hi);
+      box-shadow: 0 24px 80px rgba(5,6,5,0.35);
+    }
+    body.toc-page .toc-palette-hotspot {
+      position: absolute;
+      z-index: 5;
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      cursor: pointer;
+      outline: 0;
+      line-height: 0;
+    }
+    body.toc-page .toc-palette-hotspot:focus-visible {
+      outline: 1px dashed var(--chrome-fg);
+      outline-offset: 2px;
+    }
+    body.toc-page.debug .toc-palette-hotspot {
+      background: var(--chrome-fg);
+      opacity: 0.18;
+      outline: 1px dashed var(--chrome-rule);
+    }
+    body.toc-page .wipe-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10001;
+      pointer-events: none;
+      background-color: var(--wipe-tint, transparent);
+      mix-blend-mode: color;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      --wipe-r: 0px;
+      --wipe-cx: 50%;
+      --wipe-cy: 50%;
+      --wipe-feather: 8px;
+      -webkit-mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+      mask-image: radial-gradient(circle at var(--wipe-cx) var(--wipe-cy),
+        transparent 0,
+        transparent calc(var(--wipe-r) - var(--wipe-feather)),
+        #000 var(--wipe-r),
+        #000 100%);
+    }
+    body.toc-page .wipe-overlay.is-running {
+      opacity: 1;
+    }
+    @media (max-width: 760px) {
+      body.toc-page .toc-reader-topline {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      body.toc-page .toc-reader-actions {
+        flex-wrap: wrap;
+        width: 100%;
+      }
+      body.toc-page .toc-reader-frame {
+        min-height: 560px;
+      }
+      body.toc-page .toc-webloader-intro iframe,
+      body.toc-page .toc-image-stage {
+        width: calc(100vw - 2px);
+      }
+      body.toc-page .toc-webloader-page2 {
+        min-height: auto;
+      }
+      body.toc-page .toc-webloader-cover {
+        min-height: auto;
+      }
+      body.toc-page .toc-webloader-intro {
+        min-height: auto;
+      }
+    }
+    </style></head><body class='toc-page'>
+  <div class="palette-label" aria-hidden="true">palette: original</div>
+  <nav class="palette-switcher" aria-label="Palette switcher">
+    <span>palette</span>
+    <button type="button" data-preset="original" aria-pressed="true">Original</button>
+    <button type="button" data-preset="phosphor">Phosphor</button>
+    <button type="button" data-preset="amber">Amber</button>
+    <button type="button" data-preset="cyan">Cyan</button>
+    <button type="button" data-preset="magenta">Magenta</button>
+    <button type="button" data-preset="grey">Grey</button>
+    <button type="button" data-preset="bw">B&amp;W</button>
+    <button type="button" data-preset="sepia">Sepia</button>
+    <button type="button" data-preset="invert">Invert</button>
+    <button type="button" data-preset="bluep">Blueprint</button>
+  </nav>
+    
+<div class="toc-page-scrollbar" aria-hidden="true"><div class="toc-page-scrollbar-thumb"></div></div>
+<img class="toc-footer-background" src="assets/toc_footer_background.png" alt="" aria-hidden="true">
+<button class="toc-back-top" type="button" aria-label="Back to table of contents">TOC</button><div class="toc-latin-footer" aria-hidden="true" data-latin-message="Deus ex machina; machina ex corde amante populorum; cor populorum ex sapientia.">XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>
+<div class="toc-filtered">
+<section class="toc-webloader-cover" aria-label="Publication landing page"><div class="toc-image-stage"><img src="assets/cover_sheet_final.jpeg" alt="Research corpus landing page"><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from cover smooth brain stamp" style="left:80.4%;top:3.1%;width:15.4%;height:13.3%"></button><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from cover flake stamp" style="left:1.8%;top:1.2%;width:9.2%;height:7.0%"></button></div></section>
+<section id="address-to-reader" class="toc-webloader-intro" aria-label="Address to the Reader"><iframe src="intro.html?embed=1&amp;nofilter=1" title="Address to the Reader" loading="eager"></iframe></section>
+<section class="toc-webloader-page2" aria-label="Publication page 2"><div class="toc-image-stage"><img src="assets/page_2_above_toc.jpeg" alt="Research corpus page above the table of contents"><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from page 2 smooth brain stamp" style="left:81.5%;top:2.4%;width:15.0%;height:14.5%"></button><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from page 2 flake stamp" style="left:2.0%;top:1.5%;width:9.0%;height:7.6%"></button></div></section>
+<h1 id="toc-start" tabindex="-1"><span class="h1-title"><a class="h1-home" data-palette-cycle="true" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>TABLE OF CONTENTS</span></span><span class="h1-date">CAMPAIGN</span></h1>
+<div class='toc-kicker'>PARAMETER GOLF CAMPAIGN / NAVIGATION INDEX</div>
+<div class="report-header"><div class="rh-row"><span class="rh-key">DOCUMENT</span><span class="rh-dots"></span><span class="rh-val">COMPETITION DATA LOGS</span></div><div class="rh-row"><span class="rh-key">COMPETITION</span><span class="rh-dots"></span><span class="rh-val">OPENAI PARAMETER GOLF</span></div><div class="rh-row"><span class="rh-key">DATES</span><span class="rh-dots"></span><span class="rh-val">2026-03-18 TO 2026-05-01</span></div><div class="rh-row"><span class="rh-key">CATEGORY REPORTS</span><span class="rh-dots"></span><span class="rh-val">3</span></div><div class="rh-row"><span class="rh-key">WEEKLY REPORTS</span><span class="rh-dots"></span><span class="rh-val">7</span></div><div class="rh-row"><span class="rh-key">DAILY REPORTS</span><span class="rh-dots"></span><span class="rh-val">45</span></div></div>
+<details class="day-summary toc-calibration"><summary class="ds-key"><span class="toc-calibration-label">READER CALIBRATION / RULES</span><span class="toc-calibration-stripes" aria-hidden="true"></span></summary><div class="ds-body"><p><strong>Competition / task:</strong> OpenAI Parameter Golf: build a compressed language-model submission under contest constraints and minimize validation bits per byte.</p><p><strong>Public competition context:</strong> the competition and pull requests were public <a class='toc-inline-action' href='https://github.com/openai/parameter-golf/pulls' target='_blank' rel='noopener'>OpenAI Parameter Golf PRs</a>. Adapting to public SOTA, comparing against public submissions, and incorporating the best available techniques were part of the competition. All work included in this report is mine, built within that collaborative public field.</p><p><strong>Track calibration:</strong> the experimental branch was the non-record unified transformer / recursion research lane. It contains architecture probes and recurrence ideas tested for insight; the neural branch is the competitive leaderboard-submission track.</p><p><strong>BPB:</strong> bits per byte. Lower is better; this report separates BPB model scores from custom-kernel / FA3 timing ratios.</p><p><strong>Valid submission:</strong> a BPB submission counts only when it follows the three-seed contest standard: artifact under the 16 MB cap, a 10-minute training run on 8xH100, a 10-minute maximum evaluation period on 8xH100, and no test-data leakage.</p><p><strong>Invalid scores:</strong> BPB values below <strong>1.06</strong> are treated as TTT test-data leakage and excluded from valid competition comparisons.</p><p><strong>Excluded / non-comparable:</strong> artifacts over 16 MB, runs outside the 8xH100 / 10-minute train / 10-minute eval / three-seed standard, crash rows, loader failures, and kernel ratio measurements are not counted as valid BPB submissions.</p><p><strong>Best valid score:</strong>&nbsp;<strong>1.0620 VAL_BPB</strong>.</p><p><strong>Baseline:</strong> the tracked Naive Baseline reference was <strong>1.2244 VAL_BPB</strong>; the best valid result is a <strong>0.1624 BPB</strong> reduction, about <strong>13.3%</strong> lower than that baseline.</p><p><strong>Improvement:</strong> the strongest line was a hybrid neural submission using a larger 10k-vocabulary CaseOps tokenizer with looped GQA transformer mechanics, per-group compression, int7/int6 packaging, LQER, and phased LoRA TTT.</p><p><strong>Evidence:</strong> all files and logs provided for review or reproduction.</p></div></details>
+<h2>SECTION 1.0 — PUBLICATION MAP</h2>
+<table class='test-runs-table'><thead><tr><th>LAYER</th><th>COUNT</th><th>FUNCTION</th><th class='toc-action-cell'>OPEN</th></tr></thead><tbody>
+<tr><td><strong>ADDRESS TO THE READER</strong></td><td>1</td><td>Stellae creationem esse donum divinum nostrum postulant.</td><td class='toc-action-cell'><a class='toc-action' href='#address-to-reader'>open</a></td></tr>
+<tr><td><strong>TABLE OF CONTENTS</strong></td><td>1</td><td>navigation, report calibration, and report reader</td><td class='toc-action-cell'><a class='toc-action' href='report_144.html'>open</a></td></tr>
+<tr><td><strong>CATEGORY REPORTS</strong></td><td>3</td><td>experimental, neural, and kernel drilldowns</td><td class='toc-action-cell'><a class='toc-action' href='categories/index.html'>open</a></td></tr>
+<tr><td><strong>WEEKLY REPORTS</strong></td><td>7</td><td>7-day daily-report rollups</td><td class='toc-action-cell'><a class='toc-action' href='weeks/index.html'>open</a></td></tr>
+<tr><td><strong>DAILY REPORTS</strong></td><td>45</td><td>one locked evidence page per campaign day</td><td class='toc-action-cell'><a class='toc-action' href='2026-03-18.html'>open</a></td></tr>
+</tbody></table>
+<h2>SECTION 2.0 — REPORT INDEX</h2>
+<h3>CATEGORY INDEX</h3>
+<table class='test-runs-table toc-category-index'><thead><tr><th>CATEGORY</th><th>ACTIVE DAYS</th><th>DATAPOINTS</th><th>WINDOWS</th><th>CHART PANELS</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>EXPERIMENTAL</strong></td><td>33</td><td>33</td><td>4 / 4</td><td>4</td><td><a class='toc-action toc-reader-jump' href='categories/experimental.html' data-reader-jump='true' data-reader-href='categories/experimental.html'>open</a></td></tr>
+<tr><td><strong>NEURAL</strong></td><td>22</td><td>22</td><td>4 / 4</td><td>4</td><td><a class='toc-action toc-reader-jump' href='categories/neural.html' data-reader-jump='true' data-reader-href='categories/neural.html'>open</a></td></tr>
+<tr><td><strong>KERNEL</strong></td><td>9</td><td>9</td><td>2 / 4</td><td>2</td><td><a class='toc-action toc-reader-jump' href='categories/kernel.html' data-reader-jump='true' data-reader-href='categories/kernel.html'>open</a></td></tr>
+</tbody></table>
+<h3>WEEKLY REPORTS</h3>
+<table class='test-runs-table'><thead><tr><th>WEEK</th><th>DATES</th><th>DAYS</th><th>METRIC</th><th>CLASSIFICATION</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>WEEK 01</strong></td><td>2026-03-18 to 2026-03-24</td><td>7 (5 measured)</td><td>VAL_BPB</td><td>NEURAL 11 · EXPERIMENTAL 61</td><td><a class='toc-action' href='weeks/week-01_2026-03-18_to_2026-03-24.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 02</strong></td><td>2026-03-25 to 2026-03-31</td><td>7 (7 measured)</td><td>VAL_BPB</td><td>NEURAL 13 · EXPERIMENTAL 199</td><td><a class='toc-action' href='weeks/week-02_2026-03-25_to_2026-03-31.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 03</strong></td><td>2026-04-01 to 2026-04-07</td><td>7 (7 measured)</td><td>VAL_BPB</td><td>NEURAL 9 · EXPERIMENTAL 100</td><td><a class='toc-action' href='weeks/week-03_2026-04-01_to_2026-04-07.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 04</strong></td><td>2026-04-08 to 2026-04-14</td><td>7 (6 measured)</td><td>VAL_BPB</td><td>NEURAL 28 · EXPERIMENTAL 32</td><td><a class='toc-action' href='weeks/week-04_2026-04-08_to_2026-04-14.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 05</strong></td><td>2026-04-15 to 2026-04-21</td><td>7 (7 measured)</td><td>CUSTOM/FA3 FB RATIO</td><td>KERNEL 2866 · NEURAL 37 · EXPERIMENTAL 1</td><td><a class='toc-action' href='weeks/week-05_2026-04-15_to_2026-04-21.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 06</strong></td><td>2026-04-22 to 2026-04-28</td><td>7 (6 measured)</td><td>VAL_BPB</td><td>KERNEL 7 · NEURAL 12 · EXPERIMENTAL 184</td><td><a class='toc-action' href='weeks/week-06_2026-04-22_to_2026-04-28.html'>open week</a></td></tr>
+<tr><td><strong>WEEK 07</strong></td><td>2026-04-29 to 2026-05-01</td><td>3 (3 measured)</td><td>VAL_BPB</td><td>KERNEL 2 · NEURAL 10</td><td><a class='toc-action' href='weeks/week-07_2026-04-29_to_2026-05-01.html'>open week</a></td></tr>
+</tbody></table>
+<h3>DAILY REPORTS</h3>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="daily-index"><div class="toc-reader-topline"><strong>DAILY REPORTS · 45 DAYS</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><div class="toc-reader-day-list"><div class='lazy-test-card'><p><strong>DAILY REPORTS</strong></p><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/toc_daily_reports.html' data-target='toc-daily-reports-table' data-load-label='load daily reports' data-hide-label='hide daily reports' data-loading-label='loading daily reports' data-error-label='daily reports load failed'>load daily reports</button><div id='toc-daily-reports-table' class='lazy-test-target' hidden></div></div></div></section>
+<div id="table-of-contents" class="toc-reader" data-connected-reader="true">
+<section class="toc-reader-entry is-collapsed" data-reader-kind="category-index"><div class="toc-reader-topline"><strong>01 / CATEGORY INDEX</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="categories/index.html" title="CATEGORY INDEX" loading="lazy" scrolling="no" data-reader-href="categories/index.html" data-reader-kind="category-index"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="category"><div class="toc-reader-topline"><strong>02 / CATEGORY · EXPERIMENTAL</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="categories/experimental.html" title="CATEGORY · EXPERIMENTAL" loading="lazy" scrolling="no" data-reader-href="categories/experimental.html" data-reader-kind="category"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="category"><div class="toc-reader-topline"><strong>03 / CATEGORY · NEURAL</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="categories/neural.html" title="CATEGORY · NEURAL" loading="lazy" scrolling="no" data-reader-href="categories/neural.html" data-reader-kind="category"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="category"><div class="toc-reader-topline"><strong>04 / CATEGORY · KERNEL</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="categories/kernel.html" title="CATEGORY · KERNEL" loading="lazy" scrolling="no" data-reader-href="categories/kernel.html" data-reader-kind="category"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week-index"><div class="toc-reader-topline"><strong>05 / WEEKLY INDEX</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/index.html" title="WEEKLY INDEX" loading="lazy" scrolling="no" data-reader-href="weeks/index.html" data-reader-kind="week-index"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>06 / WEEK 01 · 2026-03-18 TO 2026-03-24</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-01_2026-03-18_to_2026-03-24.html" title="WEEK 01 · 2026-03-18 TO 2026-03-24" loading="lazy" scrolling="no" data-reader-href="weeks/week-01_2026-03-18_to_2026-03-24.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>07 / WEEK 02 · 2026-03-25 TO 2026-03-31</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-02_2026-03-25_to_2026-03-31.html" title="WEEK 02 · 2026-03-25 TO 2026-03-31" loading="lazy" scrolling="no" data-reader-href="weeks/week-02_2026-03-25_to_2026-03-31.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>08 / WEEK 03 · 2026-04-01 TO 2026-04-07</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-03_2026-04-01_to_2026-04-07.html" title="WEEK 03 · 2026-04-01 TO 2026-04-07" loading="lazy" scrolling="no" data-reader-href="weeks/week-03_2026-04-01_to_2026-04-07.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>09 / WEEK 04 · 2026-04-08 TO 2026-04-14</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-04_2026-04-08_to_2026-04-14.html" title="WEEK 04 · 2026-04-08 TO 2026-04-14" loading="lazy" scrolling="no" data-reader-href="weeks/week-04_2026-04-08_to_2026-04-14.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>10 / WEEK 05 · 2026-04-15 TO 2026-04-21</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-05_2026-04-15_to_2026-04-21.html" title="WEEK 05 · 2026-04-15 TO 2026-04-21" loading="lazy" scrolling="no" data-reader-href="weeks/week-05_2026-04-15_to_2026-04-21.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>11 / WEEK 06 · 2026-04-22 TO 2026-04-28</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-06_2026-04-22_to_2026-04-28.html" title="WEEK 06 · 2026-04-22 TO 2026-04-28" loading="lazy" scrolling="no" data-reader-href="weeks/week-06_2026-04-22_to_2026-04-28.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry is-collapsed" data-reader-kind="week"><div class="toc-reader-topline"><strong>12 / WEEK 07 · 2026-04-29 TO 2026-05-01</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><iframe class="toc-reader-frame" src="weeks/week-07_2026-04-29_to_2026-05-01.html" title="WEEK 07 · 2026-04-29 TO 2026-05-01" loading="lazy" scrolling="no" data-reader-href="weeks/week-07_2026-04-29_to_2026-05-01.html" data-reader-kind="week"></iframe></section>
+<section class="toc-reader-entry toc-reader-day-group is-collapsed" data-reader-kind="day-group"><div class="toc-reader-topline"><strong>13 / DAILY REPORTS · 45 DAYS</strong><span class="toc-reader-actions"><button class="toc-reader-toggle" type="button" aria-expanded="false">expand</button></span></div><div class="toc-reader-day-list"><table class='test-runs-table'><thead><tr><th>DAY</th><th>DATE</th><th>OPEN</th></tr></thead><tbody><tr data-reader-href='2026-03-18.html'><td><strong>DAY 001 · 2026-03-18</strong></td><td>2026-03-18</td><td><a class='toc-action' href='2026-03-18.html'>open day</a></td></tr><tr data-reader-href='2026-03-19.html'><td><strong>DAY 002 · 2026-03-19</strong></td><td>2026-03-19</td><td><a class='toc-action' href='2026-03-19.html'>open day</a></td></tr><tr data-reader-href='2026-03-20.html'><td><strong>DAY 003 · 2026-03-20</strong></td><td>2026-03-20</td><td><a class='toc-action' href='2026-03-20.html'>open day</a></td></tr><tr data-reader-href='2026-03-21.html'><td><strong>DAY 004 · 2026-03-21</strong></td><td>2026-03-21</td><td><a class='toc-action' href='2026-03-21.html'>open day</a></td></tr><tr data-reader-href='2026-03-22.html'><td><strong>DAY 005 · 2026-03-22</strong></td><td>2026-03-22</td><td><a class='toc-action' href='2026-03-22.html'>open day</a></td></tr><tr data-reader-href='2026-03-23.html'><td><strong>DAY 006 · 2026-03-23</strong></td><td>2026-03-23</td><td><a class='toc-action' href='2026-03-23.html'>open day</a></td></tr><tr data-reader-href='2026-03-24.html'><td><strong>DAY 007 · 2026-03-24</strong></td><td>2026-03-24</td><td><a class='toc-action' href='2026-03-24.html'>open day</a></td></tr><tr data-reader-href='2026-03-25.html'><td><strong>DAY 008 · 2026-03-25</strong></td><td>2026-03-25</td><td><a class='toc-action' href='2026-03-25.html'>open day</a></td></tr><tr data-reader-href='2026-03-26.html'><td><strong>DAY 009 · 2026-03-26</strong></td><td>2026-03-26</td><td><a class='toc-action' href='2026-03-26.html'>open day</a></td></tr><tr data-reader-href='2026-03-27.html'><td><strong>DAY 010 · 2026-03-27</strong></td><td>2026-03-27</td><td><a class='toc-action' href='2026-03-27.html'>open day</a></td></tr><tr data-reader-href='2026-03-28.html'><td><strong>DAY 011 · 2026-03-28</strong></td><td>2026-03-28</td><td><a class='toc-action' href='2026-03-28.html'>open day</a></td></tr><tr data-reader-href='2026-03-29.html'><td><strong>DAY 012 · 2026-03-29</strong></td><td>2026-03-29</td><td><a class='toc-action' href='2026-03-29.html'>open day</a></td></tr><tr data-reader-href='2026-03-30.html'><td><strong>DAY 013 · 2026-03-30</strong></td><td>2026-03-30</td><td><a class='toc-action' href='2026-03-30.html'>open day</a></td></tr><tr data-reader-href='2026-03-31.html'><td><strong>DAY 014 · 2026-03-31</strong></td><td>2026-03-31</td><td><a class='toc-action' href='2026-03-31.html'>open day</a></td></tr><tr data-reader-href='2026-04-01.html'><td><strong>DAY 015 · 2026-04-01</strong></td><td>2026-04-01</td><td><a class='toc-action' href='2026-04-01.html'>open day</a></td></tr><tr data-reader-href='2026-04-02.html'><td><strong>DAY 016 · 2026-04-02</strong></td><td>2026-04-02</td><td><a class='toc-action' href='2026-04-02.html'>open day</a></td></tr><tr data-reader-href='2026-04-03.html'><td><strong>DAY 017 · 2026-04-03</strong></td><td>2026-04-03</td><td><a class='toc-action' href='2026-04-03.html'>open day</a></td></tr><tr data-reader-href='2026-04-04.html'><td><strong>DAY 018 · 2026-04-04</strong></td><td>2026-04-04</td><td><a class='toc-action' href='2026-04-04.html'>open day</a></td></tr><tr data-reader-href='2026-04-05.html'><td><strong>DAY 019 · 2026-04-05</strong></td><td>2026-04-05</td><td><a class='toc-action' href='2026-04-05.html'>open day</a></td></tr><tr data-reader-href='2026-04-06.html'><td><strong>DAY 020 · 2026-04-06</strong></td><td>2026-04-06</td><td><a class='toc-action' href='2026-04-06.html'>open day</a></td></tr><tr data-reader-href='2026-04-07.html'><td><strong>DAY 021 · 2026-04-07</strong></td><td>2026-04-07</td><td><a class='toc-action' href='2026-04-07.html'>open day</a></td></tr><tr data-reader-href='2026-04-08.html'><td><strong>DAY 022 · 2026-04-08</strong></td><td>2026-04-08</td><td><a class='toc-action' href='2026-04-08.html'>open day</a></td></tr><tr data-reader-href='2026-04-09.html'><td><strong>DAY 023 · 2026-04-09</strong></td><td>2026-04-09</td><td><a class='toc-action' href='2026-04-09.html'>open day</a></td></tr><tr data-reader-href='2026-04-10.html'><td><strong>DAY 024 · 2026-04-10</strong></td><td>2026-04-10</td><td><a class='toc-action' href='2026-04-10.html'>open day</a></td></tr><tr data-reader-href='2026-04-11.html'><td><strong>DAY 025 · 2026-04-11</strong></td><td>2026-04-11</td><td><a class='toc-action' href='2026-04-11.html'>open day</a></td></tr><tr data-reader-href='2026-04-12.html'><td><strong>DAY 026 · 2026-04-12</strong></td><td>2026-04-12</td><td><a class='toc-action' href='2026-04-12.html'>open day</a></td></tr><tr data-reader-href='2026-04-13.html'><td><strong>DAY 027 · 2026-04-13</strong></td><td>2026-04-13</td><td><a class='toc-action' href='2026-04-13.html'>open day</a></td></tr><tr data-reader-href='2026-04-14.html'><td><strong>DAY 028 · 2026-04-14</strong></td><td>2026-04-14</td><td><a class='toc-action' href='2026-04-14.html'>open day</a></td></tr><tr data-reader-href='2026-04-15.html'><td><strong>DAY 029 · 2026-04-15</strong></td><td>2026-04-15</td><td><a class='toc-action' href='2026-04-15.html'>open day</a></td></tr><tr data-reader-href='2026-04-16.html'><td><strong>DAY 030 · 2026-04-16</strong></td><td>2026-04-16</td><td><a class='toc-action' href='2026-04-16.html'>open day</a></td></tr><tr data-reader-href='2026-04-17.html'><td><strong>DAY 031 · 2026-04-17</strong></td><td>2026-04-17</td><td><a class='toc-action' href='2026-04-17.html'>open day</a></td></tr><tr data-reader-href='2026-04-18.html'><td><strong>DAY 032 · 2026-04-18</strong></td><td>2026-04-18</td><td><a class='toc-action' href='2026-04-18.html'>open day</a></td></tr><tr data-reader-href='2026-04-19.html'><td><strong>DAY 033 · 2026-04-19</strong></td><td>2026-04-19</td><td><a class='toc-action' href='2026-04-19.html'>open day</a></td></tr><tr data-reader-href='2026-04-20.html'><td><strong>DAY 034 · 2026-04-20</strong></td><td>2026-04-20</td><td><a class='toc-action' href='2026-04-20.html'>open day</a></td></tr><tr data-reader-href='2026-04-21.html'><td><strong>DAY 035 · 2026-04-21</strong></td><td>2026-04-21</td><td><a class='toc-action' href='2026-04-21.html'>open day</a></td></tr><tr data-reader-href='2026-04-22.html'><td><strong>DAY 036 · 2026-04-22</strong></td><td>2026-04-22</td><td><a class='toc-action' href='2026-04-22.html'>open day</a></td></tr><tr data-reader-href='2026-04-23.html'><td><strong>DAY 037 · 2026-04-23</strong></td><td>2026-04-23</td><td><a class='toc-action' href='2026-04-23.html'>open day</a></td></tr><tr data-reader-href='2026-04-24.html'><td><strong>DAY 038 · 2026-04-24</strong></td><td>2026-04-24</td><td><a class='toc-action' href='2026-04-24.html'>open day</a></td></tr><tr data-reader-href='2026-04-25.html'><td><strong>DAY 039 · 2026-04-25</strong></td><td>2026-04-25</td><td><a class='toc-action' href='2026-04-25.html'>open day</a></td></tr><tr data-reader-href='2026-04-26.html'><td><strong>DAY 040 · 2026-04-26</strong></td><td>2026-04-26</td><td><a class='toc-action' href='2026-04-26.html'>open day</a></td></tr><tr data-reader-href='2026-04-27.html'><td><strong>DAY 041 · 2026-04-27</strong></td><td>2026-04-27</td><td><a class='toc-action' href='2026-04-27.html'>open day</a></td></tr><tr data-reader-href='2026-04-28.html'><td><strong>DAY 042 · 2026-04-28</strong></td><td>2026-04-28</td><td><a class='toc-action' href='2026-04-28.html'>open day</a></td></tr><tr data-reader-href='2026-04-29.html'><td><strong>DAY 043 · 2026-04-29</strong></td><td>2026-04-29</td><td><a class='toc-action' href='2026-04-29.html'>open day</a></td></tr><tr data-reader-href='2026-04-30.html'><td><strong>DAY 044 · 2026-04-30</strong></td><td>2026-04-30</td><td><a class='toc-action' href='2026-04-30.html'>open day</a></td></tr><tr data-reader-href='2026-05-01.html'><td><strong>DAY 045 · 2026-05-01</strong></td><td>2026-05-01</td><td><a class='toc-action' href='2026-05-01.html'>open day</a></td></tr></tbody></table></div></section>
+</div>
+</div>
+<div class="wipe-overlay" aria-hidden="true"></div>
+<script>
+(function(){
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+  var userInteracted = false;
+  ['pointerdown', 'wheel', 'touchstart', 'keydown'].forEach(function(type) {
+    window.addEventListener(type, function(){ userInteracted = true; }, {
+      capture: true,
+      passive: true
+    });
+  });
+  function isReloadNavigation() {
+    try {
+      if (window.performance && performance.getEntriesByType) {
+        var nav = performance.getEntriesByType('navigation')[0];
+        if (nav && nav.type === 'reload') return true;
+      }
+      if (window.performance && performance.navigation && performance.navigation.type === 1) {
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+  if (isReloadNavigation() && String(window.location.hash || '').match(/^#reader=(.+)$/)) {
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+  }
+  function decodeHashValue(value) {
+    try { return decodeURIComponent(value); } catch (e) { return value; }
+  }
+  function normalizeHref(value) {
+    return String(value || '').replace(/^\.\//, '');
+  }
+  function readerEntryForHref(href) {
+    var target = normalizeHref(href);
+    var entries = Array.prototype.slice.call(document.querySelectorAll('.toc-reader-entry'));
+    for (var i = 0; i < entries.length; i++) {
+      var frame = entries[i].querySelector('.toc-reader-frame');
+      if (frame && normalizeHref(frame.getAttribute('data-reader-href')) === target) {
+        return entries[i];
+      }
+      var linked = entries[i].querySelector('[data-reader-href="' + target.replace(/"/g, '\"') + '"]');
+      if (linked) return entries[i];
+    }
+    return null;
+  }
+  function setEntryCollapsed(entry, collapsed) {
+    if (!entry) return;
+    entry.classList.toggle('is-collapsed', collapsed);
+    var button = entry.querySelector('.toc-reader-toggle');
+    if (button) {
+      button.textContent = collapsed ? 'expand' : 'collapse';
+      button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    if (!collapsed) {
+      var frame = entry.querySelector('.toc-reader-frame');
+      if (frame) setTimeout(function(){ resizeFrame(frame); }, 50);
+    }
+  }
+  function scrollToReaderHref(href, updateHash) {
+    var entry = readerEntryForHref(href);
+    if (!entry) return false;
+    setEntryCollapsed(entry, false);
+    entry.scrollIntoView({ block: 'start' });
+    if (updateHash && window.history && window.history.replaceState) {
+      window.history.replaceState(null, '', '#reader=' + encodeURIComponent(normalizeHref(href)));
+    }
+    return true;
+  }
+  function restoreReaderHash() {
+    var match = String(window.location.hash || '').match(/^#reader=(.+)$/);
+    if (!match) return false;
+    var href = decodeHashValue(match[1]);
+    if (!href) return false;
+    requestAnimationFrame(function(){ scrollToReaderHref(href, false); });
+    setTimeout(function(){ scrollToReaderHref(href, false); }, 350);
+    setTimeout(function(){ scrollToReaderHref(href, false); }, 1200);
+    return true;
+  }
+  function tocStartTarget() {
+    return document.getElementById('toc-start') || document.getElementById('table-of-contents');
+  }
+  function scrollToTocStart() {
+    var target = tocStartTarget();
+    var top = target ? target.getBoundingClientRect().top + window.pageYOffset : 0;
+    window.scrollTo(0, Math.max(0, top));
+  }
+  function resetReaderScrollIfNoHash() {
+    if (String(window.location.hash || '').match(/^#reader=(.+)$/)) return;
+    function resetIfIdle() {
+      if (!userInteracted) scrollToTocStart();
+    }
+    resetIfIdle();
+    requestAnimationFrame(resetIfIdle);
+    setTimeout(resetIfIdle, 250);
+    setTimeout(resetIfIdle, 900);
+  }
+  document.querySelectorAll('[data-reader-jump="true"]').forEach(function(link) {
+    link.addEventListener('click', function(event) {
+      var href = link.getAttribute('data-reader-href') || link.getAttribute('href');
+      if (!href) return;
+      if (scrollToReaderHref(href, true)) {
+        event.preventDefault();
+      }
+    });
+  });
+  document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+    anchor.addEventListener('click', function(event) {
+      var target = document.querySelector(anchor.getAttribute('href'));
+      if (!target) return;
+      event.preventDefault();
+      target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    });
+  });
+  function resizeFrame(frame) {
+    try {
+      var doc = frame.contentDocument;
+      if (!doc) return;
+      doc.querySelectorAll('a').forEach(function(a){ a.target = '_top'; });
+      if (!doc._tocMasterReturnBound) {
+        doc._tocMasterReturnBound = true;
+        doc.addEventListener('click', function(event) {
+          var a = event.target && event.target.closest ? event.target.closest('a') : null;
+          if (!a || !a.classList || !a.classList.contains('h1-master')) return;
+          var href = a.getAttribute('href') || '';
+          if (href.indexOf('report_144.html') === -1) return;
+          event.preventDefault();
+          scrollToReaderHref(frame.getAttribute('data-reader-href'), true);
+        }, true);
+      }
+      if (doc.documentElement) doc.documentElement.style.overflow = 'hidden';
+      if (doc.body) doc.body.style.overflow = 'hidden';
+      var size = function() {
+        var body = doc.body;
+        var root = doc.documentElement;
+        // Prefer body.scrollHeight (auto-height body reflects true content size).
+        // Avoid root.scrollHeight: with overflow:hidden on root, it stays at
+        // the iframe's allocated viewport height even after content shrinks,
+        // leaving a blank area below collapsed content.
+        var height = Math.max(
+          body ? body.scrollHeight : (root ? root.scrollHeight : 0),
+          560
+        );
+        frame.style.height = (height + 8) + 'px';
+      };
+      size();
+      if (frame._tocResizeObserver) frame._tocResizeObserver.disconnect();
+      if (window.ResizeObserver && doc.documentElement) {
+        frame._tocResizeObserver = new ResizeObserver(size);
+        frame._tocResizeObserver.observe(doc.documentElement);
+        if (doc.body) frame._tocResizeObserver.observe(doc.body);
+      }
+      doc.addEventListener('toggle', size, true);
+      doc.defaultView && doc.defaultView.addEventListener('load', size);
+    } catch (e) {
+      frame.style.height = '900px';
+    }
+  }
+  document.querySelectorAll('.toc-reader-frame').forEach(function(frame){
+    frame.addEventListener('load', function(){ resizeFrame(frame); });
+    if (frame.contentDocument && frame.contentDocument.readyState === 'complete') {
+      resizeFrame(frame);
+    }
+  });
+  document.querySelectorAll('.toc-reader-toggle').forEach(function(button){
+    button.addEventListener('click', function(){
+      var entry = button.closest('.toc-reader-entry');
+      setEntryCollapsed(entry, !(entry && entry.classList.contains('is-collapsed')));
+    });
+  });
+  window.addEventListener('hashchange', restoreReaderHash);
+  window.addEventListener('load', function(){
+    if (!restoreReaderHash()) resetReaderScrollIfNoHash();
+  });
+  if (!restoreReaderHash()) resetReaderScrollIfNoHash();
+})();
+</script>
+<script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script>
+<script>
+(function(){
+  var track = document.querySelector('.toc-page-scrollbar');
+  var thumb = document.querySelector('.toc-page-scrollbar-thumb');
+  if (!track || !thumb) return;
+  var drag = null;
+
+  function metrics() {
+    var root = document.documentElement;
+    var body = document.body;
+    var scrollHeight = Math.max(
+      root ? root.scrollHeight : 0,
+      body ? body.scrollHeight : 0
+    );
+    var clientHeight = window.innerHeight || (root ? root.clientHeight : 0) || 1;
+    var maxScroll = Math.max(0, scrollHeight - clientHeight);
+    var trackHeight = track.clientHeight;
+    var ratio = clientHeight / Math.max(scrollHeight, clientHeight);
+    var thumbHeight = Math.max(48, Math.floor(trackHeight * ratio));
+    var maxTop = Math.max(0, trackHeight - thumbHeight);
+    return {
+      root: root,
+      body: body,
+      clientHeight: clientHeight,
+      maxScroll: maxScroll,
+      trackHeight: trackHeight,
+      thumbHeight: thumbHeight,
+      maxTop: maxTop
+    };
+  }
+
+  function scrollToTopValue(value) {
+    window.scrollTo(0, Math.max(0, value));
+  }
+
+  function syncPageThumb() {
+    var m = metrics();
+    var scrollTop = window.pageYOffset || m.root.scrollTop || (m.body ? m.body.scrollTop : 0) || 0;
+    var top = m.maxScroll > 0 ? Math.floor((scrollTop / m.maxScroll) * m.maxTop) : 0;
+    thumb.style.height = m.thumbHeight + 'px';
+    thumb.style.transform = 'translateY(' + top + 'px)';
+  }
+
+  function pageYToScroll(pageY, offset) {
+    var rect = track.getBoundingClientRect();
+    var m = metrics();
+    var top = Math.max(0, Math.min(m.maxTop, pageY - rect.top - offset));
+    return m.maxTop > 0 ? (top / m.maxTop) * m.maxScroll : 0;
+  }
+
+  thumb.addEventListener('pointerdown', function(event) {
+    var rect = thumb.getBoundingClientRect();
+    drag = { offset: event.clientY - rect.top };
+    thumb.classList.add('is-dragging');
+    thumb.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+
+  thumb.addEventListener('pointermove', function(event) {
+    if (!drag) return;
+    scrollToTopValue(pageYToScroll(event.clientY, drag.offset));
+    event.preventDefault();
+  });
+
+  function stopDrag(event) {
+    if (!drag) return;
+    drag = null;
+    thumb.classList.remove('is-dragging');
+    try { thumb.releasePointerCapture(event.pointerId); } catch (e) {}
+  }
+
+  thumb.addEventListener('pointerup', stopDrag);
+  thumb.addEventListener('pointercancel', stopDrag);
+
+  track.addEventListener('pointerdown', function(event) {
+    if (event.target === thumb) return;
+    var m = metrics();
+    scrollToTopValue(pageYToScroll(event.clientY, m.thumbHeight / 2));
+    event.preventDefault();
+  });
+
+  window.addEventListener('scroll', syncPageThumb, { passive: true });
+  window.addEventListener('resize', syncPageThumb);
+  syncPageThumb();
+})();
+</script>
+
+<script>
+(function(){
+  var button = document.querySelector('.toc-back-top');
+  if (!button) return;
+  button.addEventListener('click', function(event) {
+    event.preventDefault();
+    var target = document.getElementById('toc-start') || document.getElementById('table-of-contents');
+    var top = target ? target.getBoundingClientRect().top + window.pageYOffset : 0;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  });
+})();
+</script>
+
+<script>
+(function(){
+  var footer = document.querySelector('.toc-latin-footer');
+  if (!footer) return;
+  var decoded = footer.getAttribute('data-latin-message') || '';
+  var encoded = 'XXXX XX XXXXXXX X XXXXXXX XXXXXXX';
+  function isAtPageBottom() {
+    var root = document.documentElement;
+    var body = document.body;
+    var scrollHeight = Math.max(
+      root ? root.scrollHeight : 0,
+      body ? body.scrollHeight : 0
+    );
+    var scrollTop = window.pageYOffset || (root ? root.scrollTop : 0) || 0;
+    var viewport = window.innerHeight || (root ? root.clientHeight : 0) || 0;
+    return scrollHeight - (scrollTop + viewport) <= 24;
+  }
+  function syncLatinFooter() {
+    var atBottom = isAtPageBottom();
+    footer.textContent = atBottom ? decoded : encoded;
+    footer.classList.toggle('is-decoded', atBottom);
+  }
+  window.addEventListener('scroll', syncLatinFooter, { passive: true });
+  window.addEventListener('resize', syncLatinFooter);
+  window.addEventListener('load', syncLatinFooter);
+  syncLatinFooter();
+})();
+</script>
+
+<script>
+(function() {
+  var PRESETS = {
+    original: {
+      label: 'Original',
+      filter: 'none',
+      chrome: { bg:'#050605', fg:'#8b3702', rule:'#8b3702', bgSoft:'#0c0907' }
+    },
+    phosphor: {
+      label: 'Phosphor Green (CRT)',
+      filter: 'grayscale(1) sepia(1) hue-rotate(65deg) saturate(7) brightness(0.95)',
+      chrome: { bg:'#000800', fg:'#33ff66', rule:'#33ff66', bgSoft:'#031003' }
+    },
+    amber: {
+      label: 'Amber CRT',
+      filter: 'grayscale(1) sepia(1) hue-rotate(-12deg) saturate(3.6) brightness(1.05)',
+      chrome: { bg:'#0a0500', fg:'#ffb000', rule:'#ffb000', bgSoft:'#160c00' }
+    },
+    cyan: {
+      label: 'Cyan Terminal',
+      filter: 'grayscale(1) sepia(1) hue-rotate(170deg) saturate(4) brightness(1.0)',
+      chrome: { bg:'#001218', fg:'#3fe6ff', rule:'#3fe6ff', bgSoft:'#02181f' }
+    },
+    magenta: {
+      label: 'Magenta',
+      filter: 'grayscale(1) sepia(1) hue-rotate(255deg) saturate(4) brightness(1.0)',
+      chrome: { bg:'#150018', fg:'#ff5cd2', rule:'#ff5cd2', bgSoft:'#1d0220' }
+    },
+    grey: {
+      label: 'Grey',
+      filter: 'grayscale(1) brightness(1.0) contrast(1.0)',
+      chrome: { bg:'#0c0c0c', fg:'#cfcfcf', rule:'#cfcfcf', bgSoft:'#161616' }
+    },
+    bw: {
+      label: 'High Contrast B&W',
+      filter: 'grayscale(1) contrast(1.6) brightness(1.0)',
+      chrome: { bg:'#000000', fg:'#ffffff', rule:'#ffffff', bgSoft:'#0a0a0a' }
+    },
+    sepia: {
+      label: 'Sepia',
+      filter: 'sepia(1) saturate(1.3) brightness(1.0)',
+      chrome: { bg:'#1a0f06', fg:'#d8a866', rule:'#d8a866', bgSoft:'#221409' }
+    },
+    invert: {
+      label: 'Inverted',
+      filter: 'invert(1) hue-rotate(180deg)',
+      chrome: { bg:'#f4f4f4', fg:'#1a1a1a', rule:'#1a1a1a', bgSoft:'#e6e6e6' }
+    },
+    bluep: {
+      label: 'Blueprint',
+      filter: 'grayscale(1) sepia(1) hue-rotate(195deg) saturate(5) brightness(0.9) contrast(1.15)',
+      chrome: { bg:'#011024', fg:'#7ec8ff', rule:'#7ec8ff', bgSoft:'#021833' }
+    }
+  };
+  var PALETTE_CYCLE = [
+    'original', 'phosphor', 'amber', 'cyan', 'magenta',
+    'grey', 'bw', 'sepia', 'invert', 'bluep'
+  ];
+  var params = new URLSearchParams(window.location.search);
+  var root = document.documentElement;
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.palette-switcher button[data-preset]'));
+  var labelEl = document.querySelector('.palette-label');
+  var noFilter = params.get('nofilter') === '1';
+  var currentPalette = 'original';
+
+  if (params.get('debug') === '1') {
+    document.body.classList.add('debug');
+  }
+  if (noFilter) {
+    document.body.classList.add('palette-nofilter');
+  }
+
+  function validPalette(name) {
+    return PRESETS[name] ? name : 'original';
+  }
+
+  function applyPreset(name, persist) {
+    name = validPalette(name);
+    var p = PRESETS[name];
+    root.style.setProperty('--tone-filter', noFilter ? 'none' : p.filter);
+    root.style.setProperty('--chrome-bg', p.chrome.bg);
+    root.style.setProperty('--chrome-fg', p.chrome.fg);
+    root.style.setProperty('--chrome-rule', p.chrome.rule);
+    root.style.setProperty('--chrome-bg-soft', p.chrome.bgSoft);
+    if (labelEl) labelEl.textContent = 'palette: ' + p.label.toLowerCase();
+    buttons.forEach(function(button) {
+      button.setAttribute('aria-pressed', button.dataset.preset === name ? 'true' : 'false');
+    });
+    currentPalette = name;
+    if (persist !== false) {
+      try { localStorage.setItem('palette', name); } catch (e) {}
+    }
+  }
+
+  function nextPalette(name) {
+    var index = PALETTE_CYCLE.indexOf(name);
+    return PALETTE_CYCLE[(index < 0 ? 1 : index + 1) % PALETTE_CYCLE.length];
+  }
+
+  buttons.forEach(function(button) {
+    button.addEventListener('click', function() {
+      applyPreset(button.dataset.preset, true);
+    });
+  });
+
+  var initial = 'original';
+  try {
+    var saved = localStorage.getItem('palette');
+    if (saved && PRESETS[saved]) initial = saved;
+  } catch (e) {}
+  applyPreset(initial, false);
+
+  window.addEventListener('storage', function(event) {
+    if (event.key === 'palette' && event.newValue && PRESETS[event.newValue]) {
+      applyPreset(event.newValue, false);
+    }
+  });
+
+  var wipeEl = document.querySelector('.wipe-overlay');
+  var wipeRunning = false;
+  var WIPE_DURATION_MS = 750;
+  var WIPE_OVERSHOOT_PX = 60;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function maxRadiusFrom(cx, cy) {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    return Math.max(
+      Math.hypot(cx, cy),
+      Math.hypot(w - cx, cy),
+      Math.hypot(cx, h - cy),
+      Math.hypot(w - cx, h - cy)
+    );
+  }
+
+  function runWipe(cx, cy, oldPaletteName, newPaletteName) {
+    if (!wipeEl || wipeRunning) {
+      applyPreset(newPaletteName, true);
+      return;
+    }
+    wipeRunning = true;
+    var oldPreset = PRESETS[oldPaletteName] || PRESETS.original;
+    var targetR = maxRadiusFrom(cx, cy) + WIPE_OVERSHOOT_PX;
+    root.style.setProperty('--wipe-tint', oldPreset.chrome.fg);
+    root.style.setProperty('--wipe-cx', cx + 'px');
+    root.style.setProperty('--wipe-cy', cy + 'px');
+    root.style.setProperty('--wipe-r', '0px');
+    wipeEl.classList.add('is-running');
+    applyPreset(newPaletteName, true);
+
+    var start = performance.now();
+    function step(now) {
+      var t = Math.min(1, (now - start) / WIPE_DURATION_MS);
+      root.style.setProperty('--wipe-r', (easeOutCubic(t) * targetR) + 'px');
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+        wipeEl.classList.remove('is-running');
+        setTimeout(function() {
+          root.style.setProperty('--wipe-r', '0px');
+          wipeRunning = false;
+        }, 200);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function cycleFromEvent(event) {
+    runWipe(event.clientX, event.clientY, currentPalette, nextPalette(currentPalette));
+  }
+
+  Array.prototype.slice.call(document.querySelectorAll('[data-palette-cycle]')).forEach(function(trigger) {
+    trigger.addEventListener('click', function(event) {
+      event.preventDefault();
+      cycleFromEvent(event);
+    });
+  });
+
+    
+})();
+</script>
+</body></html>

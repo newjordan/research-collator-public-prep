@@ -358,8 +358,8 @@ def iter_claude_entries(path: Path, include_tool_results: bool) -> Iterable[dict
 
 
 def transcript_paths(cfg: dict[str, Any]) -> tuple[list[Path], list[Path]]:
-    codex_root = Path(str(cfg.get("codex_sessions_root") or "/home/frosty40/.codex/sessions"))
-    claude_root = Path(str(cfg.get("claude_projects_root") or "/home/frosty40/.claude/projects"))
+    codex_root = Path(str(cfg.get("codex_sessions_root") or "~/.codex/sessions"))
+    claude_root = Path(str(cfg.get("claude_projects_root") or "~/.claude/projects"))
     codex = sorted(codex_root.rglob("*.jsonl")) if codex_root.is_dir() else []
     claude = sorted(claude_root.rglob("*.jsonl")) if claude_root.is_dir() else []
     return codex, claude

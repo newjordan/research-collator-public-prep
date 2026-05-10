@@ -1,0 +1,17 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,BW23W-02_smoke_s444_20260408_154713.log,,,experimental,2026-04-08T15:47:13+00:00,1×GB10,,,log_final_eval,,,1,sota_crawler
+2,BW23W-00_smoke_s444_20260408_154713.log,,,experimental,2026-04-08T15:47:13+00:00,1×GB10,,,log_final_eval,,,1,sota_crawler
+3,BW23W-03_smoke_s444_20260408_154713.log,,,experimental,2026-04-08T15:47:13+00:00,1×GB10,,,log_final_eval,,,1,sota_crawler
+4,BW23W-01_smoke_s444_20260408_154713.log,,,experimental,2026-04-08T15:47:13+00:00,1×GB10,,,log_final_eval,,,1,sota_crawler
+5,ratio_balanced.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+6,chain_balanced_output.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_step_best,,,1,sota_nueral
+7,overnight_run.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+8,quant_gap_series.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+9,crawler_9f_gate.log,,,experimental,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+10,39_v1_9_longworm_ssm_ttt_baseline_l8_d480_h12_kv4_non_ngram_brotli.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+11,40_v1_9_longworm_loss_gated_ttt_l8_d480_h12_kv4_non_ngram_brotli.log,,,neural,2026-04-08T18:27:34+00:00,4×H100,,,log_final_eval,,,1,sota_nueral
+12,warmdown_3000_seed444_20260408_201744.log,,,experimental,2026-04-08T20:17:44+00:00,4×H100 (runpod),,,log_final_eval,,,1,sota_nueral
+13,train_seed300.log,,,experimental,2026-04-08T20:57:35Z,8×H100,,,log_final_eval,,,1,sota_nueral
+14,train_seed42.log,,,experimental,2026-04-08T20:57:35Z,8×H100,,,log_final_eval,,,1,sota_nueral
+15,Midnight 12L,,,neural,2026-04-08T20:57:35Z,,,,json_top_level,,,1,sota_nueral
+16,train_seed444.log,,,experimental,2026-04-08T20:57:35Z,8×H100,,,log_final_eval,,,1,sota_nueral

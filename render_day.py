@@ -31,8 +31,8 @@ from pathlib import Path
 
 import plot as plot_mod
 
-DB = "/home/frosty40/research_collator/index.sqlite"
-OUT_ROOT = Path("/home/frosty40/research_collator/output")
+DB = "~/research_collator/index.sqlite"
+OUT_ROOT = Path("~/research_collator/output")
 QMD_DIR = OUT_ROOT / "days"
 HTML_DIR = OUT_ROOT / "preview"
 ASSETS_DIR = OUT_ROOT / "assets"
@@ -555,8 +555,8 @@ GITHUB_REMOTES = {
     "git:pg_whale":           "https://github.com/newjordan/blessed_whale",
     "git:rascal-private":     "https://github.com/newjordan/rascal",
 }
-HOME = "/home/frosty40"
-SERVE_BASE = "http://dgx-spark:8765"   # HTTP server now serves $HOME at this base
+HOME = "~"
+SERVE_BASE = "http://rig-host:8765"   # HTTP server now serves $HOME at this base
 
 
 def _build_link(rec: dict) -> tuple[str, str]:
@@ -1466,7 +1466,7 @@ def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
     return "  ·  ".join(parts)
 
 
-_FROSTED_FLAKE_PATH = "/home/frosty40/research_collator/assets/frosted_flake.png"
+_FROSTED_FLAKE_PATH = "~/research_collator/assets/frosted_flake.png"
 
 
 def preview_asset_src(path: str | Path, home_href: str = "", asset_name: str | None = None) -> str:

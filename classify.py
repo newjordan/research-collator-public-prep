@@ -32,7 +32,7 @@ from __future__ import annotations
 import sqlite3
 import sys
 
-DB = "/home/frosty40/research_collator/index.sqlite"
+DB = "~/research_collator/index.sqlite"
 
 # STRONG experimental keywords — always pull experimental, even in competitive sources.
 # These are concrete experimental architecture/method names per user's rule:

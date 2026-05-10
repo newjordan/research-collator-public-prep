@@ -1,0 +1,23 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,junkyard_rat_s300_20260330_004516.log,,,experimental,2026-03-30T00:45:16+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+2,junkyard_rat_s42_20260330_010007.log,,,experimental,2026-03-30T01:00:07+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+3,junkyard_rat_s444_20260330_012127.log,,,experimental,2026-03-30T01:21:27+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+4,junkyard_rat_mlp_s1337_20260330_013556.log,,,experimental,2026-03-30T01:35:56+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+5,junkyard_rat_s444_20260330_025811.log,,,experimental,2026-03-30T02:58:11+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+6,junkyard_rat_s42_20260330_031307.log,,,experimental,2026-03-30T03:13:07+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+7,junkyard_rat_s444_20260330_032351.log,,,experimental,2026-03-30T03:23:51+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+8,rascal_ii_s444_20260330_035727.log,,,experimental,2026-03-30T03:57:27+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+9,rascal_ii_s42_20260330_041308.log,,,experimental,2026-03-30T04:13:08+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+10,rascal_ii_s300_20260330_042646.log,,,experimental,2026-03-30T04:26:46+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+11,rascal_ii_s444_20260330_044001.log,,,experimental,2026-03-30T04:40:01+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+12,train_seed300.log,,,experimental,2026-03-30T13:46:08+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+13,train_seed1337.log,,,experimental,2026-03-30T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+14,train_seed42.log,,,experimental,2026-03-30T13:46:08+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+15,Crawler,,,experimental,2026-03-30T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+16,Rascal,,,neural,2026-03-30T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+17,train_seed444.log,,,experimental,2026-03-30T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+18,CL2 results: 1.19593 BPB — loops=3+mlp=5.0+LOOP_AWARE_GPTQ+COMPILE wins on 8×H100,,,experimental,2026-03-30T16:15:27Z,,,,commit_message,,,3,git:parameter-golf-lab
+19,"Crawler submission: 3-seed complete, 1.1874 BPB mean",,,experimental,2026-03-30T17:14:35Z,,,,commit_message,,,3,git:parameter-golf-lab
+20,"Bandit_Wagon: update to CL3 proven config (mlp=6.0, SKIP_GPTQ=1)",,,experimental,2026-03-30T17:44:58Z,,,,commit_message,,,3,git:parameter-golf-lab
+21,"Bandit_wagon_5f_ablations: 4F+1C confirmed optimal, 5F hypothesis denied",,,experimental,2026-03-30T21:44:40Z,,,,commit_message,,,3,git:parameter-golf-lab
+22,bandit_wagon_XSA: XSA=15 (full coverage) wins on BPB AND speed,,,experimental,2026-03-30T22:27:56Z,,,,commit_message,,,3,git:parameter-golf-lab

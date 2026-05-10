@@ -152,7 +152,7 @@ Open `http://localhost:8767/2026-04-24.html` and confirm multiple architecture r
 ## Tier 4 — deep-link infrastructure
 
 ### [!] T4.1 — Per-artifact viewer route
-[!] reason: requires multi-day infrastructure — most artifacts (~95%) live outside `output/preview/` (training logs at `/home/frosty40/parameter-golf-lab/…`, etc.) so they're not URL-addressable from the static server without a file-copy/symlink stage; SQLite-id propagation through row evidence needs upstream changes to row composition (currently row.training_logs carries abs_path/basename/size but no `id`). Addressability of existing fragments works today via direct `/fragments/<path>.html` URLs. Recommend follow-up: (a) thin wrapper `artifact.html?fragment=<path>` for nicer chrome around existing fragments (1 hr), then (b) decide whether full SQLite-id deep-link is worth the file-copy + indexer pass.
+[!] reason: requires multi-day infrastructure — most artifacts (~95%) live outside `output/preview/` (training logs at `~/parameter-golf-lab/…`, etc.) so they're not URL-addressable from the static server without a file-copy/symlink stage; SQLite-id propagation through row evidence needs upstream changes to row composition (currently row.training_logs carries abs_path/basename/size but no `id`). Addressability of existing fragments works today via direct `/fragments/<path>.html` URLs. Recommend follow-up: (a) thin wrapper `artifact.html?fragment=<path>` for nicer chrome around existing fragments (1 hr), then (b) decide whether full SQLite-id deep-link is worth the file-copy + indexer pass.
 
 **Why**: 51,716 indexed artifacts; nothing is URL-addressable. Sharing a specific log/csv requires copy-paste, not a link.
 

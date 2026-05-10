@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parameter Golf Campaign Cover</title>
+  <style>
+    :root {
+      --bg: #050605;
+      --ink: #f4f0e9;
+      --muted: #89380e;
+      --accent: #89380e;
+      --rule: rgba(5,6,5,0.85);
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; background: var(--bg); }
+    body {
+      font-family: var(--mono);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      padding: clamp(12px, 2.2vw, 28px);
+    }
+    .cover-shell {
+      width: min(100%, 920px);
+      min-height: calc(100vh - clamp(24px, 4.4vw, 56px));
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+    .cover-frame {
+      width: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .cover-frame img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(100vh - 92px);
+      width: auto;
+      height: auto;
+      border: 1px solid var(--rule);
+      box-shadow: 0 0 0 1px rgba(5,6,5,0.65), 0 28px 90px rgba(5,6,5,0.78);
+      background: #050605;
+    }
+    .enter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      width: 100%;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      padding: 8px 2px 0;
+    }
+    .enter-row a {
+      color: var(--ink);
+      text-decoration: none;
+      border: 1px solid var(--rule);
+      padding: 9px 12px;
+      background: rgba(5,6,5,0.10);
+    }
+    .enter-row a:hover {
+      border-color: var(--accent);
+      color: #f4f0e9;
+    }
+    @media (max-width: 640px) {
+      .enter-row { flex-direction: column; align-items: stretch; }
+      .enter-row a { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <main class="cover-shell">
+    <div class="cover-frame">
+      <img src="assets/cover_sheet_final.jpeg" alt="Research Corpus cover sheet">
+    </div>
+    <div class="enter-row">
+      <span>2026-03-18 / 2026-05-01</span>
+      <a href="intro.html">Enter</a>
+    </div>
+  </main>
+</body>
+</html>

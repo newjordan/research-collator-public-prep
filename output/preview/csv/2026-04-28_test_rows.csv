@@ -1,0 +1,10 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,mikey_ttt_seed42.log,,,neural,2026-04-28T15:39:31+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+2,mikey_ttt_seed300.log,,,neural,2026-04-28T15:57:10+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+3,mikey_ttt_seed444.log,,,neural,2026-04-28T16:14:44+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+4,donnie_ttt_seed42.log,,,neural,2026-04-28T16:37:19+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+5,donnie_12L_seed42.log,,,neural,2026-04-28T16:53:45+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+6,donnie_ttt_seed300.log,,,neural,2026-04-28T17:13:37+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+7,donnie_12L_seed444.log,,,neural,2026-04-28T17:27:35+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+8,Ouroboros,,,experimental,2026-04-28T17:42:42Z,,,,json_top_level,,,2,sota_rascal
+9,donnie_ttt_seed444.log,,,neural,2026-04-28T17:47:49+00:00,8×H100,,,log_final_eval,,,1,sota_rascal

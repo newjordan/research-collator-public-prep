@@ -1,0 +1,7 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,pr1855_sp10240_caseops_mlp375_late045_8x.clean_restart.nohup.out,,,neural,2026-04-30T01:18:07+00:00,8×H100,,,log_final_eval,,,1,sota_rascal
+2,manual_2026-04-30_caseops6_lane4_mlp4_late050_1x_gpu4_20260430_140724.launcher.log,,,neural,2026-04-30T14:07:24+00:00,1×GB10,,,log_final_eval,,,1,sota_rascal
+3,manual_2026-04-30_caseops6_lane1_mlp375_late050_1x_gpu1_20260430_140724.launcher.log,,,neural,2026-04-30T14:07:24+00:00,1×GB10,,,log_final_eval,,,1,sota_rascal
+4,manual_2026-04-30_caseops6_lane0_repro_mlp4_late035_1x_gpu0_20260430_140724.launcher.log,,,neural,2026-04-30T14:07:24+00:00,1×GB10,,,log_final_eval,,,1,sota_rascal
+5,manual_2026-04-30_caseops6_gpu2_pr1855_repro_mlp4_late035_embed6_1x_gpu2_20260430_142320.launcher.log,,,neural,2026-04-30T14:23:20+00:00,1×GB10,,,log_final_eval,,,1,sota_rascal
+6,launch_detached.out,,,neural,2026-04-30T23:11:38Z,8×H100,,,log_final_eval,,,1,sota_rascal

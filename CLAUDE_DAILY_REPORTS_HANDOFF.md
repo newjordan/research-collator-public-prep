@@ -1,7 +1,7 @@
 # Claude Handoff — Daily Report Campaign Build
 
 Date: 2026-05-06
-Repo: `/home/frosty40/research_collator`
+Repo: `~/research_collator`
 Remote: `https://github.com/newjordan/research-collator.git`
 Branch: `master`
 
@@ -70,17 +70,17 @@ continue from the current one.
 
 Primary copied research corpus:
 
-- `/home/frosty40/llm_research/parameter-golf-lab`
-- `/home/frosty40/llm_research/parameter-golf-lab/junkyard`
-- `/home/frosty40/llm_research/parameter-golf-cross-repo`
-- `/home/frosty40/llm_research/sota_nueral`
-- `/home/frosty40/llm_research/sota_nueral_archive`
-- `/home/frosty40/llm_research/sota_crawler`
-- `/home/frosty40/llm_research/SOTA_FINAL`
-- `/home/frosty40/llm_research/sota_rascal`
-- `/home/frosty40/llm_research/pg_whale`
-- `/home/frosty40/llm_research/rascal-private`
-- `/home/frosty40/llm_research/sota_rascal_pod_saves`
+- `~/llm_research/parameter-golf-lab`
+- `~/llm_research/parameter-golf-lab/junkyard`
+- `~/llm_research/parameter-golf-cross-repo`
+- `~/llm_research/sota_nueral`
+- `~/llm_research/sota_nueral_archive`
+- `~/llm_research/sota_crawler`
+- `~/llm_research/SOTA_FINAL`
+- `~/llm_research/sota_rascal`
+- `~/llm_research/pg_whale`
+- `~/llm_research/rascal-private`
+- `~/llm_research/sota_rascal_pod_saves`
 
 Other prelude/audit roots are listed in `config.yaml`. Keep them indexed for
 auditability, but do not let pre-March-18 bootstrap work advance campaign day
@@ -91,7 +91,7 @@ numbering.
 Run from repo root:
 
 ```bash
-cd /home/frosty40/research_collator
+cd ~/research_collator
 python3 -m py_compile stripper.py enrich.py classify.py render_day.py render_all.py scripts/mine_conversation_architecture.py scripts/verify_scraper_contract.py scripts/verify_daily_template.py
 rm -f index.sqlite index.sqlite-wal index.sqlite-shm
 python3 stripper.py
@@ -138,9 +138,9 @@ Report these exact checks back:
   investigated and either fixed or reported with exact evidence.
 - No stale post-campaign date pages remain.
 - HTTP links open:
-  - `http://dgx-spark:8765/research_collator/output/preview/2026-03-18.html`
-  - `http://dgx-spark:8765/research_collator/output/preview/2026-03-19.html`
-  - `http://dgx-spark:8765/research_collator/output/preview/2026-05-01.html`
+  - `http://rig-host:8765/research_collator/output/preview/2026-03-18.html`
+  - `http://rig-host:8765/research_collator/output/preview/2026-03-19.html`
+  - `http://rig-host:8765/research_collator/output/preview/2026-05-01.html`
 
 ## Data-Gap Handling
 
@@ -149,8 +149,8 @@ a scraper or attribution failure until proven otherwise.
 
 Use this order:
 
-1. Check day-local training logs in `/home/frosty40/llm_research`.
-2. Check `/home/frosty40/llm_research/parameter-golf-lab/junkyard`.
+1. Check day-local training logs in `~/llm_research`.
+2. Check `~/llm_research/parameter-golf-lab/junkyard`.
 3. Check git commits from the configured `git_repos`.
 4. Check deterministic Claude/Codex architecture events through
    `scripts/mine_conversation_architecture.py`.

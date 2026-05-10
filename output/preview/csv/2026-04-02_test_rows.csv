@@ -1,0 +1,29 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,BW17DGX-01_s444_20260402_014348.log,,,experimental,2026-04-02T01:43:48+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+2,BW17DGX-00_s444_20260402_014348.log,,,experimental,2026-04-02T01:43:48+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+3,"Add Slot Machine submission — 1.1035 BPB, 15.5MB",,,neural,2026-04-02T03:24:07+00:00,,,,commit_message,,,1,git:parameter-golf-lab
+4,"Add Ouroboros submission — 1.1364 BPB, 15.05MB",,,experimental,2026-04-02T03:50:13+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+5,lucky_sequential_slot_seed444_20260402.log,,,experimental,2026-04-02T05:48:41Z,,,,log_final_eval,,,1,parameter-golf-lab
+6,neural: Lucky sequential+SLOT seed444 log — 1.10514 BPB (size busted),,,experimental,2026-04-02T05:48:53Z,,,,commit_message,,,3,git:parameter-golf-lab
+7,Lucky,,,neural,2026-04-02T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+8,Bandit Wagon X 9F,,,experimental,2026-04-02T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+9,BW16DS-10SOLO_s444_20260402_142554.log,,,experimental,2026-04-02T14:25:54+00:00,4×H100,,,log_final_eval,,,1,parameter-golf-lab
+10,slot_auto_slot_p30_s300_20260402_150301.log,,,experimental,2026-04-02T15:03:01+00:00,1×GB10,,,log_step_best,,,1,parameter-golf-lab
+11,slot_auto_ctrl_s300_20260402_150301.log,,,experimental,2026-04-02T15:03:01+00:00,1×GB10,,,log_step_best,,,1,parameter-golf-lab
+12,cde1f1ad-9d79-456c-8a6e-26c9be4bb535_seed300_slot8.log,,,experimental,2026-04-02T16:52:38Z,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+13,B1_helix_s1_5flat_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+14,D3_helix_dim64_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+15,C1_helix_5f_s2_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+16,B2_helix_s1_7flat_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+17,A0_ctrl_3flat_2loop_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+18,A2_helix_s1_3flat_1loop_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+19,A1_helix_s1_3flat_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+20,E0_helix_inst32_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+21,C2_helix_5f_s5_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+22,C0_helix_5f_s1_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+23,D0_helix_dim8_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+24,B0_ctrl_5flat_2loop_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+25,D1_helix_dim16_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+26,E2_helix_tap16_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+27,D2_helix_dim32_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab
+28,E1_helix_anchor16_s444_20260402_233020.log,,,experimental,2026-04-02T23:30:20+00:00,1×GB10,,,log_final_eval,,,1,parameter-golf-lab

@@ -1,0 +1,922 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-03-27 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-03-27.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-03-27</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 457 of 565 · 4 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-03-27 | 4 | 60 |</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-03-27&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 565,&#10;  &quot;render_records&quot;: 457,&#10;  &quot;test_rows&quot;: 60,&#10;  &quot;warnings&quot;: 4&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>212 commits on 2026-03-27</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>b7e9a07d</span> <span class='commit-time'>05:06:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recurrent green-branch prototype v5: Synapse v2 — GPU-native hash bridge (&lt;1ms/step)</span></li><li class='commit-item'><span class='commit-hash'>b7e9a07d</span> <span class='commit-time'>05:06:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recurrent green-branch prototype v5: Synapse v2 — GPU-native hash bridge (&lt;1ms/step)</span></li><li class='commit-item'><span class='commit-hash'>b7e9a07d</span> <span class='commit-time'>05:06:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>recurrent green-branch prototype v5: Synapse v2 — GPU-native hash bridge (&lt;1ms/step)</span></li><li class='commit-item'><span class='commit-hash'>e11298f9</span> <span class='commit-time'>05:15:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Freeze SOTA: legal n-gram GPU mixer base 1.1129 ngram 0.4489 (2026-03-27)</span></li><li class='commit-item'><span class='commit-hash'>e11298f9</span> <span class='commit-time'>05:15:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Freeze SOTA: legal n-gram GPU mixer base 1.1129 ngram 0.4489 (2026-03-27)</span></li><li class='commit-item'><span class='commit-hash'>e11298f9</span> <span class='commit-time'>05:15:47</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Freeze SOTA: legal n-gram GPU mixer base 1.1129 ngram 0.4489 (2026-03-27)</span></li><li class='commit-item'><span class='commit-hash'>7d2b5206</span> <span class='commit-time'>05:16:20</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SOTA folder README: only add, never delete or modify</span></li><li class='commit-item'><span class='commit-hash'>7d2b5206</span> <span class='commit-time'>05:16:20</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SOTA folder README: only add, never delete or modify</span></li><li class='commit-item'><span class='commit-hash'>7d2b5206</span> <span class='commit-time'>05:16:20</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add SOTA folder README: only add, never delete or modify</span></li><li class='commit-item'><span class='commit-hash'>8ec6a615</span> <span class='commit-time'>05:29:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix: remove step counter that breaks torch.compile fullgraph</span></li><li class='commit-item'><span class='commit-hash'>8ec6a615</span> <span class='commit-time'>05:29:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix: remove step counter that breaks torch.compile fullgraph</span></li><li class='commit-item'><span class='commit-hash'>8ec6a615</span> <span class='commit-time'>05:29:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix: remove step counter that breaks torch.compile fullgraph</span></li><li class='commit-item'><span class='commit-hash'>e3ae59a4</span> <span class='commit-time'>05:48:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v4/v5 Synapse + VALUE_RESIDUAL results — all dead</span></li><li class='commit-item'><span class='commit-hash'>e3ae59a4</span> <span class='commit-time'>05:48:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v4/v5 Synapse + VALUE_RESIDUAL results — all dead</span></li><li class='commit-item'><span class='commit-hash'>e3ae59a4</span> <span class='commit-time'>05:48:15</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log v4/v5 Synapse + VALUE_RESIDUAL results — all dead</span></li><li class='commit-item'><span class='commit-hash'>6ae55ed0</span> <span class='commit-time'>06:16:10</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recurrent green-branch prototype: training oracle + Dirichlet mixing + matrix_lr=0.03</span></li><li class='commit-item'><span class='commit-hash'>6ae55ed0</span> <span class='commit-time'>06:16:10</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recurrent green-branch prototype: training oracle + Dirichlet mixing + matrix_lr=0.03</span></li><li class='commit-item'><span class='commit-hash'>6ae55ed0</span> <span class='commit-time'>06:16:10</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>recurrent green-branch prototype: training oracle + Dirichlet mixing + matrix_lr=0.03</span></li><li class='commit-item'><span class='commit-hash'>c48c0604</span> <span class='commit-time'>06:23:17</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>phrase-cache variant: disable training oracle by default (legally gray)</span></li><li class='commit-item'><span class='commit-hash'>c48c0604</span> <span class='commit-time'>06:23:17</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>phrase-cache variant: disable training oracle by default (legally gray)</span></li><li class='commit-item'><span class='commit-hash'>c48c0604</span> <span class='commit-time'>06:23:17</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>phrase-cache variant: disable training oracle by default (legally gray)</span></li><li class='commit-item'><span class='commit-hash'>f8caa0c0</span> <span class='commit-time'>06:33:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recurrent green-branch prototype: add zero-cost H100 sweeps and robust trainer toggles</span></li><li class='commit-item'><span class='commit-hash'>f8caa0c0</span> <span class='commit-time'>06:33:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recurrent green-branch prototype: add zero-cost H100 sweeps and robust trainer toggles</span></li><li class='commit-item'><span class='commit-hash'>f8caa0c0</span> <span class='commit-time'>06:33:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>recurrent green-branch prototype: add zero-cost H100 sweeps and robust trainer toggles</span></li><li class='commit-item'><span class='commit-hash'>9e826d96</span> <span class='commit-time'>06:38:57</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>phrase-cache variant: phrase cache + regime tracker + warmdown=2000 + chunk=65K</span></li><li class='commit-item'><span class='commit-hash'>9e826d96</span> <span class='commit-time'>06:38:57</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>phrase-cache variant: phrase cache + regime tracker + warmdown=2000 + chunk=65K</span></li><li class='commit-item'><span class='commit-hash'>9e826d96</span> <span class='commit-time'>06:38:57</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>phrase-cache variant: phrase cache + regime tracker + warmdown=2000 + chunk=65K</span></li><li class='commit-item'><span class='commit-hash'>c185a8d6</span> <span class='commit-time'>07:20:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Siphon: ensemble-objective training + WARMDOWN2000 SOTA entry</span></li><li class='commit-item'><span class='commit-hash'>c185a8d6</span> <span class='commit-time'>07:20:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Siphon: ensemble-objective training + WARMDOWN2000 SOTA entry</span></li><li class='commit-item'><span class='commit-hash'>c185a8d6</span> <span class='commit-time'>07:20:34</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add Siphon: ensemble-objective training + WARMDOWN2000 SOTA entry</span></li><li class='commit-item'><span class='commit-hash'>63c27e13</span> <span class='commit-time'>07:30:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: Instructed Recurrence — content-derived loop instructions for shared crawler</span></li><li class='commit-item'><span class='commit-hash'>63c27e13</span> <span class='commit-time'>07:30:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: Instructed Recurrence — content-derived loop instructions for shared crawler</span></li><li class='commit-item'><span class='commit-hash'>63c27e13</span> <span class='commit-time'>07:30:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: Instructed Recurrence — content-derived loop instructions for shared crawler</span></li><li class='commit-item'><span class='commit-hash'>4ab4ced6</span> <span class='commit-time'>07:31:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: add hypothesis and ablation plan</span></li><li class='commit-item'><span class='commit-hash'>4ab4ced6</span> <span class='commit-time'>07:31:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: add hypothesis and ablation plan</span></li><li class='commit-item'><span class='commit-hash'>4ab4ced6</span> <span class='commit-time'>07:31:45</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: add hypothesis and ablation plan</span></li><li class='commit-item'><span class='commit-hash'>7a81eece</span> <span class='commit-time'>07:44:59</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Reorganize: move master runner to experiments/Biology_concepts/run_all.sh</span></li><li class='commit-item'><span class='commit-hash'>7a81eece</span> <span class='commit-time'>07:44:59</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Reorganize: move master runner to experiments/Biology_concepts/run_all.sh</span></li><li class='commit-item'><span class='commit-hash'>7a81eece</span> <span class='commit-time'>07:44:59</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Reorganize: move master runner to experiments/Biology_concepts/run_all.sh</span></li><li class='commit-item'><span class='commit-hash'>95e93330</span> <span class='commit-time'>07:49:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add recurrent green-branch prototype variant (optimized SOTA): v1 + WARMDOWN_ITERS=2000</span></li><li class='commit-item'><span class='commit-hash'>95e93330</span> <span class='commit-time'>07:49:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add recurrent green-branch prototype variant (optimized SOTA): v1 + WARMDOWN_ITERS=2000</span></li><li class='commit-item'><span class='commit-hash'>95e93330</span> <span class='commit-time'>07:49:26</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add recurrent green-branch prototype variant (optimized SOTA): v1 + WARMDOWN_ITERS=2000</span></li><li class='commit-item'><span class='commit-hash'>52680822</span> <span class='commit-time'>08:06:55</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Biology Concepts sweep findings — EMA teacher/student integration vs baseline analysis</span></li><li class='commit-item'><span class='commit-hash'>52680822</span> <span class='commit-time'>08:06:55</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Biology Concepts sweep findings — EMA teacher/student integration vs baseline analysis</span></li><li class='commit-item'><span class='commit-hash'>52680822</span> <span class='commit-time'>08:06:55</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add Biology Concepts sweep findings — EMA teacher/student integration vs baseline analysis</span></li><li class='commit-item'><span class='commit-hash'>516e2c80</span> <span class='commit-time'>08:23:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add recurrent green-branch prototype variant: v6 + complement-mix alpha=0.5</span></li><li class='commit-item'><span class='commit-hash'>516e2c80</span> <span class='commit-time'>08:23:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add recurrent green-branch prototype variant: v6 + complement-mix alpha=0.5</span></li><li class='commit-item'><span class='commit-hash'>516e2c80</span> <span class='commit-time'>08:23:23</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add recurrent green-branch prototype variant: v6 + complement-mix alpha=0.5</span></li><li class='commit-item'><span class='commit-hash'>9a58d144</span> <span class='commit-time'>08:31:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: fix compile — COMPILE_FULLGRAPH=0 for crawler loop</span></li><li class='commit-item'><span class='commit-hash'>9a58d144</span> <span class='commit-time'>08:31:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: fix compile — COMPILE_FULLGRAPH=0 for crawler loop</span></li><li class='commit-item'><span class='commit-hash'>9a58d144</span> <span class='commit-time'>08:31:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: fix compile — COMPILE_FULLGRAPH=0 for crawler loop</span></li><li class='commit-item'><span class='commit-hash'>15c66fcc</span> <span class='commit-time'>08:37:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_LOOPS=4 — exploit weight-sharing compression</span></li><li class='commit-item'><span class='commit-hash'>15c66fcc</span> <span class='commit-time'>08:37:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_LOOPS=4 — exploit weight-sharing compression</span></li><li class='commit-item'><span class='commit-hash'>15c66fcc</span> <span class='commit-time'>08:37:37</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_LOOPS=4 — exploit weight-sharing compression</span></li><li class='commit-item'><span class='commit-hash'>909901e6</span> <span class='commit-time'>08:42:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log v7 results: complement-mix alpha=0.5 worse than v1</span></li><li class='commit-item'><span class='commit-hash'>909901e6</span> <span class='commit-time'>08:42:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log v7 results: complement-mix alpha=0.5 worse than v1</span></li><li class='commit-item'><span class='commit-hash'>909901e6</span> <span class='commit-time'>08:42:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Log v7 results: complement-mix alpha=0.5 worse than v1</span></li><li class='commit-item'><span class='commit-hash'>812599db</span> <span class='commit-time'>15:10:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_QUANT_INT8 — int8 precision for shared crawler block</span></li><li class='commit-item'><span class='commit-hash'>812599db</span> <span class='commit-time'>15:10:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_QUANT_INT8 — int8 precision for shared crawler block</span></li><li class='commit-item'><span class='commit-hash'>812599db</span> <span class='commit-time'>15:10:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: CRAWLER_QUANT_INT8 — int8 precision for shared crawler block</span></li><li class='commit-item'><span class='commit-hash'>c641e5e4</span> <span class='commit-time'>15:15:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add vast_instructed-recurrence crawler.sh — single GPU instructed-recurrence crawler launcher for Vast.ai</span></li><li class='commit-item'><span class='commit-hash'>c641e5e4</span> <span class='commit-time'>15:15:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add vast_instructed-recurrence crawler.sh — single GPU instructed-recurrence crawler launcher for Vast.ai</span></li><li class='commit-item'><span class='commit-hash'>c641e5e4</span> <span class='commit-time'>15:15:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add vast_instructed-recurrence crawler.sh — single GPU instructed-recurrence crawler launcher for Vast.ai</span></li><li class='commit-item'><span class='commit-hash'>8811d79c</span> <span class='commit-time'>15:30:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recurrent green-branch prototype Green SOTA: 1.1129 sliding / 0.4489 ngram (8xH100 600s)</span></li><li class='commit-item'><span class='commit-hash'>8811d79c</span> <span class='commit-time'>15:30:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recurrent green-branch prototype Green SOTA: 1.1129 sliding / 0.4489 ngram (8xH100 600s)</span></li><li class='commit-item'><span class='commit-hash'>ce5e317e</span> <span class='commit-time'>15:56:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep: DeltaNet × Biology Concepts architecture</span></li><li class='commit-item'><span class='commit-hash'>ce5e317e</span> <span class='commit-time'>15:56:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep: DeltaNet × Biology Concepts architecture</span></li><li class='commit-item'><span class='commit-hash'>ce5e317e</span> <span class='commit-time'>15:56:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep: DeltaNet × Biology Concepts architecture</span></li><li class='commit-item'><span class='commit-hash'>38479b9d</span> <span class='commit-time'>16:20:06</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-0: GatedDeltaNet × Bio Seam architecture skeleton</span></li><li class='commit-item'><span class='commit-hash'>38479b9d</span> <span class='commit-time'>16:20:06</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-0: GatedDeltaNet × Bio Seam architecture skeleton</span></li><li class='commit-item'><span class='commit-hash'>38479b9d</span> <span class='commit-time'>16:20:06</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-0: GatedDeltaNet × Bio Seam architecture skeleton</span></li><li class='commit-item'><span class='commit-hash'>2df9c72e</span> <span class='commit-time'>16:26:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix bio concept scripts: make MAX_WALLCLOCK_SECONDS env-overridable</span></li><li class='commit-item'><span class='commit-hash'>2df9c72e</span> <span class='commit-time'>16:26:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix bio concept scripts: make MAX_WALLCLOCK_SECONDS env-overridable</span></li><li class='commit-item'><span class='commit-hash'>2df9c72e</span> <span class='commit-time'>16:26:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix bio concept scripts: make MAX_WALLCLOCK_SECONDS env-overridable</span></li><li class='commit-item'><span class='commit-hash'>8b93705a</span> <span class='commit-time'>16:40:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-1: Add four bio seam controllers (Myelin, Circadian, Clonal, Astrocyte)</span></li><li class='commit-item'><span class='commit-hash'>8b93705a</span> <span class='commit-time'>16:40:50</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-1: Add four bio seam controllers (Myelin, Circadian, Clonal, Astrocyte)</span></li><li class='commit-item'><span class='commit-hash'>8b93705a</span> <span class='commit-time'>16:40:50</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep-1: Add four bio seam controllers (Myelin, Circadian, Clonal, Astrocyte)</span></li><li class='commit-item'><span class='commit-hash'>b0776f18</span> <span class='commit-time'>16:48:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler micro: device-flexible concept test for GB10 Blackwell DGX Spark</span></li><li class='commit-item'><span class='commit-hash'>b0776f18</span> <span class='commit-time'>16:48:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler micro: device-flexible concept test for GB10 Blackwell DGX Spark</span></li><li class='commit-item'><span class='commit-hash'>b0776f18</span> <span class='commit-time'>16:48:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler micro: device-flexible concept test for GB10 Blackwell DGX Spark</span></li><li class='commit-item'><span class='commit-hash'>da80af1d</span> <span class='commit-time'>16:57:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: add DeltaNet associative memory to crawler reservoir</span></li><li class='commit-item'><span class='commit-hash'>da80af1d</span> <span class='commit-time'>16:57:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: add DeltaNet associative memory to crawler reservoir</span></li><li class='commit-item'><span class='commit-hash'>da80af1d</span> <span class='commit-time'>16:57:27</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: add DeltaNet associative memory to crawler reservoir</span></li><li class='commit-item'><span class='commit-hash'>fa21139e</span> <span class='commit-time'>18:05:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler micro: add -u flag for unbuffered stdout through tee pipe</span></li><li class='commit-item'><span class='commit-hash'>fa21139e</span> <span class='commit-time'>18:05:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler micro: add -u flag for unbuffered stdout through tee pipe</span></li><li class='commit-item'><span class='commit-hash'>fa21139e</span> <span class='commit-time'>18:05:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler micro: add -u flag for unbuffered stdout through tee pipe</span></li><li class='commit-item'><span class='commit-hash'>531f98f6</span> <span class='commit-time'>18:10:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>vast: blacklist offer 33510639 (103.42.50.244 — SSH never connects)</span></li><li class='commit-item'><span class='commit-hash'>531f98f6</span> <span class='commit-time'>18:10:46</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>vast: blacklist offer 33510639 (103.42.50.244 — SSH never connects)</span></li><li class='commit-item'><span class='commit-hash'>531f98f6</span> <span class='commit-time'>18:10:46</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>vast: blacklist offer 33510639 (103.42.50.244 — SSH never connects)</span></li><li class='commit-item'><span class='commit-hash'>ff7069b5</span> <span class='commit-time'>18:34:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler DeltaNet: disable compile on forward to prevent T-loop OOM</span></li><li class='commit-item'><span class='commit-hash'>ff7069b5</span> <span class='commit-time'>18:34:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler DeltaNet: disable compile on forward to prevent T-loop OOM</span></li><li class='commit-item'><span class='commit-hash'>ff7069b5</span> <span class='commit-time'>18:34:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler DeltaNet: disable compile on forward to prevent T-loop OOM</span></li><li class='commit-item'><span class='commit-hash'>36845e34</span> <span class='commit-time'>18:37:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler run.sh: DELTA_NET_HEADS=0 for core concept test</span></li><li class='commit-item'><span class='commit-hash'>36845e34</span> <span class='commit-time'>18:37:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler run.sh: DELTA_NET_HEADS=0 for core concept test</span></li><li class='commit-item'><span class='commit-hash'>36845e34</span> <span class='commit-time'>18:37:31</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler run.sh: DELTA_NET_HEADS=0 for core concept test</span></li><li class='commit-item'><span class='commit-hash'>fa4c218c</span> <span class='commit-time'>18:41:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: suppress inductor NaN in RoPE bounds analysis (PyTorch 2.4 bug)</span></li><li class='commit-item'><span class='commit-hash'>fa4c218c</span> <span class='commit-time'>18:41:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: suppress inductor NaN in RoPE bounds analysis (PyTorch 2.4 bug)</span></li><li class='commit-item'><span class='commit-hash'>fa4c218c</span> <span class='commit-time'>18:41:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: suppress inductor NaN in RoPE bounds analysis (PyTorch 2.4 bug)</span></li><li class='commit-item'><span class='commit-hash'>b4968bec</span> <span class='commit-time'>18:46:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: disable torch.compile on GatedDeltaNet.forward</span></li><li class='commit-item'><span class='commit-hash'>b4968bec</span> <span class='commit-time'>18:46:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: disable torch.compile on GatedDeltaNet.forward</span></li><li class='commit-item'><span class='commit-hash'>b4968bec</span> <span class='commit-time'>18:46:35</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: disable torch.compile on GatedDeltaNet.forward</span></li><li class='commit-item'><span class='commit-hash'>f74175d4</span> <span class='commit-time'>18:48:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep run.sh: set COMPILE_FULLGRAPH=0</span></li><li class='commit-item'><span class='commit-hash'>f74175d4</span> <span class='commit-time'>18:48:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep run.sh: set COMPILE_FULLGRAPH=0</span></li><li class='commit-item'><span class='commit-hash'>f74175d4</span> <span class='commit-time'>18:48:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep run.sh: set COMPILE_FULLGRAPH=0</span></li><li class='commit-item'><span class='commit-hash'>3247b115</span> <span class='commit-time'>18:50:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add root static Research Hub for Vercel deploy</span></li><li class='commit-item'><span class='commit-hash'>3247b115</span> <span class='commit-time'>18:50:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add root static Research Hub for Vercel deploy</span></li><li class='commit-item'><span class='commit-hash'>3247b115</span> <span class='commit-time'>18:50:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add root static Research Hub for Vercel deploy</span></li><li class='commit-item'><span class='commit-hash'>cea3b8b9</span> <span class='commit-time'>18:58:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix astrocyte gate shape bug: view(B,1,1) not unsqueeze(1).unsqueeze(2)</span></li><li class='commit-item'><span class='commit-hash'>cea3b8b9</span> <span class='commit-time'>18:58:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix astrocyte gate shape bug: view(B,1,1) not unsqueeze(1).unsqueeze(2)</span></li><li class='commit-item'><span class='commit-hash'>cea3b8b9</span> <span class='commit-time'>18:58:34</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix astrocyte gate shape bug: view(B,1,1) not unsqueeze(1).unsqueeze(2)</span></li><li class='commit-item'><span class='commit-hash'>5fac1c8d</span> <span class='commit-time'>19:01:22</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>hybrid GatedDeltaNet-attention body X_1: Hybrid DeltaNet + Attention engine</span></li><li class='commit-item'><span class='commit-hash'>5fac1c8d</span> <span class='commit-time'>19:01:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>hybrid GatedDeltaNet-attention body X_1: Hybrid DeltaNet + Attention engine</span></li><li class='commit-item'><span class='commit-hash'>5fac1c8d</span> <span class='commit-time'>19:01:22</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>hybrid GatedDeltaNet-attention body X_1: Hybrid DeltaNet + Attention engine</span></li><li class='commit-item'><span class='commit-hash'>b55a4214</span> <span class='commit-time'>19:03:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: forward PYTORCH_CUDA_ALLOC_CONF to torchrun (expandable_segments default)</span></li><li class='commit-item'><span class='commit-hash'>b55a4214</span> <span class='commit-time'>19:03:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: forward PYTORCH_CUDA_ALLOC_CONF to torchrun (expandable_segments default)</span></li><li class='commit-item'><span class='commit-hash'>b55a4214</span> <span class='commit-time'>19:03:19</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: forward PYTORCH_CUDA_ALLOC_CONF to torchrun (expandable_segments default)</span></li><li class='commit-item'><span class='commit-hash'>15714f9b</span> <span class='commit-time'>19:13:30</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: remove @torch.compiler.disable from GDN.forward</span></li><li class='commit-item'><span class='commit-hash'>15714f9b</span> <span class='commit-time'>19:13:30</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: remove @torch.compiler.disable from GDN.forward</span></li><li class='commit-item'><span class='commit-hash'>15714f9b</span> <span class='commit-time'>19:13:30</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: remove @torch.compiler.disable from GDN.forward</span></li><li class='commit-item'><span class='commit-hash'>24dd5505</span> <span class='commit-time'>19:24:34</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: flow instructions + DeltaNet + hypothesis</span></li><li class='commit-item'><span class='commit-hash'>24dd5505</span> <span class='commit-time'>19:24:34</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: flow instructions + DeltaNet + hypothesis</span></li><li class='commit-item'><span class='commit-hash'>24dd5505</span> <span class='commit-time'>19:24:34</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: flow instructions + DeltaNet + hypothesis</span></li><li class='commit-item'><span class='commit-hash'>6470fbe0</span> <span class='commit-time'>19:30:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Upgrade research hub: SOTA/hypothesis/ablation visual dashboard</span></li><li class='commit-item'><span class='commit-hash'>6470fbe0</span> <span class='commit-time'>19:30:24</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Upgrade research hub: SOTA/hypothesis/ablation visual dashboard</span></li><li class='commit-item'><span class='commit-hash'>6470fbe0</span> <span class='commit-time'>19:30:24</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Upgrade research hub: SOTA/hypothesis/ablation visual dashboard</span></li><li class='commit-item'><span class='commit-hash'>0b2164d4</span> <span class='commit-time'>19:33:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: restore @torch.compiler.disable, default wallclock 600s</span></li><li class='commit-item'><span class='commit-hash'>0b2164d4</span> <span class='commit-time'>19:33:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: restore @torch.compiler.disable, default wallclock 600s</span></li><li class='commit-item'><span class='commit-hash'>0b2164d4</span> <span class='commit-time'>19:33:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>biology-inspired DeltaNet seam sweep: restore @torch.compiler.disable, default wallclock 600s</span></li><li class='commit-item'><span class='commit-hash'>9c34b423</span> <span class='commit-time'>19:34:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: n-gram entropy as smoothing reference hypothesis</span></li><li class='commit-item'><span class='commit-hash'>9c34b423</span> <span class='commit-time'>19:34:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: n-gram entropy as smoothing reference hypothesis</span></li><li class='commit-item'><span class='commit-hash'>9c34b423</span> <span class='commit-time'>19:34:27</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: n-gram entropy as smoothing reference hypothesis</span></li><li class='commit-item'><span class='commit-hash'>0c623c7a</span> <span class='commit-time'>19:50:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep bio seam sweep script</span></li><li class='commit-item'><span class='commit-hash'>0c623c7a</span> <span class='commit-time'>19:50:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep bio seam sweep script</span></li><li class='commit-item'><span class='commit-hash'>0c623c7a</span> <span class='commit-time'>19:50:19</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep bio seam sweep script</span></li><li class='commit-item'><span class='commit-hash'>d1d28c71</span> <span class='commit-time'>19:51:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Research hub: independent top-3 rankings (BPB/base/file size)</span></li><li class='commit-item'><span class='commit-hash'>d1d28c71</span> <span class='commit-time'>19:51:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Research hub: independent top-3 rankings (BPB/base/file size)</span></li><li class='commit-item'><span class='commit-hash'>d1d28c71</span> <span class='commit-time'>19:51:42</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Research hub: independent top-3 rankings (BPB/base/file size)</span></li><li class='commit-item'><span class='commit-hash'>96bc2b4f</span> <span class='commit-time'>20:10:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: disable DeltaNet for flow-only test, add inductor patch</span></li><li class='commit-item'><span class='commit-hash'>96bc2b4f</span> <span class='commit-time'>20:10:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: disable DeltaNet for flow-only test, add inductor patch</span></li><li class='commit-item'><span class='commit-hash'>96bc2b4f</span> <span class='commit-time'>20:10:29</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: disable DeltaNet for flow-only test, add inductor patch</span></li><li class='commit-item'><span class='commit-hash'>3adddb09</span> <span class='commit-time'>20:20:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>instructed-recurrence crawler: DeltaNet with gradient checkpointing + truncated BPTT</span></li><li class='commit-item'><span class='commit-hash'>3adddb09</span> <span class='commit-time'>20:20:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>instructed-recurrence crawler: DeltaNet with gradient checkpointing + truncated BPTT</span></li><li class='commit-item'><span class='commit-hash'>3adddb09</span> <span class='commit-time'>20:20:58</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>instructed-recurrence crawler: DeltaNet with gradient checkpointing + truncated BPTT</span></li><li class='commit-item'><span class='commit-hash'>7b5e09cc</span> <span class='commit-time'>20:39:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix biology-inspired DeltaNet seam sweep hang: SKIP_FINAL_EVAL=1 + process cleanup</span></li><li class='commit-item'><span class='commit-hash'>7b5e09cc</span> <span class='commit-time'>20:39:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix biology-inspired DeltaNet seam sweep hang: SKIP_FINAL_EVAL=1 + process cleanup</span></li><li class='commit-item'><span class='commit-hash'>7b5e09cc</span> <span class='commit-time'>20:39:02</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix biology-inspired DeltaNet seam sweep hang: SKIP_FINAL_EVAL=1 + process cleanup</span></li><li class='commit-item'><span class='commit-hash'>c7ffeec9</span> <span class='commit-time'>21:00:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Deprecate instructed-recurrence crawler* experiments; add flow-instruction crawler hybrid gitignore</span></li><li class='commit-item'><span class='commit-hash'>c7ffeec9</span> <span class='commit-time'>21:00:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Deprecate instructed-recurrence crawler* experiments; add flow-instruction crawler hybrid gitignore</span></li><li class='commit-item'><span class='commit-hash'>c7ffeec9</span> <span class='commit-time'>21:00:12</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Deprecate instructed-recurrence crawler* experiments; add flow-instruction crawler hybrid gitignore</span></li><li class='commit-item'><span class='commit-hash'>c9600c75</span> <span class='commit-time'>21:12:20</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep agent instructions for Vast.ai sweep</span></li><li class='commit-item'><span class='commit-hash'>c9600c75</span> <span class='commit-time'>21:12:20</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep agent instructions for Vast.ai sweep</span></li><li class='commit-item'><span class='commit-hash'>c9600c75</span> <span class='commit-time'>21:12:20</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add biology-inspired DeltaNet seam sweep agent instructions for Vast.ai sweep</span></li><li class='commit-item'><span class='commit-hash'>03f98384</span> <span class='commit-time'>21:16:20</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flow-instruction crawler hybrid (flow instructions + DeltaNet); gitignore both flow-instruction crawler hybrid experiments</span></li><li class='commit-item'><span class='commit-hash'>03f98384</span> <span class='commit-time'>21:16:20</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flow-instruction crawler hybrid (flow instructions + DeltaNet); gitignore both flow-instruction crawler hybrid experiments</span></li><li class='commit-item'><span class='commit-hash'>03f98384</span> <span class='commit-time'>21:16:20</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flow-instruction crawler hybrid (flow instructions + DeltaNet); gitignore both flow-instruction crawler hybrid experiments</span></li><li class='commit-item'><span class='commit-hash'>7c197c7e</span> <span class='commit-time'>21:19:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add flow-instruction crawler hybrid and flow-instruction crawler hybrid experiment code</span></li><li class='commit-item'><span class='commit-hash'>7c197c7e</span> <span class='commit-time'>21:19:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add flow-instruction crawler hybrid and flow-instruction crawler hybrid experiment code</span></li><li class='commit-item'><span class='commit-hash'>7c197c7e</span> <span class='commit-time'>21:19:01</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add flow-instruction crawler hybrid and flow-instruction crawler hybrid experiment code</span></li><li class='commit-item'><span class='commit-hash'>0a89f4a7</span> <span class='commit-time'>21:21:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix REPO_ROOT depth in flow-instruction crawler hybrid run.sh files (../.. not ../../..)</span></li><li class='commit-item'><span class='commit-hash'>0a89f4a7</span> <span class='commit-time'>21:21:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix REPO_ROOT depth in flow-instruction crawler hybrid run.sh files (../.. not ../../..)</span></li><li class='commit-item'><span class='commit-hash'>0a89f4a7</span> <span class='commit-time'>21:21:31</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix REPO_ROOT depth in flow-instruction crawler hybrid run.sh files (../.. not ../../..)</span></li><li class='commit-item'><span class='commit-hash'>8037fce7</span> <span class='commit-time'>21:27:43</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP unused-params crash: disable VE in flow-instruction crawler hybrid crawler runs</span></li><li class='commit-item'><span class='commit-hash'>8037fce7</span> <span class='commit-time'>21:27:43</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP unused-params crash: disable VE in flow-instruction crawler hybrid crawler runs</span></li><li class='commit-item'><span class='commit-hash'>8037fce7</span> <span class='commit-time'>21:27:43</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix DDP unused-params crash: disable VE in flow-instruction crawler hybrid crawler runs</span></li><li class='commit-item'><span class='commit-hash'>3651d352</span> <span class='commit-time'>23:01:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler-only ngram export body experiment; restore instructed-recurrence crawler from deprecated</span></li><li class='commit-item'><span class='commit-hash'>3651d352</span> <span class='commit-time'>23:01:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler-only ngram export body experiment; restore instructed-recurrence crawler from deprecated</span></li><li class='commit-item'><span class='commit-hash'>3651d352</span> <span class='commit-time'>23:01:36</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler-only ngram export body experiment; restore instructed-recurrence crawler from deprecated</span></li><li class='commit-item'><span class='commit-hash'>f2a4f5fe</span> <span class='commit-time'>23:10:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler-only ngram export body: disable ngram eval — sliding window baseline only</span></li><li class='commit-item'><span class='commit-hash'>f2a4f5fe</span> <span class='commit-time'>23:10:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler-only ngram export body: disable ngram eval — sliding window baseline only</span></li><li class='commit-item'><span class='commit-hash'>f2a4f5fe</span> <span class='commit-time'>23:10:00</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler-only ngram export body: disable ngram eval — sliding window baseline only</span></li><li class='commit-item'><span class='commit-hash'>5ae2be59</span> <span class='commit-time'>23:38:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler-only ngram export body: canonical FLA DeltaNet + Crawler symbiotic pairing</span></li><li class='commit-item'><span class='commit-hash'>5ae2be59</span> <span class='commit-time'>23:38:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler-only ngram export body: canonical FLA DeltaNet + Crawler symbiotic pairing</span></li><li class='commit-item'><span class='commit-hash'>5ae2be59</span> <span class='commit-time'>23:38:12</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler-only ngram export body: canonical FLA DeltaNet + Crawler symbiotic pairing</span></li><li class='commit-item'><span class='commit-hash'>ba4a2a74</span> <span class='commit-time'>23:44:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix crawler-only ngram export body/II run.sh: add missing crawler flags (USE_CRAWLER=1 etc.)</span></li><li class='commit-item'><span class='commit-hash'>ba4a2a74</span> <span class='commit-time'>23:44:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix crawler-only ngram export body/II run.sh: add missing crawler flags (USE_CRAWLER=1 etc.)</span></li><li class='commit-item'><span class='commit-hash'>ba4a2a74</span> <span class='commit-time'>23:44:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix crawler-only ngram export body/II run.sh: add missing crawler flags (USE_CRAWLER=1 etc.)</span></li><li class='commit-item'><span class='commit-hash'>87ad173f</span> <span class='commit-time'>02:09:08</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler-only ngram export body: add FLA ops preflight check to confirm canonical kernel loads</span></li><li class='commit-item'><span class='commit-hash'>87ad173f</span> <span class='commit-time'>02:09:08</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler-only ngram export body: add FLA ops preflight check to confirm canonical kernel loads</span></li><li class='commit-item'><span class='commit-hash'>87ad173f</span> <span class='commit-time'>02:09:08</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler-only ngram export body: add FLA ops preflight check to confirm canonical kernel loads</span></li><li class='commit-item'><span class='commit-hash'>e3ba2818</span> <span class='commit-time'>02:12:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix crawler-only ngram export body: cast q/k/v/beta to x.dtype before chunk_delta_rule</span></li><li class='commit-item'><span class='commit-hash'>e3ba2818</span> <span class='commit-time'>02:12:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix crawler-only ngram export body: cast q/k/v/beta to x.dtype before chunk_delta_rule</span></li><li class='commit-item'><span class='commit-hash'>e3ba2818</span> <span class='commit-time'>02:12:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix crawler-only ngram export body: cast q/k/v/beta to x.dtype before chunk_delta_rule</span></li><li class='commit-item'><span class='commit-hash'>c0cf2ac5</span> <span class='commit-time'>02:34:41</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler-only ngram export body: GPTQ bypass + state dtype fix</span></li><li class='commit-item'><span class='commit-hash'>c0cf2ac5</span> <span class='commit-time'>02:34:41</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler-only ngram export body: GPTQ bypass + state dtype fix</span></li><li class='commit-item'><span class='commit-hash'>c0cf2ac5</span> <span class='commit-time'>02:34:41</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler-only ngram export body: GPTQ bypass + state dtype fix</span></li><li class='commit-item'><span class='commit-hash'>5d9e0b23</span> <span class='commit-time'>02:47:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix crawler-only ngram export body: revert state dtype cast — only change is SKIP_GPTQ=1</span></li><li class='commit-item'><span class='commit-hash'>5d9e0b23</span> <span class='commit-time'>02:47:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix crawler-only ngram export body: revert state dtype cast — only change is SKIP_GPTQ=1</span></li><li class='commit-item'><span class='commit-hash'>5d9e0b23</span> <span class='commit-time'>02:47:15</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix crawler-only ngram export body: revert state dtype cast — only change is SKIP_GPTQ=1</span></li><li class='commit-item'><span class='commit-hash'>a7d53c88</span> <span class='commit-time'>02:50:33</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler-only ngram export body: SKIP_GPTQ only — restored from known-good e3ba281</span></li><li class='commit-item'><span class='commit-hash'>a7d53c88</span> <span class='commit-time'>02:50:33</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler-only ngram export body: SKIP_GPTQ only — restored from known-good e3ba281</span></li><li class='commit-item'><span class='commit-hash'>a7d53c88</span> <span class='commit-time'>02:50:33</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler-only ngram export body: SKIP_GPTQ only — restored from known-good e3ba281</span></li><li class='commit-item'><span class='commit-hash'>baceb10f</span> <span class='commit-time'>03:22:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler-only ngram export body: reset to crawler-only ngram export body base + EMA_DECAY=0.99</span></li><li class='commit-item'><span class='commit-hash'>baceb10f</span> <span class='commit-time'>03:22:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler-only ngram export body: reset to crawler-only ngram export body base + EMA_DECAY=0.99</span></li><li class='commit-item'><span class='commit-hash'>baceb10f</span> <span class='commit-time'>03:22:39</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler-only ngram export body: reset to crawler-only ngram export body base + EMA_DECAY=0.99</span></li><li class='commit-item'><span class='commit-hash'>e587c917</span> <span class='commit-time'>03:31:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>crawler-only ngram export body: remove GPTQ, use naive int6</span></li><li class='commit-item'><span class='commit-hash'>e587c917</span> <span class='commit-time'>03:31:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>crawler-only ngram export body: remove GPTQ, use naive int6</span></li><li class='commit-item'><span class='commit-hash'>e587c917</span> <span class='commit-time'>03:31:07</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>crawler-only ngram export body: remove GPTQ, use naive int6</span></li><li class='commit-item'><span class='commit-hash'>c2620863</span> <span class='commit-time'>03:52:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler-only ngram export body and loop-instructed DeltaNet crawler body: skip EMA + naive int6</span></li><li class='commit-item'><span class='commit-hash'>c2620863</span> <span class='commit-time'>03:52:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler-only ngram export body and loop-instructed DeltaNet crawler body: skip EMA + naive int6</span></li><li class='commit-item'><span class='commit-hash'>c2620863</span> <span class='commit-time'>03:52:28</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler-only ngram export body and loop-instructed DeltaNet crawler body: skip EMA + naive int6</span></li><li class='commit-item'><span class='commit-hash'>07a57bfd</span> <span class='commit-time'>03:53:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>pod_setup: add fla + attr install for DeltaNet</span></li><li class='commit-item'><span class='commit-hash'>07a57bfd</span> <span class='commit-time'>03:53:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>pod_setup: add fla + attr install for DeltaNet</span></li><li class='commit-item'><span class='commit-hash'>07a57bfd</span> <span class='commit-time'>03:53:49</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>pod_setup: add fla + attr install for DeltaNet</span></li><li class='commit-item'><span class='commit-hash'>d9db34d9</span> <span class='commit-time'>04:25:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler-only ngram export body: loop-aware 2-phase GPTQ + no EMA</span></li><li class='commit-item'><span class='commit-hash'>d9db34d9</span> <span class='commit-time'>04:25:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler-only ngram export body: loop-aware 2-phase GPTQ + no EMA</span></li><li class='commit-item'><span class='commit-hash'>d9db34d9</span> <span class='commit-time'>04:25:54</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add crawler-only ngram export body: loop-aware 2-phase GPTQ + no EMA</span></li><li class='commit-item'><span class='commit-hash'>cc06d3bc</span> <span class='commit-time'>04:27:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: sync to crawler-only ngram export body (loop-aware GPTQ + no EMA)</span></li><li class='commit-item'><span class='commit-hash'>cc06d3bc</span> <span class='commit-time'>04:27:18</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: sync to crawler-only ngram export body (loop-aware GPTQ + no EMA)</span></li><li class='commit-item'><span class='commit-hash'>cc06d3bc</span> <span class='commit-time'>04:27:18</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>loop-instructed DeltaNet crawler body: sync to crawler-only ngram export body (loop-aware GPTQ + no EMA)</span></li><li class='commit-item'><span class='commit-hash'>ebc4b84a</span> <span class='commit-time'>04:53:16</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: late-start EMA (step 4400) + loop-aware GPTQ</span></li><li class='commit-item'><span class='commit-hash'>ebc4b84a</span> <span class='commit-time'>04:53:16</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: late-start EMA (step 4400) + loop-aware GPTQ</span></li><li class='commit-item'><span class='commit-hash'>ebc4b84a</span> <span class='commit-time'>04:53:16</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Add loop-instructed DeltaNet crawler body: late-start EMA (step 4400) + loop-aware GPTQ</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-03-27</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">010</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">60 unique  (18 valid / 21 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">BIOLOGY-INSPIRED DELTANET SEAM SWEEP (×18)  ·  RECURRENT GREEN-BRANCH PROTOTYPE (×8)  ·  CRAWLER ABLATION CONTROL SET (×8)  ·  FLOW-INSTRUCTION CRAWLER HYBRID (×7)  ·  TRAINING SCHEDULE SWEEP (×5)  ·  CRAWLER-ONLY NGRAM EXPORT BODY (×4)  ·  +4 MORE (×10)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 100% (60)"><span class="alloc-seg-exp" style="width:100.00%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 100% (60)</span></span></span></div></div>
+
+<section class="architecture-recipe" aria-label="Architecture recipe"><div class="ar-kicker">ARCHITECTURE RECIPE</div><div class="ar-cards"><article class="ar-card"><div class="ar-head"><span class="ar-name">BIOLOGY-INSPIRED DELTANET SEAM SWEEP</span><span class="ar-count">x18</span></div><p class="ar-summary">DeltaNet chunk-seam experiments testing biology-inspired state controllers before the crawler line was carried forward.</p><div class="ar-line"><span class="ar-key">BASE BODY</span><span class="ar-val">GatedDeltaNet recurrent body · chunked state passed across sequence seams · XSA attention stack above recurrent memory · Muon optimizer · entropy-adaptive n-gram eval path</span></div><div class="ar-line"><span class="ar-key">SEAM CONTROLLERS</span><span class="ar-val">myelin Fibonacci chunk bridges · circadian phi-gated state flow · astrocyte state-norm erase-gate modulation · clonal top-k state amplification · all-controller sweep arm</span></div><div class="ar-line"><span class="ar-key">LOCAL / POD TESTS</span><span class="ar-val">GB10 local probes for myelin, circadian, astrocyte, and clonal-selection arms · 8-GPU biology-inspired sweep covering baseline, individual seam-controller arms, and all-controller arm · crawler line retained as the stronger follow-on direction</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">RECURRENT GREEN-BRANCH PROTOTYPE</span><span class="ar-count">x8</span></div><p class="ar-summary">Fast prototype line around green-branch recurrence, complement mixing, and residual/value-routing variants before later crawler consolidation.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">green-branch recurrent path · value-residual variants · complement-mix alpha variants · high-speed prototype iteration</span></div><div class="ar-line"><span class="ar-key">SWEEPS</span><span class="ar-val">remote fast A/B runs · synthetic branch variants · green v7 follow-up · warmdown and SWA schedule probes</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">CRAWLER-ONLY NGRAM EXPORT BODY</span><span class="ar-count">x4</span></div><p class="ar-summary">Crawler body with the fast ngram finish: crawler architecture retained, CPU-heavy phrase/regime paths removed.</p><div class="ar-line"><span class="ar-key">MODEL BODY</span><span class="ar-val">crawler-only instructed-recurrence body · DELTA_NET_HEADS=0 · model_dim=512 · num_heads=8 · num_kv_heads=4 · int6+zstd target under 11 MB</span></div><div class="ar-line"><span class="ar-key">EVAL FINISH</span><span class="ar-val">ngram9 eval stack · NGRAM_DIRICHLET=1 · remove NGRAM_CHUNK_TOKENS=65536 · remove PHRASE_CACHE · remove REGIME_TRACKER</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">HYBRID GATEDDELTANET-ATTENTION BODY</span><span class="ar-count">x3</span></div><p class="ar-summary">Hybrid GreenRod branch combining GatedDeltaNet-style memory with attention-body changes as part of the March 27 exploratory campaign.</p><div class="ar-line"><span class="ar-key">BODY</span><span class="ar-val">GatedDeltaNet-attention hybrid · X1 experimental branch · H100/runpod measurement path</span></div></article><article class="ar-card"><div class="ar-head"><span class="ar-name">LOOP-INSTRUCTED DELTANET CRAWLER BODY</span><span class="ar-count">x1</span></div><p class="ar-summary">Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments.</p><div class="ar-line"><span class="ar-key">BASE BODY</span><span class="ar-val">vocab_size=1024 · num_layers=11 · model_dim=512 · num_heads=8 · num_kv_heads=4 · mlp_mult=3.0 · BigramHash 2048x128 · XSA last_n=11 · rope_dims=16</span></div><div class="ar-line"><span class="ar-key">CRAWLER BODY</span><span class="ar-val">flat transformer blocks around shared crawler block · crawler_mlp_mult=4.0 default · inst_dim=32 · loop instruction projection · crawler_loop_rope_scales=1,1,1 default · optional DeltaNet memory</span></div><div class="ar-line"><span class="ar-key">QUANT PATH</span><span class="ar-val">loop-aware GPTQ option · crawler Hessian collection · EMA / no-EMA ablations · int6 sliding-window export path</span></div></article></div></section>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>BIOLOGY-INSPIRED DELTANET SEAM SWEEP (x18): DeltaNet chunk-seam experiments testing biology-inspired state controllers before the crawler line was carried forward.</span> <span>RECURRENT GREEN-BRANCH PROTOTYPE (x8): Fast prototype line around green-branch recurrence, complement mixing, and residual/value-routing variants before later crawler consolidation.</span> <span>CRAWLER ABLATION CONTROL SET (x8): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p>Day 010 measured <strong>60 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>18 valid</strong> rows and <strong>21 TTT leakage</strong> readings excluded. Techniques to copy/reference: <strong>ngram9 eval stack; remove PHRASE_CACHE; remove REGIME_TRACKER; flat transformer blocks around shared crawler block; loop instruction projection; optional DeltaNet memory; loop-aware GPTQ option; crawler Hessian collection</strong>.</p><p>No new personal best. Best valid of the day = <strong>1.1129</strong> (instructed-recurrence crawler: Instructed Recurrence — conte); best-before-today = <strong>1.0672</strong> still stands. 21 crash-class outliers (5.97, 5.97) excluded.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-03-27_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-03-27 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-27_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-03-27_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-03-27 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-27_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>RECURRENT GREEN-BRANCH PROTOTYPE</td><td>8</td><td>1.1713</td><td>1.3639</td><td>1.4111</td><td><a class='bpb-download-action' href='architecture-run-files/archives/33_rat-rod.zip' download>download</a></td></tr>
+<tr><td>FLOW-INSTRUCTION CRAWLER HYBRID</td><td>4</td><td>1.1129</td><td>1.6313</td><td>2.0817</td><td><a class='bpb-download-action' href='architecture-run-files/archives/14_fx-wing.zip' download>download</a></td></tr>
+<tr><td>CRAWLER-ONLY NGRAM EXPORT BODY</td><td>3</td><td>1.1230</td><td>1.1812</td><td>1.5100</td><td><a class='bpb-download-action' href='architecture-run-files/archives/07_clowncar.zip' download>download</a></td></tr>
+<tr><td>HYBRID GATEDDELTANET-ATTENTION BODY</td><td>2</td><td>1.2020</td><td>2.0321</td><td>2.8623</td><td><a class='bpb-download-action' href='architecture-run-files/archives/16_greenrod.zip' download>download</a></td></tr>
+<tr><td>REGULARIZATION/CONTROL SWEEP</td><td>1</td><td>1.3635</td><td>1.3635</td><td>1.3635</td><td><a class='bpb-download-action' href='architecture-run-files/archives/39_tornado.zip' download>download</a></td></tr>
+<tr><td>ALL VALID</td><td>18</td><td>1.1129</td><td>1.3570</td><td>2.8623</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 60</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr class="invalid"><td><strong>1</strong></td><td>02:34</td><td>—</td><td>Add crawler-only ngram export body: GPTQ bypass + state dtype fix (×3)</td><td><code>1.0427</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0001_details_bada5e6a047f.html' data-target='row-detail-2026-03-27-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-1' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>2</strong></td><td>03:09</td><td>8×H100 (runpod)</td><td>recurrent green-branch prototype.log</td><td><code>0.4489</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0002_details_79ed39d43f92.html' data-target='row-detail-2026-03-27-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-2' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>3</strong></td><td>03:25</td><td>1×GB10</td><td>local chunk-bridge seam arm.log</td><td><code>0.9110</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0003_details_d1aba84d2616.html' data-target='row-detail-2026-03-27-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-3' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>4</strong></td><td>03:25</td><td>1×GB10</td><td>myelin_s1337_20260327_032513.log</td><td><code>0.9110</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0004_details_0653fc2237d1.html' data-target='row-detail-2026-03-27-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-4' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>5</strong></td><td>03:31</td><td>8×H100 (runpod)</td><td>recurrent green-branch prototype.log</td><td><code>0.4490</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0005_details_8d08566a5415.html' data-target='row-detail-2026-03-27-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-5' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>6</strong></td><td>04:06</td><td>8×H100 (runpod)</td><td>RoPE ablation arm.log</td><td><code>0.4702</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0006_details_851dde429be0.html' data-target='row-detail-2026-03-27-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-6' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>7</strong></td><td>04:17</td><td>8×H100 (runpod)</td><td>RoPE ablation arm.log</td><td><code>0.4701</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0007_details_a14873ebd74e.html' data-target='row-detail-2026-03-27-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>04:25</td><td>—</td><td>Add crawler-only ngram export body: loop-aware 2-phase GPTQ + no EMA (×3)</td><td>1.5100</td><td>OK</td><td>↑41.5%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0008_details_f46e1a990ac3.html' data-target='row-detail-2026-03-27-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>04:37</td><td>8×H100 (runpod)</td><td>recurrent green-branch prototype.log</td><td>1.1713</td><td>OK</td><td>↑9.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0009_details_43a78d3e5f70.html' data-target='row-detail-2026-03-27-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>04:44</td><td>1×GB10</td><td>SMK-01_rust_on.log</td><td>5.9723</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0010_details_63380350c4a3.html' data-target='row-detail-2026-03-27-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-10' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>11</strong></td><td>04:44</td><td>1×GB10</td><td>SMK-02_delta0.log</td><td>4.9038</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0011_details_bffa4de6fff6.html' data-target='row-detail-2026-03-27-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>04:45</td><td>1×GB10</td><td>SMK-03_no_crawler_int8.log</td><td>5.9722</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0012_details_5d16c80eb527.html' data-target='row-detail-2026-03-27-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-12' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>04:46</td><td>1×GB10</td><td>SMK-04_inst0.log</td><td>5.9534</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0013_details_a5ff10c2991a.html' data-target='row-detail-2026-03-27-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-13' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>14</strong></td><td>04:54</td><td>8×H100 (runpod)</td><td>value-residual ablation off arm.log</td><td><code>0.4702</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0014_details_6cc7ab6c2a67.html' data-target='row-detail-2026-03-27-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-14' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>15</strong></td><td>05:07</td><td>8×H100 (runpod)</td><td>value-residual ablation on arm.log</td><td><code>0.4704</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0015_details_efe4967e6881.html' data-target='row-detail-2026-03-27-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-15' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>16</strong></td><td>05:30</td><td>8×H100 (runpod)</td><td>recurrent green-branch prototype.log</td><td><code>0.4534</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0016_details_3e912ef16f64.html' data-target='row-detail-2026-03-27-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>05:48</td><td>8×H100</td><td>recurrent green-branch prototype.log</td><td>1.3215</td><td>OK</td><td>↑23.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0017_details_3210fd1e909c.html' data-target='row-detail-2026-03-27-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>05:48</td><td>8×H100</td><td>recurrent green-branch prototype.log</td><td>1.3188</td><td>OK</td><td>↑23.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0018_details_254d9e309942.html' data-target='row-detail-2026-03-27-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-18' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>19</strong></td><td>06:08</td><td>8×H100</td><td>warmdown schedule sweep arm.log</td><td>1.3775</td><td>OK</td><td>↑29.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0019_details_9346eb5df58b.html' data-target='row-detail-2026-03-27-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-19' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>20</strong></td><td>06:08</td><td>8×H100</td><td>warmdown schedule sweep arm.log</td><td>1.4111</td><td>OK</td><td>↑32.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0020_details_73e2f38ed39b.html' data-target='row-detail-2026-03-27-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-20' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>21</strong></td><td>06:08</td><td>8×H100</td><td>warmdown schedule sweep arm.log</td><td>1.3504</td><td>OK</td><td>↑26.5%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0021_details_0e136a8b7b39.html' data-target='row-detail-2026-03-27-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-21' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>22</strong></td><td>06:21</td><td>8×H100</td><td>SWA schedule sweep arm.log</td><td>1.3773</td><td>OK</td><td>↑29.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0022_details_ab699ccd9de4.html' data-target='row-detail-2026-03-27-22' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-22' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>23</strong></td><td>06:21</td><td>8×H100</td><td>SWA schedule sweep arm.log</td><td>1.3778</td><td>OK</td><td>↑29.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0023_details_e54c3a0ff7a6.html' data-target='row-detail-2026-03-27-23' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-23' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>24</strong></td><td>06:46</td><td>1×GB10</td><td>astrocyte_s1337_h512_20260327_064618.log</td><td><code>0.9139</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0024_details_d0810a11c710.html' data-target='row-detail-2026-03-27-24' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-24' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>25</strong></td><td>06:46</td><td>1×GB10</td><td>local erase-gate seam arm.log</td><td><code>0.9139</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0025_details_73b086343afe.html' data-target='row-detail-2026-03-27-25' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-25' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>26</strong></td><td>07:20</td><td>8×H100 (runpod)</td><td>siphon ablation off arm.log</td><td><code>0.4674</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0026_details_5d8ca5942066.html' data-target='row-detail-2026-03-27-26' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-26' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>27</strong></td><td>07:30</td><td>—</td><td>instructed-recurrence crawler: Instructed Recurrence — content-derived loop i…</td><td>1.1129</td><td>OK</td><td>↑4.3%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0027_details_a620d423413b.html' data-target='row-detail-2026-03-27-27' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-27' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>28</strong></td><td>07:31</td><td>8×H100 (runpod)</td><td>siphon ablation on arm.log</td><td><code>0.4841</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0028_details_ff9a9a734cf9.html' data-target='row-detail-2026-03-27-28' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-28' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>29</strong></td><td>07:44</td><td>8×H100 (runpod)</td><td>baseline_s1337_20260327_074433.log</td><td><code>0.4742</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0029_details_e9407726d2b7.html' data-target='row-detail-2026-03-27-29' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-29' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>30</strong></td><td>07:54</td><td>8×H100 (runpod)</td><td>EMA teacher/student integration.1_20260327_075441.log</td><td><code>0.5221</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0030_details_76e2b2740a98.html' data-target='row-detail-2026-03-27-30' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-30' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>31</strong></td><td>08:02</td><td>8×H100 (runpod)</td><td>theta-gamma regularization arm regularization arm.1_20260327_080237.log</td><td>1.3635</td><td>OK</td><td>↑27.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0031_details_365308fd030f.html' data-target='row-detail-2026-03-27-31' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-31' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>32</strong></td><td>08:13</td><td>8×H100</td><td>instructed-recurrence crawler.log</td><td>2.0817</td><td>OK</td><td>↑95.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0032_details_4bf40ddae717.html' data-target='row-detail-2026-03-27-32' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-32' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>33</strong></td><td>08:13</td><td>8×H100</td><td>instructed-recurrence crawler.log</td><td>2.0817</td><td>OK</td><td>↑95.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0033_details_f45746d059c2.html' data-target='row-detail-2026-03-27-33' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-33' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>34</strong></td><td>08:21</td><td>1×GB10</td><td>arm0_baseline__no_EMA teacher/student integration.log</td><td>4.1049</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0034_details_7fe50b2f0d1b.html' data-target='row-detail-2026-03-27-34' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-34' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>35</strong></td><td>08:23</td><td>—</td><td>Add recurrent green-branch prototype variant: v6 + complement-mix alpha=0.5 (×3)</td><td><code>0.4420</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0035_details_a025c71d137c.html' data-target='row-detail-2026-03-27-35' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-35' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>36</strong></td><td>08:24</td><td>8×H100 (runpod)</td><td>recurrent green-branch prototype.log</td><td><code>0.4500</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0036_details_92946544e209.html' data-target='row-detail-2026-03-27-36' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-36' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>37</strong></td><td>10:05</td><td>1×GB10</td><td>local state-amplification seam arm.log</td><td><code>0.9110</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0037_details_1f42296e3dda.html' data-target='row-detail-2026-03-27-37' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-37' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>38</strong></td><td>10:05</td><td>1×GB10</td><td>clonal_selection_s1337_k96_b64_20260327_100526.log</td><td><code>0.9110</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0038_details_34715fd79e68.html' data-target='row-detail-2026-03-27-38' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-38' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>39</strong></td><td>12:13</td><td>1×GB10</td><td>instructed-recurrence crawler.log</td><td>3.8469</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0039_details_8f83b8494fe3.html' data-target='row-detail-2026-03-27-39' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-39' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>40</strong></td><td>13:41</td><td>1×H100 (vast.ai)</td><td>instructed-recurrence crawler.log</td><td>4.6423</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0040_details_b98e1620fcc5.html' data-target='row-detail-2026-03-27-40' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-40' class='lazy-test-target' hidden></div></td></tr>
+<tr class="invalid"><td><strong>41</strong></td><td>13:46</td><td>—</td><td>loop-instructed DeltaNet crawler body: DeltaNet (DELTA_NET_HEADS=4) + Loop-Aw…</td><td><code>0.9984</code></td><td><strong>INVALID</strong></td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0041_details_2d42456450a2.html' data-target='row-detail-2026-03-27-41' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-41' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>42</strong></td><td>18:43</td><td>1×H100 (vast.ai)</td><td>instructed-recurrence crawler.log</td><td>4.6423</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0042_details_69a6cef16898.html' data-target='row-detail-2026-03-27-42' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-42' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>43</strong></td><td>19:43</td><td>1×H100 (vast.ai)</td><td>remote_run_nongdn_v4.log</td><td>4.1095</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0043_details_243ae4864ffe.html' data-target='row-detail-2026-03-27-43' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-43' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>44</strong></td><td>19:43</td><td>1×H100 (vast.ai)</td><td>remote_proxy_ab_v8_run2.log</td><td>2.8623</td><td>OK</td><td>↑168.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0044_details_743aee46b98e.html' data-target='row-detail-2026-03-27-44' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-44' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>45</strong></td><td>20:10</td><td>8×H100 (runpod)</td><td>DeltaNet crawler recurrence variant.log</td><td>1.1809</td><td>OK</td><td>↑10.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0045_details_28d6cef7cee2.html' data-target='row-detail-2026-03-27-45' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-45' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>46</strong></td><td>20:46</td><td>8×H100 (runpod)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.3328</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0046_details_bffb588e2314.html' data-target='row-detail-2026-03-27-46' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-46' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>47</strong></td><td>20:55</td><td>8×H100 (runpod)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.2150</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0047_details_7500faff47ae.html' data-target='row-detail-2026-03-27-47' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-47' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>48</strong></td><td>21:04</td><td>8×H100 (runpod)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.3292</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0048_details_54582b4820ff.html' data-target='row-detail-2026-03-27-48' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-48' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>49</strong></td><td>21:35</td><td>8×H100 (runpod)</td><td>hybrid GatedDeltaNet-attention body.log</td><td>1.2020</td><td>OK</td><td>↑12.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0049_details_c5b1111c1f12.html' data-target='row-detail-2026-03-27-49' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-49' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>50</strong></td><td>21:45</td><td>8×H100 (vast.ai)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.1823</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0050_details_54724da5b865.html' data-target='row-detail-2026-03-27-50' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-50' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>51</strong></td><td>21:55</td><td>8×H100 (vast.ai)</td><td>gdn_base.log</td><td>3.1823</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0051_details_16246adb9e69.html' data-target='row-detail-2026-03-27-51' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-51' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>52</strong></td><td>21:55</td><td>8×H100 (vast.ai)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.2090</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0052_details_701f06923982.html' data-target='row-detail-2026-03-27-52' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-52' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>53</strong></td><td>22:04</td><td>8×H100 (vast.ai)</td><td>GDN chunk-bridge seam arm.log</td><td>3.2090</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0053_details_d75467b751c9.html' data-target='row-detail-2026-03-27-53' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-53' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>54</strong></td><td>22:04</td><td>8×H100 (vast.ai)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.1895</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0054_details_d710379a2413.html' data-target='row-detail-2026-03-27-54' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-54' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>55</strong></td><td>22:13</td><td>8×H100 (vast.ai)</td><td>GDN state-flow seam arm.log</td><td>3.1895</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0055_details_298f1d6ebe9f.html' data-target='row-detail-2026-03-27-55' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-55' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>56</strong></td><td>22:13</td><td>8×H100 (vast.ai)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.8659</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0056_details_7653cb440dac.html' data-target='row-detail-2026-03-27-56' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-56' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>57</strong></td><td>22:17</td><td>8×H100 (vast.ai)</td><td>biology-inspired DeltaNet seam sweep.log</td><td>3.1823</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0057_details_119c457d29f5.html' data-target='row-detail-2026-03-27-57' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-57' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>58</strong></td><td>22:17</td><td>8×H100 (vast.ai)</td><td>GDN state-amplification seam arm.log</td><td>3.8659</td><td>CRASH</td><td>—</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0058_details_fe240584b4e7.html' data-target='row-detail-2026-03-27-58' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-58' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>59</strong></td><td>23:11</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>1.1230</td><td>OK</td><td>↑5.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0059_details_3cb2fe2c4730.html' data-target='row-detail-2026-03-27-59' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-59' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>60</strong></td><td>23:51</td><td>8×H100 (runpod)</td><td>crawler-only ngram export body.log</td><td>1.1812</td><td>OK</td><td>↑10.7%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-27_row0060_details_1d944ecba4f6.html' data-target='row-detail-2026-03-27-60' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-27-60' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

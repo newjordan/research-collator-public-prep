@@ -1,0 +1,23 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,Add TTT sweep infra + Vast.ai pipeline + int5mix run record,,,neural,2026-03-23T02:47:29+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+2,Frugendorff v2: trigram hash + lr_mul compile-spike fix,,,experimental,2026-03-23T04:21:36+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+3,"Freeze run1 scripts — 1.1377 sliding window (broken LR, dim=640)",,,experimental,2026-03-23T04:25:12+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+4,Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD,,,experimental,2026-03-23T05:54:45Z,,,,commit_message,,,7,git:parameter-golf-lab
+5,Record: GPTQ + Early QAT + TTT EMA — 3-seed mean val_bpb 1.1215,,,neural,2026-03-23T06:02:05Z,,,,commit_message,,,3,git:parameter-golf-lab
+6,SwiGLU + GPTQ: PR #462 architecture with our quant improvements,,,experimental,2026-03-23T06:26:42Z,,,,commit_message,,,6,git:parameter-golf-lab
+7,"Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)",,,experimental,2026-03-23T07:12:44Z,,,,commit_message,,,6,git:parameter-golf-lab
+8,run_s1337.log,,,experimental,2026-03-23T14:35:43Z,8×H100,,,log_final_eval,,,3,open_parameter_golf_junkyard
+9,Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337),,,neural,2026-03-23T14:37:25Z,,,,commit_message,,,6,git:parameter-golf-lab
+10,A_bigram1536_xsa11.log,,,experimental,2026-03-23T16:24:52Z,1×GB10,,,log_final_eval,,,1,open_parameter_golf_junkyard
+11,Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies,,,experimental,2026-03-23T16:51:09Z,,,,commit_message,,,4,git:parameter-golf-lab
+12,"Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression)",,,neural,2026-03-23T17:00:01Z,,,,commit_message,,,4,git:parameter-golf-lab
+13,S1_loops3_baseline.log,,,experimental,2026-03-23T17:03:28Z,1×GB10,,,log_step_best,,,1,open_parameter_golf_junkyard
+14,S2_loops4.log,,,experimental,2026-03-23T17:39:51Z,1×GB10,,,log_step_best,,,1,open_parameter_golf_junkyard
+15,S3_loops5.log,,,experimental,2026-03-23T18:17:53Z,1×GB10,,,log_step_best,,,1,open_parameter_golf_junkyard
+16,S4_share3_loops4.log,,,experimental,2026-03-23T18:53:40Z,1×GB10,,,log_step_best,,,1,open_parameter_golf_junkyard
+17,S5_loops4_bigram4096.log,,,experimental,2026-03-23T19:06:38Z,1×GB10,,,log_step_best,,,1,open_parameter_golf_junkyard
+18,submit_s1337_20260323_221742.log,,,experimental,2026-03-23T22:17:42+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+19,submit_s42_20260323_223824.log,,,experimental,2026-03-23T22:38:24+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+20,submit_s7_20260323_225635.log,,,experimental,2026-03-23T22:56:35+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+21,XSA-11 + GPTQ block64/percdamp002 — 3-seed mean 1.1208 BPB,,,experimental,2026-03-23T23:15:01Z,,,,commit_message,,,2,git:parameter-golf-lab
+22,XSA-11 + GPTQ block64/percdamp002 — 3-seed mean val_bpb 1.1208,,,experimental,2026-03-23T23:16:37Z,,,,commit_message,,,2,git:parameter-golf-lab

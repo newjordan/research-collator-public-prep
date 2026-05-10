@@ -1,0 +1,4 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,blessed_whale_anchor,,,kernel,2026-04-23T13:54:38Z,,,,unknown,,,3,SOTA_FINAL
+2,blessed_whale_hybrid_b1952_anchor,,,kernel,2026-04-23T13:54:38Z,,,,unknown,,,3,SOTA_FINAL
+3,blessed_whale_fallback_anchor,,,kernel,2026-04-23T13:54:38Z,,,,unknown,,,3,SOTA_FINAL

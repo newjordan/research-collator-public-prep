@@ -240,7 +240,7 @@ Cross-day verification spread (one playwright + SQL pass per fix):
 ## Useful commands
 
 ```bash
-cd /home/frosty40/research_collator
+cd ~/research_collator
 
 # Full pipeline rebuild (when stripper changes):
 rm -f index.sqlite
@@ -258,20 +258,20 @@ node _pw_audit_spread.mjs 2026-03-18 2026-03-19 2026-03-22 \
                           2026-03-28 2026-04-10 2026-04-20 2026-05-02
 
 # Single-day playwright review (saves screenshot to /tmp):
-node _pw_day_review.mjs http://dgx-spark:8765/research_collator/output/preview/2026-03-28.html /tmp/day12.png
+node _pw_day_review.mjs http://rig-host:8765/research_collator/output/preview/2026-03-28.html /tmp/day12.png
 
 # Local HTTP server (already running on background):
-# python3 -m http.server 8765 --bind 0.0.0.0  (cwd: /home/frosty40)
-# URLs: http://dgx-spark:8765/research_collator/output/preview/<date>.html
+# python3 -m http.server 8765 --bind 0.0.0.0  (cwd: ~)
+# URLs: http://rig-host:8765/research_collator/output/preview/<date>.html
 ```
 
 ## Live URL spread (current state)
 
-- Day 1   `2026-03-18`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-18.html
-- Day 2   `2026-03-19`  — http://dgx-spark:8765/research_collator/output/preview/2026-03-19.html
-- Canonical regression date `2026-03-28` — http://dgx-spark:8765/research_collator/output/preview/2026-03-28.html
-- Day 25  `2026-04-10`  — http://dgx-spark:8765/research_collator/output/preview/2026-04-10.html
-- Day 35  `2026-04-20`  — http://dgx-spark:8765/research_collator/output/preview/2026-04-20.html
+- Day 1   `2026-03-18`  — http://rig-host:8765/research_collator/output/preview/2026-03-18.html
+- Day 2   `2026-03-19`  — http://rig-host:8765/research_collator/output/preview/2026-03-19.html
+- Canonical regression date `2026-03-28` — http://rig-host:8765/research_collator/output/preview/2026-03-28.html
+- Day 25  `2026-04-10`  — http://rig-host:8765/research_collator/output/preview/2026-04-10.html
+- Day 35  `2026-04-20`  — http://rig-host:8765/research_collator/output/preview/2026-04-20.html
 
 ## Repo
 

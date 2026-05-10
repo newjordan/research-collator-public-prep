@@ -1,0 +1,7 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,train_seed300.log,,,experimental,2026-04-01T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+2,train_seed4.log,,,experimental,2026-04-01T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+3,Nightcrawler,,,experimental,2026-04-01T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+4,train_seed444.log,,,experimental,2026-04-01T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+5,slot_seed300_runpod_20260401_torch291_OVERSIZED.log,,,experimental,2026-04-01T15:24:02Z,8×H100 (runpod),,,log_final_eval,,,1,parameter-golf-lab
+6,slot_f_seed300_20260401_172030.log,,,experimental,2026-04-01T17:20:30+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab

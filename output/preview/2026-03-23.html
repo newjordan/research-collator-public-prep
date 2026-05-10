@@ -1,0 +1,852 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>2026-03-23 — Research Day</title><style>/* COVER-FIELD RESEARCH REPORT
+       Cover-derived orange field, dark-black detail rules, no grey-black
+       surfaces. */
+    :root {
+      --mono: "Berkeley Mono", "JetBrains Mono", "IBM Plex Mono",
+              ui-monospace, "SF Mono", Consolas, "Cascadia Code",
+              "DejaVu Sans Mono", "Liberation Mono", "Courier New", monospace;
+      --bg:       #89380e;   /* cover orange/grunge field */
+      --surface:  #89380e;   /* reserved; no separate grey-black fill */
+      --rule:     #050605;   /* dark-black hairline dividers */
+      --rule-hi:  #050605;   /* dark-black stronger rule */
+      --ink:      #050605;   /* primary text */
+      --ink-hi:   #050605;   /* emphasized */
+      --ink-mute: #1b0f08;   /* labels, muted cover-black */
+      --accent:   #050605;   /* dark-black accent */
+      --warn:     #2b0000;   /* INVALID dark red */
+      --link:     #050605;   /* dark-black links */
+      --data-exp: #050605;   /* dark-black experimental */
+      --data-neu: #2b1607;   /* cover-brown neural + stripe */
+      --data-kernel: #050605; /* dark-black kernel work */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(circle at 12px 18px, rgba(5,6,5,0.075) 0 1px, transparent 1.35px),
+        radial-gradient(circle at 42px 35px, rgba(5,6,5,0.055) 0 0.8px, transparent 1.2px);
+      background-size: 54px 54px, 71px 71px;
+    }
+    body { font-family: var(--mono); font-size: 13px; line-height: 1.55;
+           color: var(--ink);
+           max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;
+           position: relative; }
+
+    /* H1: clean bold block, no border, sits above header block */
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: 0.02em;
+         text-transform: uppercase; margin: 0 0 18px;
+         padding: 0;
+         color: var(--ink-hi);
+         display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 .h1-title { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-home { display: block; width: 32px; height: 32px; border-bottom: none; }
+    h1 .h1-home:hover { border-bottom: none; }
+    h1 .h1-home:focus-visible { outline: 1px solid var(--ink-hi); outline-offset: 3px; }
+    h1 .h1-right { display: inline-flex; align-items: center; gap: 14px; }
+    h1 .h1-master {
+                  font-size: 10px; line-height: 1.2; letter-spacing: 0.12em;
+                  color: var(--ink-hi);
+                  border: 1px solid var(--rule-hi);
+                  padding: 5px 8px;
+                  white-space: nowrap; }
+    h1 .h1-master:hover { background: var(--rule-hi); color: var(--bg);
+                          border-bottom-color: var(--rule-hi); }
+    h1 .h1-mark { width: 32px; height: 32px; display: block;
+                  opacity: 1;
+                  filter: brightness(0) saturate(100%);
+                  mix-blend-mode: multiply; }
+    h1 .h1-date { font-variant-numeric: tabular-nums; color: var(--ink-mute);
+                  font-size: 14px; font-weight: 500; letter-spacing: 0.04em; }
+
+    /* Hide legacy CRT terminal bar entirely — no longer needed */
+    .terminal-bar { display: none; }
+
+    h2 { position: relative;
+         font-size: 12px; font-weight: 700; letter-spacing: 0.12em;
+         text-transform: uppercase; margin: 36px 0 14px;
+         padding: 7px 86px 7px 42px;
+         border-bottom: none;
+         color: var(--bg);
+         background: var(--rule-hi); }
+    h2::before,
+    h2::after {
+         content: "";
+         position: absolute;
+         top: 50%;
+         height: 1px;
+         background: var(--bg);
+         transform: translateY(-50%); }
+    h2::before { left: 12px; width: 18px; }
+    h2::after { right: 12px; width: 54px; }
+    h3 { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em;
+         text-transform: uppercase; margin: 18px 0 8px; color: var(--ink-hi); }
+    p { margin: 8px 0; color: var(--ink); }
+    code { font-family: var(--mono); background: transparent;
+           padding: 0; border: none;
+           color: var(--ink-hi); font-weight: 600; }
+    .muted { color: var(--ink-mute); }
+    em, i { font-style: normal; color: var(--ink-mute); }
+    figure { position: relative;
+             margin: 16px 0; text-align: center;
+             border: 1px solid var(--rule-hi);
+             padding: 20px;
+             background-color: var(--rule-hi); }
+    figure img { max-width: 100%; height: auto; display: block; margin: 0 auto;
+                 border: 1px solid var(--bg); background: var(--bg); }
+
+    /* Report header — inverted black evidence block */
+    .report-header { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 18px 20px 16px;
+                     margin: 0 0 20px;
+                     background-color: var(--rule-hi);
+                     color: var(--bg); }
+    .rh-row { display: flex; align-items: baseline;
+              padding: 5px 0; font-size: 12.5px; color: var(--bg); }
+    .rh-row + .rh-row { border-top: 1px solid var(--bg); }
+    .rh-key { white-space: nowrap; font-weight: 500;
+              letter-spacing: 0.04em;
+              min-width: 220px; color: var(--bg); opacity: 0.78; }
+    .rh-dots { display: none; }
+    .rh-val { white-space: nowrap; font-weight: 600; color: var(--bg); }
+
+    /* Architecture recipe — pure copy recipe, not provenance */
+    .architecture-recipe { position: relative;
+                     border: 1px solid var(--rule-hi);
+                     padding: 16px 20px 18px;
+                     margin: 0 0 22px;
+                     background: var(--rule-hi);
+                     color: var(--bg); }
+    .ar-kicker { font-size: 10.5px; letter-spacing: 0.12em;
+                 text-transform: uppercase; font-weight: 700;
+                 color: var(--bg); opacity: 0.78; margin-bottom: 12px; }
+    .ar-cards { display: grid; gap: 14px; }
+    .ar-card { border-top: 1px solid var(--bg); padding-top: 12px; }
+    .ar-card:first-child { border-top: none; padding-top: 0; }
+    .ar-head { display: flex; align-items: baseline;
+               justify-content: space-between; gap: 12px; }
+    .ar-name { font-size: 14px; font-weight: 700;
+               letter-spacing: 0.08em; color: var(--bg); }
+    .ar-count { font-size: 11px; color: var(--bg); opacity: 0.78;
+                font-weight: 700; }
+    .ar-summary { color: var(--bg); margin: 7px 0 10px;
+                  font-weight: 600; }
+    .ar-line { display: grid; grid-template-columns: 170px 1fr; gap: 16px;
+               padding: 6px 0; border-top: 1px solid var(--bg); }
+    .ar-key { color: var(--bg); opacity: 0.78; font-size: 10.5px;
+              letter-spacing: 0.08em; font-weight: 700;
+              text-transform: uppercase; }
+    .ar-val { color: var(--bg); font-weight: 600; overflow-wrap: anywhere; }
+
+    /* Camp ratio bar — muted, with hairline border to match group style */
+    .camp-bar { display: flex; height: 10px;
+                overflow: hidden; margin: 0 0 8px;
+                background: var(--rule); border: 1px solid var(--rule-hi);
+                border-radius: 0; }
+    .camp-seg-exp { background: var(--data-exp); }
+    .camp-seg-neu { background: var(--data-neu); }
+    .camp-seg-kernel { background: var(--data-kernel); }
+    .camp-bar-labels { display: flex; justify-content: space-between;
+                       font-size: 11px; margin-bottom: 22px; font-weight: 600;
+                       letter-spacing: 0.04em; color: var(--ink-mute); }
+    .camp-label-exp { color: var(--data-exp); }
+    .camp-label-neu { color: var(--data-neu); }
+
+    /* Inline allocation bar inside header row */
+    .rh-row-alloc { align-items: center; padding: 14px 0; }
+    .rh-alloc { display: flex; align-items: center; gap: 16px;
+                white-space: nowrap; }
+    .alloc-bar { display: inline-flex; height: 30px; width: 240px;
+                 border: 1px solid var(--rule-hi); background: var(--rule);
+                 overflow: hidden; vertical-align: middle; }
+    .report-header .alloc-bar { border-color: var(--bg); background: transparent; }
+    .alloc-seg-exp { background: var(--data-exp); height: 100%; }
+    .alloc-seg-kernel { background: var(--data-kernel); height: 100%; }
+    .report-header .alloc-seg-exp,
+    .report-header .alloc-seg-kernel { background: var(--bg); }
+    .alloc-seg-neu { background-color: var(--data-neu); height: 100%;
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .report-header .alloc-seg-neu {
+                     background-color: var(--bg);
+                     background-image: repeating-linear-gradient(
+                       45deg,
+                       rgba(5,6,5,0.72) 0,
+                       rgba(5,6,5,0.72) 3px,
+                       transparent 3px,
+                       transparent 7px); }
+    .alloc-text { display: inline-flex; gap: 10px; font-weight: 600;
+                  font-size: 12px; letter-spacing: 0.02em; }
+    .alloc-text-exp { color: var(--data-exp); }
+    .alloc-text-neu { color: var(--data-neu); }
+    .alloc-text-kernel { color: var(--data-kernel); }
+    .alloc-sep { color: var(--ink-mute); }
+    .report-header .alloc-text-exp,
+    .report-header .alloc-text-neu,
+    .report-header .alloc-text-kernel,
+    .report-header .alloc-sep { color: var(--bg); }
+
+    /* Tables — flat bordered, no card fill */
+    table { position: relative;
+            border-collapse: collapse; width: 100%; font-size: 12px;
+            margin: 10px 0 18px;
+            border: 1px solid var(--rule-hi);
+            background-color: transparent; }
+    th { text-align: left; color: var(--bg); font-weight: 600;
+         text-transform: uppercase; letter-spacing: 0.08em;
+         padding: 10px 14px;
+         background: var(--rule-hi);
+         border-bottom: 1px solid var(--rule-hi);
+         font-size: 10.5px;
+         overflow-wrap: anywhere; }
+    td { padding: 9px 14px;
+         border-bottom: 1px solid var(--rule);
+         vertical-align: top;
+         color: var(--ink);
+         background: transparent;
+         overflow-wrap: anywhere; }
+    tbody tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(5,6,5,0.08); }
+    /* INVALID row — clean red tint, no hatch */
+    tr.invalid td { color: var(--ink-mute); }
+    tr.invalid td:nth-child(5) code { color: var(--warn); font-weight: 700; }
+    tr.invalid td:nth-child(6) strong { color: var(--warn); font-weight: 700; }
+
+    /* Lists — wrapped in a flat bordered block, internal hairlines */
+    ul { position: relative;
+         padding: 0; list-style: none; margin: 10px 0 18px;
+         border: 1px solid var(--rule-hi); }
+    ul::before,
+    ul::after {
+         content: "";
+         position: absolute;
+         width: 34px;
+         height: 6px;
+         background: var(--rule-hi); }
+    ul::before { left: -1px; top: -1px; }
+    ul::after { right: -1px; bottom: -1px; }
+    li { margin: 0; font-size: 12px; color: var(--ink);
+         padding: 9px 14px; border-bottom: 1px solid var(--rule);
+         line-height: 1.6; }
+    li:last-child { border-bottom: none; }
+    li strong { color: var(--ink-hi); font-weight: 600; }
+
+    /* Links — dark-black, underline on hover only */
+    a { color: var(--link); text-decoration: none;
+        border-bottom: 1px solid transparent; }
+    a:hover { border-bottom-color: var(--link); }
+
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* Native chrome — flat, black, blocky, no default grey controls */
+    * {
+        scrollbar-color: var(--rule-hi) var(--bg);
+        scrollbar-width: thin;
+    }
+    ::-webkit-scrollbar { width: 12px; height: 12px; }
+    ::-webkit-scrollbar-track {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+    }
+    ::-webkit-scrollbar-thumb {
+        background: var(--rule-hi);
+        border: 2px solid var(--bg);
+        border-radius: 0;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--rule-hi); }
+    ::-webkit-scrollbar-corner { background: var(--bg); }
+
+    /* Daily summary callout — inverted black key-reading block */
+    .day-summary { position: relative;
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 24px;
+        border: 1px solid var(--rule-hi);
+        border-left: 4px solid var(--rule-hi);
+        padding: 18px 22px;
+        margin: 14px 0 22px;
+        background: var(--rule-hi);
+        color: var(--bg); }
+    .day-summary .ds-key {
+        font-size: 10.5px; letter-spacing: 0.10em;
+        text-transform: uppercase; font-weight: 700;
+        color: var(--bg); opacity: 0.78; padding-top: 2px; }
+    .day-summary p { color: var(--bg); }
+    .day-summary .ds-body p { margin: 0 0 10px; }
+    .day-summary .ds-body p:last-child { margin-bottom: 0; }
+    .day-summary strong { color: var(--bg); font-weight: 700; }
+
+    /* Supporting files — left camp indicator stripe down the list */
+    .supporting-section { position: relative; padding-left: 22px; }
+    .supporting-section::before {
+        content: "";
+        position: absolute;
+        left: 3px; top: 0; bottom: 0;
+        width: 1px;
+        background: var(--rule-hi);
+        opacity: 0.5;
+    }
+    .supporting-section > h2 { margin-left: 0; }
+    .supporting-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .supporting-list li {
+        position: relative;
+        padding: 6px 0 6px 22px;
+        border-left: none;
+        margin: 0;
+        list-style: none;
+    }
+    .supporting-list li::before {
+        content: "";
+        position: absolute;
+        left: -19px; top: 4px; bottom: 4px;
+        width: 8px;
+        background: var(--ink-mute);
+    }
+    .supporting-list li[data-camp="experimental"]::before {
+        background: var(--data-exp);
+    }
+    .supporting-list li[data-camp="neural"]::before {
+        background: var(--data-neu);
+        background-image: repeating-linear-gradient(
+            45deg,
+            rgba(5,6,5,0.72) 0,
+            rgba(5,6,5,0.72) 2px,
+            transparent 2px,
+            transparent 5px);
+    }
+
+    /* val_bpb spread per family table */
+    .bpb-table { width: auto; min-width: 480px; }
+    .bpb-table td { font-variant-numeric: tabular-nums; }
+    .bpb-table td:first-child { font-weight: 600; color: var(--ink-hi); }
+    .bpb-table td:not(:first-child),
+    .bpb-table th:not(:first-child) { text-align: right; }
+
+    @media (max-width: 760px) {
+      body { padding: 20px 14px 44px; }
+      h1 { align-items: flex-start; flex-wrap: wrap; }
+      h1 .h1-right { align-items: flex-start; flex-direction: column; gap: 6px; }
+      h2 { padding: 7px 12px 7px 34px; }
+      h2::after { display: none; }
+      .report-header { padding: 18px 14px 16px; }
+      .rh-row { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .rh-key { min-width: 0; }
+      .rh-val { white-space: normal; overflow-wrap: anywhere; }
+      .rh-alloc { align-items: flex-start; flex-direction: column; gap: 8px;
+                  white-space: normal; width: 100%; }
+      .alloc-bar { width: min(240px, 100%); }
+      .alloc-text { flex-wrap: wrap; }
+      .architecture-recipe { padding: 16px 14px; }
+      .ar-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+      .ar-line { grid-template-columns: 1fr; gap: 2px; }
+      .day-summary { grid-template-columns: 1fr; gap: 10px; padding: 18px 14px; }
+      figure { padding: 14px; }
+      .bpb-table { min-width: 0; width: 100%; }
+      table { display: block; overflow-x: auto; }
+    }
+/* Section 2 details: compact toggle in OPEN, full-width panel below. */
+    .test-runs-table td.open-cell { min-width: 150px; }
+    .log-toggle { margin: 0; }
+    .log-toggle + .log-toggle { margin-top: 6px; }
+    .log-toggle summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        list-style: none;
+        user-select: none;
+    }
+    .log-toggle summary::-webkit-details-marker { display: none; }
+    .log-toggle summary::marker { content: ""; }
+    .log-toggle summary::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .log-toggle[open] summary::before {
+        background: transparent;
+        outline: 1px solid var(--bg);
+        outline-offset: -1px;
+    }
+    .log-toggle summary:hover,
+    .log-toggle summary:focus-visible {
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-detail-row { display: none; }
+    .test-runs-table tr:has(details.log-toggle[open]) + tr.log-detail-row,
+    .log-detail-row.is-open { display: table-row; }
+    .log-detail-row td {
+        padding: 12px 14px 16px;
+        border-top: none;
+        color: var(--bg);
+        background: var(--rule-hi);
+    }
+    .log-panel {
+        position: relative;
+        border: 1px solid var(--bg);
+        padding: 12px 14px;
+        background: var(--rule-hi);
+    }
+    .log-panel + .log-panel { margin-top: 14px; }
+    .log-meta {
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        margin: 0 0 7px;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note {
+        margin: 0 0 10px;
+        padding: 9px 10px;
+        border: 1px solid var(--bg);
+        background: transparent;
+    }
+    .hypothesis-note-title {
+        margin: 0 0 6px;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--bg);
+    }
+    .hypothesis-note-row {
+        margin: 0 0 5px;
+        color: var(--bg);
+        font-size: 10.5px;
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+    .hypothesis-note-row:last-child { margin-bottom: 0; }
+    .log-text {
+        max-height: 520px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        padding: 0;
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--bg);
+        background: transparent;
+    }
+    .log-panel strong,
+    .log-panel code {
+        color: var(--bg);
+    }
+    .log-panel a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+        vertical-align: middle;
+    }
+    .log-panel a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible {
+        border-bottom-color: var(--bg);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    .open-extra {
+        margin-top: 6px;
+        color: var(--ink-mute);
+        font-size: 11px;
+    }
+    .bpb-download-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg) !important;
+        font-size: 10px;
+        font-weight: 900;
+        letter-spacing: 0;
+        line-height: 1;
+        text-transform: uppercase;
+        text-decoration: none !important;
+        white-space: nowrap;
+    }
+    .bpb-download-action::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 6px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .bpb-download-action:hover,
+    .bpb-download-action:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi) !important;
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .bpb-download-action:hover::before,
+    .bpb-download-action:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .bpb-download-missing {
+        color: var(--muted);
+        font-size: 10px;
+    }
+    .lazy-test-card {
+        border: 1px solid var(--rule-hi);
+        padding: 12px 14px;
+        margin: 12px 0 18px;
+        background: transparent;
+    }
+    .lazy-test-card p {
+        margin: 0 0 10px;
+        color: var(--ink);
+    }
+    .lazy-test-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 0 0 10px;
+        color: var(--ink-mute);
+        font-size: 10.5px;
+        text-transform: uppercase;
+    }
+    .lazy-test-load {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid var(--rule-hi);
+        border-radius: 0;
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: 0;
+        text-transform: uppercase;
+    }
+    .lazy-test-load::before {
+        content: "+";
+        display: inline-block;
+        margin-right: 7px;
+        color: var(--bg);
+        font-weight: 900;
+    }
+    .lazy-test-load:hover,
+    .lazy-test-load:focus-visible {
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 1px;
+    }
+    .lazy-test-load:hover::before,
+    .lazy-test-load:focus-visible::before {
+        color: var(--rule-hi);
+    }
+    .lazy-test-target {
+        margin-top: 12px;
+    }
+    /* Per-day audit chip + expanded panel. Lives between the report H1 and
+       the report-header block. Color comes from the day's audit state. */
+    .audit-badge {
+        margin: 0 0 14px;
+        display: block;
+    }
+    .audit-badge[open] .audit-chip::after { content: " ▾"; }
+    .audit-badge:not([open]) .audit-chip::after { content: " ▸"; }
+    .audit-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+    }
+    .audit-chip::-webkit-details-marker { display: none; }
+    .audit-chip.audit-clean   { background: var(--bg);      color: var(--ink-hi);   border-color: var(--rule-hi); }
+    .audit-chip.audit-warn    { background: var(--rule-hi); color: var(--bg); }
+    .audit-chip.audit-fatal   { background: var(--warn);    color: var(--bg);       border-color: var(--warn); }
+    .audit-chip.audit-pending { background: var(--bg);      color: var(--muted);    border-style: dashed; }
+    .audit-body {
+        margin-top: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-size: 11px;
+    }
+    .audit-section-label {
+        font-size: 9.5px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+        margin: 0 0 4px;
+    }
+    .audit-section-label + * { margin-bottom: 10px; }
+    .audit-findings, .audit-json {
+        margin: 0 0 6px;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+        color: var(--ink);
+        max-height: 320px;
+        overflow: auto;
+    }
+    /* Ablation rationale: row evidence's ablation label is wrapped in a
+       lazy-load button when the day's labeling pass produced a review.md.
+       Styled inline so it reads as a clickable label, not a chunky button. */
+    .lazy-ablation-label {
+        background: transparent;
+        color: inherit;
+        border: 0;
+        border-bottom: 1px dashed var(--rule-hi);
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        text-align: left;
+        line-height: inherit;
+        min-height: 0;
+    }
+    .lazy-ablation-label::before { content: ""; margin: 0; }
+    .lazy-ablation-label:hover, .lazy-ablation-label:focus-visible {
+        background: transparent;
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }
+    .ablation-review-doc {
+        max-height: 480px;
+        overflow: auto;
+        padding: 12px 14px;
+        margin-top: 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        font-family: var(--mono);
+        font-size: 11px;
+        line-height: 1.5;
+    }
+    .ablation-review-doc h2 { font-size: 13px; font-weight: 800; margin: 14px 0 6px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc h3 { font-size: 12px; font-weight: 700; margin: 12px 0 5px; text-transform: none; letter-spacing: 0; }
+    .ablation-review-doc table.md-table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 8px 0;
+        font-size: 10.5px;
+    }
+    .ablation-review-doc table.md-table th,
+    .ablation-review-doc table.md-table td {
+        padding: 4px 6px;
+        border: 1px solid var(--rule-hi);
+        text-align: left;
+        vertical-align: top;
+    }
+    .ablation-review-doc pre.codeblock {
+        background: var(--bg);
+        border: 1px solid var(--rule-hi);
+        padding: 8px 10px;
+        font-size: 10.5px;
+        white-space: pre;
+        overflow: auto;
+    }
+    /* Per-day commits disclosure: short_hash · time · repo · subject. */
+    .commits-panel { margin: 0 0 14px; }
+    .commits-summary {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border: 1px solid var(--rule-hi);
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        cursor: pointer;
+        list-style: none;
+        background: var(--bg);
+        color: var(--ink-hi);
+    }
+    .commits-summary::-webkit-details-marker { display: none; }
+    .commits-panel[open] .commits-summary::after { content: " ▾"; }
+    .commits-panel:not([open]) .commits-summary::after { content: " ▸"; }
+    .commits-list {
+        margin: 8px 0 0;
+        padding: 10px 14px;
+        border: 1px solid var(--rule-hi);
+        background: var(--bg);
+        list-style-type: decimal;
+        list-style-position: outside;
+        max-height: 360px;
+        overflow: auto;
+    }
+    .commits-list .commit-item {
+        margin: 0 0 4px 22px;
+        padding: 0;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        line-height: 1.4;
+    }
+    .commits-list .commit-hash { color: var(--ink-mute); font-weight: 700; }
+    .commits-list .commit-time { color: var(--ink-mute); }
+    .commits-list .commit-repo {
+        color: var(--ink-mute);
+        font-size: 10px;
+        padding: 1px 4px;
+        border: 1px solid var(--rule-hi);
+        margin-right: 4px;
+    }
+    .commits-list .commit-subject { color: var(--ink); }
+    /* Per-chart CSV download caption: a small link beneath the figure that
+       points to the day's underlying test_rows CSV. */
+    .chart-csv-link {
+        margin-top: 6px;
+        text-align: right;
+        font-size: 10.5px;
+        font-family: var(--mono);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--ink-mute);
+    }
+    .chart-csv-link a {
+        color: var(--ink-mute);
+        border-bottom: 1px dashed var(--rule-hi);
+        text-decoration: none;
+    }
+    .chart-csv-link a:hover, .chart-csv-link a:focus-visible {
+        color: var(--ink-hi);
+        border-bottom-color: var(--ink-hi);
+    }</style></head><body><h1><span class="h1-title"><a class="h1-home" href="index.html" aria-label="Open landing page"><img class="h1-mark" src="assets/frosted_flake.png" alt=""></a><span>DAILY RESEARCH REPORT</span></span><span class="h1-right"><a class="h1-master" href="report_144.html#reader=2026-03-23.html">BACK TO MASTER SHEET</a><span class="h1-date">2026-03-23</span></span></h1>
+
+<details class='audit-badge'><summary class='audit-chip audit-warn'>val_bpb · 568 of 658 · 12 warnings</summary><div class='audit-body'><div class='audit-section-label'>findings mentioning this date</div><pre class='audit-findings'>| 2026-03-23 | 12 | 22 |</pre><div class='audit-section-label'>audit summary</div><pre class='audit-json'>{&#10;  &quot;date&quot;: &quot;2026-03-23&quot;,&#10;  &quot;fatal&quot;: 0,&#10;  &quot;headline_metric&quot;: &quot;val_bpb&quot;,&#10;  &quot;raw_records&quot;: 658,&#10;  &quot;render_records&quot;: 568,&#10;  &quot;test_rows&quot;: 22,&#10;  &quot;warnings&quot;: 12&#10;}</pre></div></details>
+
+<details class='commits-panel'><summary class='commits-summary'>256 commits on 2026-03-23</summary><ol class='commits-list'><li class='commit-item'><span class='commit-hash'>899a1db8</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>711eb3a6</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>fcfbd34f</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>217eaad5</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>899a1db8</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>fcfbd34f</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>217eaad5</span> <span class='commit-time'>05:06:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Remove post-quant burst — illegal (uses training data during eval)</span></li><li class='commit-item'><span class='commit-hash'>3c049dde</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>0a22c2b7</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>286b2adc</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>f94c09a3</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>3c049dde</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>286b2adc</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>f94c09a3</span> <span class='commit-time'>05:14:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add selective int8 for sensitive layers (GPTQ-int8 upgrade path)</span></li><li class='commit-item'><span class='commit-hash'>fc900eb2</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>769b01b5</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>c96450e2</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>8b22b10f</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>fc900eb2</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>c96450e2</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>8b22b10f</span> <span class='commit-time'>05:18:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: v7 full stack + fractal cadence test cadence test loops (GPTQ + TTT + PQB)</span></li><li class='commit-item'><span class='commit-hash'>6d4772ce</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>b5986e4d</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>ff4a79ef</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>a0e0841e</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>6d4772ce</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>ff4a79ef</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>a0e0841e</span> <span class='commit-time'>05:54:45</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD</span></li><li class='commit-item'><span class='commit-hash'>e605d1c5</span> <span class='commit-time'>06:02:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: GPTQ + Early QAT + TTT EMA — 3-seed mean val_bpb 1.1215</span></li><li class='commit-item'><span class='commit-hash'>464f8591</span> <span class='commit-time'>06:02:05</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: GPTQ + Early QAT + TTT EMA — 3-seed mean val_bpb 1.1215</span></li><li class='commit-item'><span class='commit-hash'>464f8591</span> <span class='commit-time'>06:02:05</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: GPTQ + Early QAT + TTT EMA — 3-seed mean val_bpb 1.1215</span></li><li class='commit-item'><span class='commit-hash'>cd7871ef</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>8fe38f0a</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>8a195607</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>cd7871ef</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>8fe38f0a</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>8a195607</span> <span class='commit-time'>06:04:46</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: SwiGLU + AdamW TTT + 8K bigram (PR#462 techniques)</span></li><li class='commit-item'><span class='commit-hash'>1f6d92a7</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>98f3e2f5</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>a5724c0d</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>1f6d92a7</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>98f3e2f5</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>a5724c0d</span> <span class='commit-time'>06:21:26</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP unused params: add find_unused_parameters=True</span></li><li class='commit-item'><span class='commit-hash'>c4763c7d</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>c97ad546</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>04eb2e54</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>c4763c7d</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>c97ad546</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>04eb2e54</span> <span class='commit-time'>06:26:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>SwiGLU + GPTQ: PR #462 architecture with our quant improvements</span></li><li class='commit-item'><span class='commit-hash'>dbd79b65</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>03e5f541</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>b639e15b</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>dbd79b65</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>03e5f541</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>b639e15b</span> <span class='commit-time'>06:43:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add OptRot: Hadamard rotation before GPTQ quantization</span></li><li class='commit-item'><span class='commit-hash'>675f3749</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>eb09f7ec</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>5aec5ae3</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>675f3749</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>eb09f7ec</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>5aec5ae3</span> <span class='commit-time'>06:49:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V3: Star-ReLU SwiGLU + VRL + MLP 4.0 (fits 16MB)</span></li><li class='commit-item'><span class='commit-hash'>34335573</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>7020bf6d</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>ce487d52</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>34335573</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>7020bf6d</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>ce487d52</span> <span class='commit-time'>07:12:44</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted)</span></li><li class='commit-item'><span class='commit-hash'>60137e91</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>addbea95</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>06952977</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>60137e91</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>addbea95</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>06952977</span> <span class='commit-time'>13:39:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4: GEPA-matched config for 16MB compression</span></li><li class='commit-item'><span class='commit-hash'>e90f9c16</span> <span class='commit-time'>13:54:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>H100-ready: revert to DG v2.1, auto-detect GQA, clean up</span></li><li class='commit-item'><span class='commit-hash'>01e7c574</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>5c912b51</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>5b72e979</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>01e7c574</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>5c912b51</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>5b72e979</span> <span class='commit-time'>13:57:54</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer V4 A/B: 5x2 and 4x2 variants for H100 calibration</span></li><li class='commit-item'><span class='commit-hash'>2c594466</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>324843ba</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>eec0981a</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>2c594466</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>324843ba</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>eec0981a</span> <span class='commit-time'>14:06:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add short TTT experiment: no-EMA, 50 chunks, SGD</span></li><li class='commit-item'><span class='commit-hash'>d97ad7db</span> <span class='commit-time'>14:23:24</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>DG: use Flash Attention for designator matching</span></li><li class='commit-item'><span class='commit-hash'>b6374c09</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>d36c1595</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>27833024</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>b6374c09</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>d36c1595</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>27833024</span> <span class='commit-time'>14:27:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add XSA-all(11) + short TTT run script</span></li><li class='commit-item'><span class='commit-hash'>03a4ef6f</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>4185795d</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>eac2e723</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>03a4ef6f</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>4185795d</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>eac2e723</span> <span class='commit-time'>14:37:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337)</span></li><li class='commit-item'><span class='commit-hash'>5a5bbad3</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>874237b6</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>9fd191d5</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>5a5bbad3</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>874237b6</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>9fd191d5</span> <span class='commit-time'>14:39:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer compression shim on SwiGLU SOTA (1.0763 model)</span></li><li class='commit-item'><span class='commit-hash'>57314a2a</span> <span class='commit-time'>14:50:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add v7 smooth run: proper warmdown + XSA-all</span></li><li class='commit-item'><span class='commit-hash'>47b7700f</span> <span class='commit-time'>14:50:31</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add v7 smooth run: proper warmdown + XSA-all</span></li><li class='commit-item'><span class='commit-hash'>57314a2a</span> <span class='commit-time'>14:50:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add v7 smooth run: proper warmdown + XSA-all</span></li><li class='commit-item'><span class='commit-hash'>47b7700f</span> <span class='commit-time'>14:50:31</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add v7 smooth run: proper warmdown + XSA-all</span></li><li class='commit-item'><span class='commit-hash'>a79acfdf</span> <span class='commit-time'>14:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Reduce bigram buckets 2048→1792 for XSA-11 size fit</span></li><li class='commit-item'><span class='commit-hash'>da0f71aa</span> <span class='commit-time'>14:51:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Reduce bigram buckets 2048→1792 for XSA-11 size fit</span></li><li class='commit-item'><span class='commit-hash'>a79acfdf</span> <span class='commit-time'>14:51:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Reduce bigram buckets 2048→1792 for XSA-11 size fit</span></li><li class='commit-item'><span class='commit-hash'>da0f71aa</span> <span class='commit-time'>14:51:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Reduce bigram buckets 2048→1792 for XSA-11 size fit</span></li><li class='commit-item'><span class='commit-hash'>510b1bc6</span> <span class='commit-time'>14:59:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>DG v3: hardcoded depth schedule replaces learned β</span></li><li class='commit-item'><span class='commit-hash'>6046116c</span> <span class='commit-time'>15:09:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer stacked: LeakyReLU(0.5)² + VRL + decoder_lr_mult=2.0</span></li><li class='commit-item'><span class='commit-hash'>7efd4e32</span> <span class='commit-time'>15:09:02</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer stacked: LeakyReLU(0.5)² + VRL + decoder_lr_mult=2.0</span></li><li class='commit-item'><span class='commit-hash'>6046116c</span> <span class='commit-time'>15:09:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer stacked: LeakyReLU(0.5)² + VRL + decoder_lr_mult=2.0</span></li><li class='commit-item'><span class='commit-hash'>7efd4e32</span> <span class='commit-time'>15:09:02</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer stacked: LeakyReLU(0.5)² + VRL + decoder_lr_mult=2.0</span></li><li class='commit-item'><span class='commit-hash'>f96d349e</span> <span class='commit-time'>15:16:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add research batch script + GPTQ env var tuning</span></li><li class='commit-item'><span class='commit-hash'>f523db4a</span> <span class='commit-time'>15:16:28</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add research batch script + GPTQ env var tuning</span></li><li class='commit-item'><span class='commit-hash'>f96d349e</span> <span class='commit-time'>15:16:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add research batch script + GPTQ env var tuning</span></li><li class='commit-item'><span class='commit-hash'>f523db4a</span> <span class='commit-time'>15:16:28</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add research batch script + GPTQ env var tuning</span></li><li class='commit-item'><span class='commit-hash'>8ff3e0ef</span> <span class='commit-time'>15:19:40</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Record: LeakyReLU² + Legal TTT + Parallel Muon — val_bpb 1.1194 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>8ff3e0ef</span> <span class='commit-time'>15:19:40</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Record: LeakyReLU² + Legal TTT + Parallel Muon — val_bpb 1.1194 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>8ff3e0ef</span> <span class='commit-time'>15:19:40</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Record: LeakyReLU² + Legal TTT + Parallel Muon — val_bpb 1.1194 (3-seed mean)</span></li><li class='commit-item'><span class='commit-hash'>9fec4314</span> <span class='commit-time'>15:21:45</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add DG Attention non-record submission (val_bpb=1.1898)</span></li><li class='commit-item'><span class='commit-hash'>b3c24d97</span> <span class='commit-time'>15:27:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Clean PR: remove dev artifacts and track_10min_16mb files</span></li><li class='commit-item'><span class='commit-hash'>9dd29bea</span> <span class='commit-time'>15:29:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Sanitize: remove all illegal TTT from recursive weight-sharing transformer scripts</span></li><li class='commit-item'><span class='commit-hash'>ddb28362</span> <span class='commit-time'>15:29:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Sanitize: remove all illegal TTT from recursive weight-sharing transformer scripts</span></li><li class='commit-item'><span class='commit-hash'>9dd29bea</span> <span class='commit-time'>15:29:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Sanitize: remove all illegal TTT from recursive weight-sharing transformer scripts</span></li><li class='commit-item'><span class='commit-hash'>ddb28362</span> <span class='commit-time'>15:29:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Sanitize: remove all illegal TTT from recursive weight-sharing transformer scripts</span></li><li class='commit-item'><span class='commit-hash'>736d1bd9</span> <span class='commit-time'>15:41:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add recursive weight-sharing transformer SwiGLU sweep: 9 configs across 3 batches</span></li><li class='commit-item'><span class='commit-hash'>6f8be1f3</span> <span class='commit-time'>15:41:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add recursive weight-sharing transformer SwiGLU sweep: 9 configs across 3 batches</span></li><li class='commit-item'><span class='commit-hash'>736d1bd9</span> <span class='commit-time'>15:41:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add recursive weight-sharing transformer SwiGLU sweep: 9 configs across 3 batches</span></li><li class='commit-item'><span class='commit-hash'>6f8be1f3</span> <span class='commit-time'>15:41:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add recursive weight-sharing transformer SwiGLU sweep: 9 configs across 3 batches</span></li><li class='commit-item'><span class='commit-hash'>214fa9e8</span> <span class='commit-time'>15:51:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>EMERGENCY: Disable all illegal TTT across entire project</span></li><li class='commit-item'><span class='commit-hash'>496705c9</span> <span class='commit-time'>15:51:52</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>EMERGENCY: Disable all illegal TTT across entire project</span></li><li class='commit-item'><span class='commit-hash'>214fa9e8</span> <span class='commit-time'>15:51:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>EMERGENCY: Disable all illegal TTT across entire project</span></li><li class='commit-item'><span class='commit-hash'>496705c9</span> <span class='commit-time'>15:51:52</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>EMERGENCY: Disable all illegal TTT across entire project</span></li><li class='commit-item'><span class='commit-hash'>1a01dc77</span> <span class='commit-time'>15:56:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>CRITICAL: Remove illegal TTT from train_gpt_swiglu.py</span></li><li class='commit-item'><span class='commit-hash'>560db561</span> <span class='commit-time'>15:56:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>CRITICAL: Remove illegal TTT from train_gpt_swiglu.py</span></li><li class='commit-item'><span class='commit-hash'>1a01dc77</span> <span class='commit-time'>15:56:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>CRITICAL: Remove illegal TTT from train_gpt_swiglu.py</span></li><li class='commit-item'><span class='commit-hash'>560db561</span> <span class='commit-time'>15:56:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>CRITICAL: Remove illegal TTT from train_gpt_swiglu.py</span></li><li class='commit-item'><span class='commit-hash'>605f965a</span> <span class='commit-time'>16:03:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>DG v4: prev-token baseline, single projection, depth-skip</span></li><li class='commit-item'><span class='commit-hash'>bc4f3420</span> <span class='commit-time'>16:24:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SwiGLU recursive weight-sharing transformer compression sweep (6 configs)</span></li><li class='commit-item'><span class='commit-hash'>ebf06e18</span> <span class='commit-time'>16:24:27</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add SwiGLU recursive weight-sharing transformer compression sweep (6 configs)</span></li><li class='commit-item'><span class='commit-hash'>bc4f3420</span> <span class='commit-time'>16:24:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SwiGLU recursive weight-sharing transformer compression sweep (6 configs)</span></li><li class='commit-item'><span class='commit-hash'>ebf06e18</span> <span class='commit-time'>16:24:27</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add SwiGLU recursive weight-sharing transformer compression sweep (6 configs)</span></li><li class='commit-item'><span class='commit-hash'>c2da2f2f</span> <span class='commit-time'>16:32:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>SwiGLU F1: VRL + LeakyReLU(0.5)² + legal TTT + int8 attn.proj + seq2048</span></li><li class='commit-item'><span class='commit-hash'>4a629336</span> <span class='commit-time'>16:32:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>SwiGLU F1: VRL + LeakyReLU(0.5)² + legal TTT + int8 attn.proj + seq2048</span></li><li class='commit-item'><span class='commit-hash'>c2da2f2f</span> <span class='commit-time'>16:32:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>SwiGLU F1: VRL + LeakyReLU(0.5)² + legal TTT + int8 attn.proj + seq2048</span></li><li class='commit-item'><span class='commit-hash'>4a629336</span> <span class='commit-time'>16:32:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>SwiGLU F1: VRL + LeakyReLU(0.5)² + legal TTT + int8 attn.proj + seq2048</span></li><li class='commit-item'><span class='commit-hash'>4e5de0b7</span> <span class='commit-time'>16:39:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP: find_unused_parameters=True for VRL block 0</span></li><li class='commit-item'><span class='commit-hash'>77a8a188</span> <span class='commit-time'>16:39:38</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix DDP: find_unused_parameters=True for VRL block 0</span></li><li class='commit-item'><span class='commit-hash'>4e5de0b7</span> <span class='commit-time'>16:39:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP: find_unused_parameters=True for VRL block 0</span></li><li class='commit-item'><span class='commit-hash'>77a8a188</span> <span class='commit-time'>16:39:38</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix DDP: find_unused_parameters=True for VRL block 0</span></li><li class='commit-item'><span class='commit-hash'>2aae6b0a</span> <span class='commit-time'>16:45:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add GPTQ re-quantization sweep (no training, ~2 min)</span></li><li class='commit-item'><span class='commit-hash'>d66040ee</span> <span class='commit-time'>16:45:42</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add GPTQ re-quantization sweep (no training, ~2 min)</span></li><li class='commit-item'><span class='commit-hash'>2aae6b0a</span> <span class='commit-time'>16:45:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add GPTQ re-quantization sweep (no training, ~2 min)</span></li><li class='commit-item'><span class='commit-hash'>d66040ee</span> <span class='commit-time'>16:45:42</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add GPTQ re-quantization sweep (no training, ~2 min)</span></li><li class='commit-item'><span class='commit-hash'>ffc909b0</span> <span class='commit-time'>16:51:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies</span></li><li class='commit-item'><span class='commit-hash'>3e624068</span> <span class='commit-time'>16:51:09</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies</span></li><li class='commit-item'><span class='commit-hash'>ffc909b0</span> <span class='commit-time'>16:51:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies</span></li><li class='commit-item'><span class='commit-hash'>3e624068</span> <span class='commit-time'>16:51:09</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies</span></li><li class='commit-item'><span class='commit-hash'>9fefc754</span> <span class='commit-time'>16:52:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore original train_gpt_swiglu.py, new F1 variant as separate file</span></li><li class='commit-item'><span class='commit-hash'>4b9ed8b2</span> <span class='commit-time'>16:52:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Restore original train_gpt_swiglu.py, new F1 variant as separate file</span></li><li class='commit-item'><span class='commit-hash'>9fefc754</span> <span class='commit-time'>16:52:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore original train_gpt_swiglu.py, new F1 variant as separate file</span></li><li class='commit-item'><span class='commit-hash'>4b9ed8b2</span> <span class='commit-time'>16:52:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Restore original train_gpt_swiglu.py, new F1 variant as separate file</span></li><li class='commit-item'><span class='commit-hash'>0340c66f</span> <span class='commit-time'>17:00:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression)</span></li><li class='commit-item'><span class='commit-hash'>16db94f0</span> <span class='commit-time'>17:00:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression)</span></li><li class='commit-item'><span class='commit-hash'>0340c66f</span> <span class='commit-time'>17:00:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression)</span></li><li class='commit-item'><span class='commit-hash'>16db94f0</span> <span class='commit-time'>17:00:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression)</span></li><li class='commit-item'><span class='commit-hash'>139d573e</span> <span class='commit-time'>17:13:03</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix pre-TTT BPB, TTT gains, and steps to match logs exactly</span></li><li class='commit-item'><span class='commit-hash'>139d573e</span> <span class='commit-time'>17:13:03</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix pre-TTT BPB, TTT gains, and steps to match logs exactly</span></li><li class='commit-item'><span class='commit-hash'>139d573e</span> <span class='commit-time'>17:13:03</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix pre-TTT BPB, TTT gains, and steps to match logs exactly</span></li><li class='commit-item'><span class='commit-hash'>b08d72a9</span> <span class='commit-time'>17:22:25</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix author attributions: PR #493 @parinzee, PR #461 @Christopher-Lee-McClendon</span></li><li class='commit-item'><span class='commit-hash'>b08d72a9</span> <span class='commit-time'>17:22:25</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix author attributions: PR #493 @parinzee, PR #461 @Christopher-Lee-McClendon</span></li><li class='commit-item'><span class='commit-hash'>b08d72a9</span> <span class='commit-time'>17:22:25</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Fix author attributions: PR #493 @parinzee, PR #461 @Christopher-Lee-McClendon</span></li><li class='commit-item'><span class='commit-hash'>b82c50dd</span> <span class='commit-time'>17:36:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update README leaderboard with merged records</span></li><li class='commit-item'><span class='commit-hash'>b82c50dd</span> <span class='commit-time'>17:36:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update README leaderboard with merged records</span></li><li class='commit-item'><span class='commit-hash'>b82c50dd</span> <span class='commit-time'>17:36:14</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Update README leaderboard with merged records</span></li><li class='commit-item'><span class='commit-hash'>d74c0b58</span> <span class='commit-time'>17:38:56</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Use GitHub usernames in new leaderboard rows</span></li><li class='commit-item'><span class='commit-hash'>d74c0b58</span> <span class='commit-time'>17:38:56</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Use GitHub usernames in new leaderboard rows</span></li><li class='commit-item'><span class='commit-hash'>d74c0b58</span> <span class='commit-time'>17:38:56</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Use GitHub usernames in new leaderboard rows</span></li><li class='commit-item'><span class='commit-hash'>8a77849b</span> <span class='commit-time'>17:41:35</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Describe leaderboard entries by base-run diff</span></li><li class='commit-item'><span class='commit-hash'>8a77849b</span> <span class='commit-time'>17:41:35</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Describe leaderboard entries by base-run diff</span></li><li class='commit-item'><span class='commit-hash'>8a77849b</span> <span class='commit-time'>17:41:35</span> <span class='commit-repo'>SOTA_FINAL</span> <span class='commit-subject'>Describe leaderboard entries by base-run diff</span></li><li class='commit-item'><span class='commit-hash'>c7311ad2</span> <span class='commit-time'>18:00:18</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>DG v4.1: eliminate second matmul via linearity trick</span></li><li class='commit-item'><span class='commit-hash'>89914646</span> <span class='commit-time'>20:33:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT calibration sweep: 11-config grid to close 1.11 BPB gap</span></li><li class='commit-item'><span class='commit-hash'>0efae917</span> <span class='commit-time'>20:33:11</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT calibration sweep: 11-config grid to close 1.11 BPB gap</span></li><li class='commit-item'><span class='commit-hash'>89914646</span> <span class='commit-time'>20:33:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT calibration sweep: 11-config grid to close 1.11 BPB gap</span></li><li class='commit-item'><span class='commit-hash'>0efae917</span> <span class='commit-time'>20:33:11</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT calibration sweep: 11-config grid to close 1.11 BPB gap</span></li><li class='commit-item'><span class='commit-hash'>a89a1426</span> <span class='commit-time'>21:23:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add GPTQ re-quant sweep for GS v7 — no retraining needed</span></li><li class='commit-item'><span class='commit-hash'>d6dad03c</span> <span class='commit-time'>21:23:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add GPTQ re-quant sweep for GS v7 — no retraining needed</span></li><li class='commit-item'><span class='commit-hash'>a89a1426</span> <span class='commit-time'>21:23:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add GPTQ re-quant sweep for GS v7 — no retraining needed</span></li><li class='commit-item'><span class='commit-hash'>d6dad03c</span> <span class='commit-time'>21:23:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add GPTQ re-quant sweep for GS v7 — no retraining needed</span></li><li class='commit-item'><span class='commit-hash'>513fd618</span> <span class='commit-time'>21:43:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update recursive weight-sharing transformer PR with full experiment history and research directions</span></li><li class='commit-item'><span class='commit-hash'>6abf4436</span> <span class='commit-time'>21:43:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update recursive weight-sharing transformer PR with full experiment history and research directions</span></li><li class='commit-item'><span class='commit-hash'>513fd618</span> <span class='commit-time'>21:43:51</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update recursive weight-sharing transformer PR with full experiment history and research directions</span></li><li class='commit-item'><span class='commit-hash'>6abf4436</span> <span class='commit-time'>21:43:51</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update recursive weight-sharing transformer PR with full experiment history and research directions</span></li><li class='commit-item'><span class='commit-hash'>d0c4271d</span> <span class='commit-time'>22:00:21</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Rewrite recursive weight-sharing transformer PR: honest framing, clean architecture/training separation</span></li><li class='commit-item'><span class='commit-hash'>d0c4271d</span> <span class='commit-time'>22:00:21</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Rewrite recursive weight-sharing transformer PR: honest framing, clean architecture/training separation</span></li><li class='commit-item'><span class='commit-hash'>da89c9ee</span> <span class='commit-time'>22:13:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Submission: XSA-11 + GPTQ block64/percdamp002</span></li><li class='commit-item'><span class='commit-hash'>8fbd41db</span> <span class='commit-time'>22:13:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Submission: XSA-11 + GPTQ block64/percdamp002</span></li><li class='commit-item'><span class='commit-hash'>d6748136</span> <span class='commit-time'>22:13:07</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Submission: XSA-11 + GPTQ block64/percdamp002</span></li><li class='commit-item'><span class='commit-hash'>da89c9ee</span> <span class='commit-time'>22:13:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Submission: XSA-11 + GPTQ block64/percdamp002</span></li><li class='commit-item'><span class='commit-hash'>8fbd41db</span> <span class='commit-time'>22:13:07</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Submission: XSA-11 + GPTQ block64/percdamp002</span></li><li class='commit-item'><span class='commit-hash'>0100f8e9</span> <span class='commit-time'>23:15:01</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean 1.1208 BPB</span></li><li class='commit-item'><span class='commit-hash'>0100f8e9</span> <span class='commit-time'>23:15:01</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean 1.1208 BPB</span></li><li class='commit-item'><span class='commit-hash'>303192e9</span> <span class='commit-time'>23:16:37</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean val_bpb 1.1208</span></li><li class='commit-item'><span class='commit-hash'>303192e9</span> <span class='commit-time'>23:16:37</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean val_bpb 1.1208</span></li><li class='commit-item'><span class='commit-hash'>54f14bd9</span> <span class='commit-time'>00:37:50</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add int5 sizing sweep — test how many params fit at int5 vs int6</span></li><li class='commit-item'><span class='commit-hash'>44ae7a85</span> <span class='commit-time'>00:40:58</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add int5 sizing sweep — test how many params fit at int5</span></li><li class='commit-item'><span class='commit-hash'>44ae7a85</span> <span class='commit-time'>00:40:58</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add int5 sizing sweep — test how many params fit at int5</span></li><li class='commit-item'><span class='commit-hash'>7bbb09cd</span> <span class='commit-time'>00:50:04</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Int5 test: 33.6M params (MHA 8/8, MLP 3.5x) with int5 GPTQ</span></li><li class='commit-item'><span class='commit-hash'>7bbb09cd</span> <span class='commit-time'>00:50:04</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Int5 test: 33.6M params (MHA 8/8, MLP 3.5x) with int5 GPTQ</span></li><li class='commit-item'><span class='commit-hash'>bd415d5c</span> <span class='commit-time'>01:14:49</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add 576+ single-file runner and aggressive edge test launchers</span></li><li class='commit-item'><span class='commit-hash'>bd415d5c</span> <span class='commit-time'>01:14:49</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add 576+ single-file runner and aggressive edge test launchers</span></li><li class='commit-item'><span class='commit-hash'>30a61762</span> <span class='commit-time'>02:47:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add TTT sweep infra + Vast.ai pipeline + int5mix run record</span></li><li class='commit-item'><span class='commit-hash'>30a61762</span> <span class='commit-time'>02:47:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add TTT sweep infra + Vast.ai pipeline + int5mix run record</span></li><li class='commit-item'><span class='commit-hash'>f1b68023</span> <span class='commit-time'>02:48:19</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add RunPod setup script for TTT calibration sweep</span></li><li class='commit-item'><span class='commit-hash'>f1b68023</span> <span class='commit-time'>02:48:19</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add RunPod setup script for TTT calibration sweep</span></li><li class='commit-item'><span class='commit-hash'>8f94780c</span> <span class='commit-time'>03:10:53</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add Micro Crawler architecture — asymmetric fractal cadence test cadence test with flat+crawler split</span></li><li class='commit-item'><span class='commit-hash'>8f94780c</span> <span class='commit-time'>03:10:53</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add Micro Crawler architecture — asymmetric fractal cadence test cadence test with flat+crawler split</span></li><li class='commit-item'><span class='commit-hash'>b3b408bb</span> <span class='commit-time'>03:13:15</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Update micro crawler to balanced 4f+2cx2 config at dim=640</span></li><li class='commit-item'><span class='commit-hash'>b3b408bb</span> <span class='commit-time'>03:13:15</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Update micro crawler to balanced 4f+2cx2 config at dim=640</span></li><li class='commit-item'><span class='commit-hash'>65f42e86</span> <span class='commit-time'>03:41:23</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add crawler cadence + per-loop GPTQ to H100 micro crawler</span></li><li class='commit-item'><span class='commit-hash'>65f42e86</span> <span class='commit-time'>03:41:23</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add crawler cadence + per-loop GPTQ to H100 micro crawler</span></li><li class='commit-item'><span class='commit-hash'>c9e2aff8</span> <span class='commit-time'>03:53:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Cadence N/N/N/N/C + activation-aware per-loop GPTQ blending</span></li><li class='commit-item'><span class='commit-hash'>c9e2aff8</span> <span class='commit-time'>03:53:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Cadence N/N/N/N/C + activation-aware per-loop GPTQ blending</span></li><li class='commit-item'><span class='commit-hash'>ee034506</span> <span class='commit-time'>03:59:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Pre-flight: backup scripts + pod setup for micro crawler 8xH100</span></li><li class='commit-item'><span class='commit-hash'>ee034506</span> <span class='commit-time'>03:59:51</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Pre-flight: backup scripts + pod setup for micro crawler 8xH100</span></li><li class='commit-item'><span class='commit-hash'>5a1e8b76</span> <span class='commit-time'>04:10:39</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Recursive cadence: ramp N count as LR warms down</span></li><li class='commit-item'><span class='commit-hash'>5a1e8b76</span> <span class='commit-time'>04:10:39</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Recursive cadence: ramp N count as LR warms down</span></li><li class='commit-item'><span class='commit-hash'>81ed4752</span> <span class='commit-time'>04:21:36</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>recursive weight-sharing transformer v2: trigram hash + lr_mul compile-spike fix</span></li><li class='commit-item'><span class='commit-hash'>81ed4752</span> <span class='commit-time'>04:21:36</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>recursive weight-sharing transformer v2: trigram hash + lr_mul compile-spike fix</span></li><li class='commit-item'><span class='commit-hash'>de856119</span> <span class='commit-time'>04:24:00</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix lr_mul compile spike + shrink dim 640→624 for artifact budget</span></li><li class='commit-item'><span class='commit-hash'>de856119</span> <span class='commit-time'>04:24:00</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix lr_mul compile spike + shrink dim 640→624 for artifact budget</span></li><li class='commit-item'><span class='commit-hash'>84f32ff5</span> <span class='commit-time'>04:25:12</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Freeze run1 scripts — 1.1377 sliding window (broken LR, dim=640)</span></li><li class='commit-item'><span class='commit-hash'>84f32ff5</span> <span class='commit-time'>04:25:12</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Freeze run1 scripts — 1.1377 sliding window (broken LR, dim=640)</span></li><li class='commit-item'><span class='commit-hash'>a35820ee</span> <span class='commit-time'>04:25:47</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix dim 624→630 (must be divisible by num_heads=10)</span></li><li class='commit-item'><span class='commit-hash'>a35820ee</span> <span class='commit-time'>04:25:47</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix dim 624→630 (must be divisible by num_heads=10)</span></li><li class='commit-item'><span class='commit-hash'>3cfebf8d</span> <span class='commit-time'>04:26:51</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix dim 630→620 (head_dim must be even for RoPE)</span></li><li class='commit-item'><span class='commit-hash'>3cfebf8d</span> <span class='commit-time'>04:26:51</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix dim 630→620 (head_dim must be even for RoPE)</span></li><li class='commit-item'><span class='commit-hash'>357b9aff</span> <span class='commit-time'>04:29:14</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Fix dim 620→560 (FA3 needs head_dim multiple of 8: 560/10=56)</span></li><li class='commit-item'><span class='commit-hash'>357b9aff</span> <span class='commit-time'>04:29:14</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Fix dim 620→560 (FA3 needs head_dim multiple of 8: 560/10=56)</span></li><li class='commit-item'><span class='commit-hash'>61dce75b</span> <span class='commit-time'>04:31:22</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Add quantfix training script: learned scales, earlier QAT, selective int8</span></li><li class='commit-item'><span class='commit-hash'>61dce75b</span> <span class='commit-time'>04:31:22</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Add quantfix training script: learned scales, earlier QAT, selective int8</span></li><li class='commit-item'><span class='commit-hash'>94cd3eba</span> <span class='commit-time'>04:39:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Run2: GPTQ Hessian quant + dim=640 + trigram_vocab=2048</span></li><li class='commit-item'><span class='commit-hash'>94cd3eba</span> <span class='commit-time'>04:39:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Run2: GPTQ Hessian quant + dim=640 + trigram_vocab=2048</span></li><li class='commit-item'><span class='commit-hash'>9d50ab72</span> <span class='commit-time'>04:42:29</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Launcher: dim=640, trigram_vocab=2048 (fit budget, test lr_mul fix only)</span></li><li class='commit-item'><span class='commit-hash'>9d50ab72</span> <span class='commit-time'>04:42:29</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Launcher: dim=640, trigram_vocab=2048 (fit budget, test lr_mul fix only)</span></li><li class='commit-item'><span class='commit-hash'>1a6ab1b3</span> <span class='commit-time'>04:43:10</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Keep trigram_vocab=8192 to match run1 — isolate lr_mul fix only</span></li><li class='commit-item'><span class='commit-hash'>1a6ab1b3</span> <span class='commit-time'>04:43:10</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Keep trigram_vocab=8192 to match run1 — isolate lr_mul fix only</span></li><li class='commit-item'><span class='commit-hash'>bcccc19d</span> <span class='commit-time'>04:53:13</span> <span class='commit-repo'>parameter-golf-lab</span> <span class='commit-subject'>Run3: Self-referential crawler with deliberation gate</span></li><li class='commit-item'><span class='commit-hash'>bcccc19d</span> <span class='commit-time'>04:53:13</span> <span class='commit-repo'>sota_crawler</span> <span class='commit-subject'>Run3: Self-referential crawler with deliberation gate</span></li></ol></details>
+
+<div class="report-header"><div class="rh-row"><span class="rh-key">DATE</span><span class="rh-dots"></span><span class="rh-val">2026-03-23</span></div><div class="rh-row"><span class="rh-key">DAY</span><span class="rh-dots"></span><span class="rh-val">006</span></div><div class="rh-row"><span class="rh-key">PRIMARY METRIC</span><span class="rh-dots"></span><span class="rh-val">VAL_BPB</span></div><div class="rh-row"><span class="rh-key">TESTS RUN</span><span class="rh-dots"></span><span class="rh-val">22 unique  (22 valid / 0 TTT leakage)</span></div><div class="rh-row"><span class="rh-key">ARCHITECTURE FAMILY</span><span class="rh-dots"></span><span class="rh-val">LEADERBOARD TRANSFORMER VARIANTS (×11)  ·  CROSS-SEQUENCE ATTENTION VARIANT (×3)  ·  STATE-SPACE TTT VARIANT (×2)  ·  POST-TRAINING QUANTIZATION CALIBRATION (×2)  ·  RECURSIVE WEIGHT-SHARING TRANSFORMER (×1)  ·  SLIDING-WINDOW EVALUATION VARIANT (×1)  ·  +2 MORE (×2)</span></div><div class="rh-row rh-row-alloc"><span class="rh-key">CLASSIFICATION</span><span class="rh-dots"></span><span class="rh-val rh-alloc"><span class="alloc-bar" aria-label="EXPERIMENTAL 82% (18) / NEURAL 18% (4)"><span class="alloc-seg-exp" style="width:81.82%"></span><span class="alloc-seg-neu" style="width:18.18%"></span></span><span class="alloc-text"><span class="alloc-text-exp">EXPERIMENTAL 82% (18)</span><span class="alloc-sep">/</span><span class="alloc-text-neu">NEURAL 18% (4)</span></span></span></div></div>
+
+<h2>SECTION 1.0 — TRAJECTORY</h2>
+
+<aside class="day-summary"><div class="ds-key">DAILY SUMMARY</div><div class="ds-body"><p><strong>Experimental work:</strong> <span>LEADERBOARD TRANSFORMER VARIANTS (x10): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>CROSS-SEQUENCE ATTENTION VARIANT (x3): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>RECURSIVE WEIGHT-SHARING TRANSFORMER (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p><strong>Neural work:</strong> <span>STATE-SPACE TTT VARIANT (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>POST-TRAINING QUANTIZATION CALIBRATION (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span> <span>COMPACT TRANSFORMER RECIPE (x1): architecture family detected in measured rows; exact flags are preserved in the row details.</span></p><p>Day 006 measured <strong>22 architecture/test rows</strong> against <strong>VAL_BPB</strong>, with <strong>22 valid</strong> rows and <strong>0 TTT leakage</strong> readings excluded.</p><p><strong>NEW PERSONAL BEST.</strong> Best valid <strong>1.0672</strong> beats prior bar <strong>1.1210</strong>.</p></div></aside>
+
+<figure><img src='assets/chart_assets_2026-03-23_day_chart_val_bpb_01.png' alt='VAL_BPB for 2026-03-23 panel 1 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-23_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<figure><img src='assets/chart_assets_2026-03-23_day_chart_val_bpb_02.png' alt='VAL_BPB for 2026-03-23 panel 2 of 2'/><figcaption class='chart-csv-link'><a href='csv/2026-03-23_test_rows.csv' download>csv data</a></figcaption></figure>
+
+<table class="bpb-table"><thead><tr><th>VAL_BPB SPREAD</th><th>n</th><th>min</th><th>median</th><th>max</th><th>download</th></tr></thead><tbody>
+<tr><td>LEADERBOARD TRANSFORMER VARIANTS</td><td>11</td><td>1.0672</td><td>1.1208</td><td>1.4138</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>CROSS-SEQUENCE ATTENTION VARIANT</td><td>3</td><td>1.1208</td><td>1.1208</td><td>2.0644</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>STATE-SPACE TTT VARIANT</td><td>2</td><td>1.1201</td><td>1.1262</td><td>1.1322</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>POST-TRAINING QUANTIZATION CALIBRATION</td><td>2</td><td>1.1206</td><td>1.1210</td><td>1.1215</td><td><a class='bpb-download-action' href='architecture-run-files/archives/02_ar-self-gen-gptq.zip' download>download</a></td></tr>
+<tr><td>RECURSIVE WEIGHT-SHARING TRANSFORMER</td><td>1</td><td>1.1478</td><td>1.1478</td><td>1.1478</td><td><a class='bpb-download-action' href='architecture-run-files/archives/13_frugendorff.zip' download>download</a></td></tr>
+<tr><td>SLIDING-WINDOW EVALUATION VARIANT</td><td>1</td><td>1.1377</td><td>1.1377</td><td>1.1377</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>COMPACT TRANSFORMER RECIPE</td><td>1</td><td>1.1207</td><td>1.1207</td><td>1.1207</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>CRAWLER ABLATION CONTROL SET</td><td>1</td><td>1.3766</td><td>1.3766</td><td>1.3766</td><td><span class='bpb-download-missing'>—</span></td></tr>
+<tr><td>ALL VALID</td><td>22</td><td>1.0672</td><td>1.1209</td><td>2.0644</td><td><span class='bpb-download-missing'>—</span></td></tr>
+</tbody></table>
+
+<h2>SECTION 2.0 — TEST RUNS</h2>
+
+<h3>EXPERIMENTAL TEST RUNS — 18</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>2</strong></td><td>04:21</td><td>—</td><td>recursive weight-sharing transformer v2: trigram hash + lr_mul compile-spike …</td><td>1.1478</td><td>OK</td><td>↑2.4%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0002_details_5c3bed25c93f.html' data-target='row-detail-2026-03-23-2' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-2' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>3</strong></td><td>04:25</td><td>—</td><td>Freeze run1 scripts — 1.1377 sliding window (broken LR, dim=640) (×2)</td><td>1.1377</td><td>OK</td><td>↑1.5%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0003_details_f05ae04b1f7c.html' data-target='row-detail-2026-03-23-3' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-3' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>4</strong></td><td>05:54</td><td>—</td><td>Add AdamW TTT option — PR #462 shows 5x better TTT gain vs SGD (×7)</td><td>1.0672</td><td>OK</td><td>↓4.8%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0004_details_18808512e07f.html' data-target='row-detail-2026-03-23-4' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-4' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>6</strong></td><td>06:26</td><td>—</td><td>SwiGLU + GPTQ: PR #462 architecture with our quant improvements (×6)</td><td>1.0672</td><td>OK</td><td>↓4.8%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0006_details_c170470cd5ba.html' data-target='row-detail-2026-03-23-6' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-6' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>7</strong></td><td>07:12</td><td>—</td><td>Log session results: 1.0763 SwiGLU (size problem), 1.1215 v7 (submitted) (×6)</td><td>1.0763</td><td>OK</td><td>↓4.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0007_details_964ace0e174d.html' data-target='row-detail-2026-03-23-7' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-7' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>8</strong></td><td>14:35</td><td>8×H100</td><td>run_s1337.log (×3)</td><td>1.1201</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log 1</summary></details><details class='log-toggle'><summary>training_log 2</summary></details><details class='log-toggle'><summary>training_log 3</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0008_details_bb22fe51c40c.html' data-target='row-detail-2026-03-23-8' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-8' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>10</strong></td><td>16:24</td><td>1×GB10</td><td>A_bigram1536_xsa11.log</td><td>2.0644</td><td>OK</td><td>↑84.2%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0010_details_dde3468e77dc.html' data-target='row-detail-2026-03-23-10' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-10' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>11</strong></td><td>16:51</td><td>—</td><td>Save Gold Standard (GS): v7 GPTQ 1.1206 BPB — 3 copies (×4)</td><td>1.1206</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0011_details_0151ad40bbcb.html' data-target='row-detail-2026-03-23-11' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-11' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>13</strong></td><td>17:03</td><td>1×GB10</td><td>S1_loops3_baseline.log</td><td>1.3766</td><td>OK</td><td>↑22.8%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0013_details_a16a62c266cc.html' data-target='row-detail-2026-03-23-13' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-13' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>14</strong></td><td>17:39</td><td>1×GB10</td><td>S2_loops4.log</td><td>1.4058</td><td>OK</td><td>↑25.4%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0014_details_c42060c70f02.html' data-target='row-detail-2026-03-23-14' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-14' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>15</strong></td><td>18:17</td><td>1×GB10</td><td>S3_loops5.log</td><td>1.4138</td><td>OK</td><td>↑26.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0015_details_61b448fda2d3.html' data-target='row-detail-2026-03-23-15' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-15' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>16</strong></td><td>18:53</td><td>1×GB10</td><td>S4_share3_loops4.log</td><td>1.4076</td><td>OK</td><td>↑25.6%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0016_details_ed4a2da75fe2.html' data-target='row-detail-2026-03-23-16' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-16' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>17</strong></td><td>19:06</td><td>1×GB10</td><td>S5_loops4_bigram4096.log</td><td>1.4123</td><td>OK</td><td>↑26.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0017_details_e5501e37cfa3.html' data-target='row-detail-2026-03-23-17' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-17' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>18</strong></td><td>22:17</td><td>8×H100 (runpod)</td><td>submit_s1337_20260323_221742.log</td><td>1.1203</td><td>OK</td><td>↓0.1%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0018_details_2f4c9141d703.html' data-target='row-detail-2026-03-23-18' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-18' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>19</strong></td><td>22:38</td><td>8×H100 (runpod)</td><td>submit_s42_20260323_223824.log</td><td>1.1211</td><td>OK</td><td>↑0.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0019_details_2333252477e7.html' data-target='row-detail-2026-03-23-19' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-19' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>20</strong></td><td>22:56</td><td>8×H100 (runpod)</td><td>submit_s7_20260323_225635.log</td><td>1.1205</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>training_log</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0020_details_179ba14c9c94.html' data-target='row-detail-2026-03-23-20' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-20' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>21</strong></td><td>23:15</td><td>—</td><td>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean 1.1208 BPB (×2)</td><td>1.1208</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0021_details_8aa725a410b9.html' data-target='row-detail-2026-03-23-21' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-21' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>22</strong></td><td>23:16</td><td>—</td><td>XSA-11 + GPTQ block64/percdamp002 — 3-seed mean val_bpb 1.1208 (×2)</td><td>1.1208</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0022_details_4971debbd0f9.html' data-target='row-detail-2026-03-23-22' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-22' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table>
+
+<h3>NEURAL TEST RUNS — 4</h3>
+
+<table class='test-runs-table'><thead><tr><th>#</th><th>TIME</th><th>HW</th><th>ABLATION</th><th>VAL_BPB</th><th>STATUS</th><th>Δ %</th><th>OPEN</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td>02:47</td><td>—</td><td>Add TTT sweep infra + Vast.ai pipeline + int5mix run record (×2)</td><td>1.1322</td><td>OK</td><td>↑1.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0001_details_372425f24740.html' data-target='row-detail-2026-03-23-1' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-1' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>5</strong></td><td>06:02</td><td>—</td><td>Record: GPTQ + Early QAT + TTT EMA — 3-seed mean val_bpb 1.1215 (×3)</td><td>1.1215</td><td>OK</td><td>↑0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0005_details_9e8044335a69.html' data-target='row-detail-2026-03-23-5' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-5' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>9</strong></td><td>14:37</td><td>—</td><td>Record: v7 GPTQ + Short TTT — val_bpb 1.1207 (seed 1337) (×6)</td><td>1.1207</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0009_details_fcbf15d0070a.html' data-target='row-detail-2026-03-23-9' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-9' class='lazy-test-target' hidden></div></td></tr>
+<tr><td><strong>12</strong></td><td>17:00</td><td>—</td><td>Log SwiGLU F1 run: 1.1208 BPB (20.6MB, needs compression) (×4)</td><td>1.1208</td><td>OK</td><td>↓0.0%</td><td class='open-cell'><details class='log-toggle'><summary>details</summary></details></td></tr>
+<tr class='log-detail-row'><td colspan='8'><button class='lazy-test-load' type='button' data-lazy-fragment='fragments/2026-03-23_row0012_details_c3a0088ed9f2.html' data-target='row-detail-2026-03-23-12' data-load-label='load details' data-hide-label='hide details' data-loading-label='loading details' data-error-label='details load failed'>load details</button><div id='row-detail-2026-03-23-12' class='lazy-test-target' hidden></div></td></tr>
+</tbody></table><script>(function(){function sync(d){var tr=d.closest('tr');var row=tr&&tr.nextElementSibling;if(!row||!row.classList.contains('log-detail-row'))return;var open=Array.prototype.some.call(tr.querySelectorAll('details.log-toggle'),function(x){return x.open;});row.classList.toggle('is-open',open);}function bind(root){(root||document).querySelectorAll('details.log-toggle').forEach(function(d){if(d.dataset.bound)return;d.dataset.bound='1';d.addEventListener('toggle',function(){sync(d);});sync(d);});(root||document).querySelectorAll('[data-lazy-fragment]').forEach(function(btn){if(btn.dataset.lazyBound)return;btn.dataset.lazyBound='1';btn.addEventListener('click',function(){var target=document.getElementById(btn.getAttribute('data-target'));var url=btn.getAttribute('data-lazy-fragment');if(!target||!url)return;var loadLabel=btn.getAttribute('data-load-label')||'load';var hideLabel=btn.getAttribute('data-hide-label')||'hide';var loadingLabel=btn.getAttribute('data-loading-label')||'loading';var errorLabel=btn.getAttribute('data-error-label')||'load failed';if(btn.dataset.loaded==='1'){target.hidden=!target.hidden;btn.textContent=target.hidden?loadLabel:hideLabel;return;}btn.disabled=true;btn.textContent=loadingLabel;fetch(url).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(html){target.innerHTML=html;target.hidden=false;btn.dataset.loaded='1';btn.disabled=false;btn.textContent=hideLabel;bind(target);}).catch(function(err){btn.disabled=false;btn.textContent=errorLabel;target.hidden=false;target.innerHTML='<p class="muted">Unable to load fragment: '+err.message+'</p>';});});});}bind(document);})();</script></body></html>

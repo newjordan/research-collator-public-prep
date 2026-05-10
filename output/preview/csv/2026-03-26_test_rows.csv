@@ -1,0 +1,34 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,xwing_s1337_20260326_010921.log,,,experimental,2026-03-26T01:09:21+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+2,xwing_s1337_20260326_013008.log,,,experimental,2026-03-26T01:30:08+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+3,xwing_s42_20260326_014952.log,,,experimental,2026-03-26T01:49:52+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+4,xwing_s300_20260326_020950.log,,,experimental,2026-03-26T02:09:50+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+5,xwing_s1337_20260326_024538.log,,,experimental,2026-03-26T02:45:38+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+6,xwing_brown_s1337_20260326_031702.log,,,experimental,2026-03-26T03:17:02+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+7,xwing_fast_s1337_20260326_033855.log,,,experimental,2026-03-26T03:38:55+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+8,xwing_yellow2_s1337_20260326_035809.log,,,experimental,2026-03-26T03:58:09+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+9,xwing_yellow2_s1337_20260326_041458.log,,,experimental,2026-03-26T04:14:58+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+10,xwing_yellow2_s300_20260326_043607.log,,,experimental,2026-03-26T04:36:07+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+11,xwing_yellow2_s300_20260326_044045.log,,,experimental,2026-03-26T04:40:45+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+12,xwing_yellow2_s58_20260326_050135.log,,,experimental,2026-03-26T05:01:35+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+13,"X-WING 3D Cubric: 0.4820 BPB (3-seed mean, std 0.0002)",,,experimental,2026-03-26T05:22:29Z,,,,commit_message,,,4,git:parameter-golf-lab
+14,bwing_fullport_s1337_20260326_053857.log,,,experimental,2026-03-26T05:38:57+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+15,bwing_III_s1337_20260326_062103.log,,,experimental,2026-03-26T06:21:03+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+16,Record bwing_full_port seed 1337: 0.4512 BPB,,,experimental,2026-03-26T06:24:15Z,,,,commit_message,,,3,git:parameter-golf-lab
+17,Replace bwing_III with copy of SOTA bwing_full_port (0.4512 BPB),,,neural,2026-03-26T06:29:06Z,,,,commit_message,,,3,git:parameter-golf-lab
+18,bwing_V_s1337_20260326_065408.log,,,experimental,2026-03-26T06:54:08+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+19,bwing_V_s1337_20260326_065821.log,,,experimental,2026-03-26T06:58:21+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+20,awing_green_s1337_20260326_073045.log,,,experimental,2026-03-26T07:30:45+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+21,"Record results: A-Wing Green 0.4576, bwing_V 0.4601",,,experimental,2026-03-26T07:55:55Z,,,,commit_message,,,3,git:parameter-golf-lab
+22,awing_green1_s1337_SOTA_0.3200_20260326.log,,,experimental,2026-03-26T13:46:07+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+23,train_seed300.log,,,experimental,2026-03-26T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+24,train_seed1337.log,,,experimental,2026-03-26T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+25,train_seed58.log,,,experimental,2026-03-26T13:46:08+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+26,X-WING: 3D Cubric + Complementary Training,,,neural,2026-03-26T13:46:08+00:00,,,,json_top_level,,,1,parameter-golf-lab
+27,train_seed1337_yellowII_reference.log,,,experimental,2026-03-26T13:46:08+00:00,,,,log_final_eval,,,1,parameter-golf-lab
+28,awing_green1_s1337_20260326_165136.log,,,experimental,2026-03-26T16:51:36+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+29,A-Wing Green_2: Oracle Alpha + LoRA TTT + 9-Prime,,,neural,2026-03-26T17:14:33Z,,,,commit_message,,,3,git:parameter-golf-lab
+30,awing_green2_s1337_20260326_171852.log,,,experimental,2026-03-26T17:18:52+00:00,1×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+31,NEW SOTA 0.3200 BPB: A-Wing Green_1 Oracle Alpha + 9-Prime,,,experimental,2026-03-26T17:46:12Z,,,,commit_message,,,3,git:parameter-golf-lab
+32,awing_redg_gpu_mixer_s1337_20260326_212900.log,,,experimental,2026-03-26T21:29:00+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+33,awing_redg_gpu_mixer_s1337_20260326_214344.log,,,experimental,2026-03-26T21:43:44+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard

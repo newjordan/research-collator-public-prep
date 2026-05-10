@@ -9,8 +9,8 @@ cd "${SCRIPT_DIR}"
 
 # 8k tokenizer/data defaults.
 if [[ -z "${DATA_PATH:-}" ]]; then
-  if [[ -d "/home/frosty40/parameter-golf-lab/data/datasets/fineweb10B_sp8192" ]]; then
-    export DATA_PATH="/home/frosty40/parameter-golf-lab/data/datasets/fineweb10B_sp8192"
+  if [[ -d "~/parameter-golf-lab/data/datasets/fineweb10B_sp8192" ]]; then
+    export DATA_PATH="~/parameter-golf-lab/data/datasets/fineweb10B_sp8192"
   elif [[ -d "../../data/datasets/fineweb10B_sp8192" ]]; then
     export DATA_PATH="../../data/datasets/fineweb10B_sp8192"
   else
@@ -20,8 +20,8 @@ if [[ -z "${DATA_PATH:-}" ]]; then
 fi
 
 if [[ -z "${TOKENIZER_PATH:-}" ]]; then
-  if [[ -f "/home/frosty40/parameter-golf-lab/data/tokenizers/fineweb_8192_bpe.model" ]]; then
-    export TOKENIZER_PATH="/home/frosty40/parameter-golf-lab/data/tokenizers/fineweb_8192_bpe.model"
+  if [[ -f "~/parameter-golf-lab/data/tokenizers/fineweb_8192_bpe.model" ]]; then
+    export TOKENIZER_PATH="~/parameter-golf-lab/data/tokenizers/fineweb_8192_bpe.model"
   elif [[ -f "../../data/tokenizers/fineweb_8192_bpe.model" ]]; then
     export TOKENIZER_PATH="../../data/tokenizers/fineweb_8192_bpe.model"
   else

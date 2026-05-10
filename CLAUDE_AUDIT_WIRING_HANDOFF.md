@@ -1,7 +1,7 @@
 # Claude Handoff - Audit and Evidence Wiring Loops
 
 Date: 2026-05-09
-Repo: `/home/frosty40/research_collator`
+Repo: `~/research_collator`
 Branch: `art/palette-switcher`
 Locked starting commit: `a5b576f`
 

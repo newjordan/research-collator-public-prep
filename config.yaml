@@ -3,13 +3,13 @@
 
 roots:
   # Canonical LLM research corpus copy. Most local SOTA/parameter-golf work
-  # should be scraped from /home/frosty40/llm_research so this repo does not
+  # should be scraped from ~/llm_research so this repo does not
   # need to chase scattered source locations.
   #
   # ml-lab is still on its original path because it is not currently present
-  # under /home/frosty40/llm_research. It is scraped for auditability but is
+  # under ~/llm_research. It is scraped for auditability but is
   # treated as prelude/bootstrap, not parameter-golf research chronology.
-  - path: /home/frosty40/ml-lab
+  - path: ~/ml-lab
     label: ml-lab
     git_remote: newjordan/ml-lab
     period_hint: "2026-02-24 .. 2026-03-23"
@@ -31,76 +31,76 @@ roots:
     label: srv_models
     git_remote: null
     period_hint: "2026-03-02 .. 2026-03-04 metadata-only"
-  - path: /home/frosty40/workspace/projects/dotagents-mono
+  - path: ~/workspace/projects/dotagents-mono
     label: dotagents_mono
     git_remote: newjordan/GR44
     period_hint: "2026-03-02 .. 2026-03-07"
-  - path: /home/frosty40/workspace/projects/rig-desktop-config
+  - path: ~/workspace/projects/rig-desktop-config
     label: rig_desktop_config
     git_remote: null
     period_hint: "2026-03-04 .. 2026-03-06"
-  - path: /home/frosty40/workspace/projects/local_qwen_agent
+  - path: ~/workspace/projects/local_qwen_agent
     label: local_qwen_agent
     git_remote: null
     period_hint: "2026-03-03"
-  - path: /home/frosty40/workspace/projects/dgx_nim_upgrade
+  - path: ~/workspace/projects/dgx_nim_upgrade
     label: dgx_nim_upgrade
     git_remote: null
     period_hint: "2026-03-04"
-  - path: /home/frosty40/workspace/projects/Qwen-Agent
+  - path: ~/workspace/projects/Qwen-Agent
     label: qwen_agent
     git_remote: QwenLM/Qwen-Agent
     period_hint: "2026-03-06"
-  - path: /home/frosty40/.augment
+  - path: ~/.augment
     label: augment_checkpoints
     git_remote: null
     period_hint: "2026-03-06"
-  - path: /home/frosty40/llm_research/parameter-golf-lab
+  - path: ~/llm_research/parameter-golf-lab
     label: parameter-golf-lab
     git_remote: newjordan/parameter-golf
     period_hint: "2026-03-18 .. 2026-05-01"
-  - path: /home/frosty40/llm_research/parameter-golf-lab/junkyard
+  - path: ~/llm_research/parameter-golf-lab/junkyard
     label: open_parameter_golf_junkyard
     git_remote: newjordan/parameter-golf
     period_hint: "parameter-golf junkyard outputs, launchers, checkpoints, and traces"
-  - path: /home/frosty40/llm_research/parameter-golf-cross-repo
+  - path: ~/llm_research/parameter-golf-cross-repo
     label: parameter-golf-cross-repo
     git_remote: null
     period_hint: "2026-04-06 (one day)"
-  - path: /home/frosty40/llm_research/sota_nueral
+  - path: ~/llm_research/sota_nueral
     label: sota_nueral
     git_remote: newjordan/sota_nueral
     period_hint: "2026-04-01 .. 2026-04-26"
-  - path: /home/frosty40/llm_research/sota_nueral_archive
+  - path: ~/llm_research/sota_nueral_archive
     label: sota_nueral_archive
     git_remote: null
     period_hint: "2026-04-01 .. 2026-04-06"
-  - path: /home/frosty40/llm_research/sota_crawler
+  - path: ~/llm_research/sota_crawler
     label: sota_crawler
     git_remote: newjordan/parameter-golf
     period_hint: "2026-04-08 .. 2026-04-23"
-  - path: /home/frosty40/llm_research/SOTA_FINAL
+  - path: ~/llm_research/SOTA_FINAL
     label: SOTA_FINAL
     git_remote: newjordan/Fartmagic
     period_hint: "2026-04-12 .. 2026-05-01 campaign; later artifacts are audit-only"
-  - path: /home/frosty40/llm_research/sota_rascal
+  - path: ~/llm_research/sota_rascal
     label: sota_rascal
     git_remote: newjordan/rascal
     period_hint: "2026-04-03 .. 2026-05-01 campaign; later artifacts are audit-only"
-  - path: /home/frosty40/llm_research/pg_whale
+  - path: ~/llm_research/pg_whale
     label: pg_whale
     git_remote: newjordan/blessed_whale
     period_hint: "2026-04-15 .. 2026-05-01 campaign; later artifacts are audit-only"
-  - path: /home/frosty40/llm_research/rascal-private
+  - path: ~/llm_research/rascal-private
     label: rascal-private
     git_remote: newjordan/rascal
     period_hint: "2026-04-26"
-  - path: /home/frosty40/llm_research/sota_rascal_pod_saves
+  - path: ~/llm_research/sota_rascal_pod_saves
     label: sota_rascal_pod_saves
     git_remote: null
     period_hint: "pod shutdown archives and manifests"
   # Codex daily-grind narrative rollups (ml-intern phase + others)
-  - path: /home/frosty40/.codex/memories/rollout_summaries
+  - path: ~/.codex/memories/rollout_summaries
     label: codex_rollouts
     git_remote: null
     period_hint: "daily codex rollups"
@@ -130,7 +130,7 @@ exclude_dir_names:
 # roots like /srv/models are valid research evidence, while this specific
 # DotAgents desktop model cache would introduce stale upstream mtimes.
 exclude_path_substrings:
-  - /home/frosty40/workspace/projects/rig-desktop-config/.config/@dotagents/desktop/models/
+  - ~/workspace/projects/rig-desktop-config/.config/@dotagents/desktop/models/
   - /srv/agents/lanes/agent-orchestrator/state/grafana/plugins/
   - /srv/studio/apps/comfyui/.github/
   - /srv/studio/apps/comfyui/api_server/
@@ -141,7 +141,7 @@ exclude_path_substrings:
   - /srv/studio/apps/comfyui/script_examples/
   - /srv/studio/apps/comfyui/tests/
   - /srv/studio/apps/comfyui/web/
-  - /home/frosty40/llm_research/parameter-golf-lab/junkyard/vendor/
+  - ~/llm_research/parameter-golf-lab/junkyard/vendor/
 
 # Extensions and which handler runs on them.
 ext_handler_map:
@@ -209,26 +209,26 @@ max_pt_bytes: 0             # 0 means "always treat as metadata-only"
 # Git repos to walk for commits — author-date is the ground-truth activity
 # signal that mtime doesn't capture. Each commit becomes one record.
 git_repos:
-  - {path: /home/frosty40/llm_research/parameter-golf-lab, label: "git:parameter-golf-lab"}
-  - {path: /home/frosty40/ml-lab,                          label: "git:ml-lab"}
-  - {path: /home/frosty40/workspace/projects/dotagents-mono, label: "git:dotagents_mono", since: "2026-03-01", until: "2026-03-08"}
-  - {path: /home/frosty40/workspace/projects/Qwen-Agent,     label: "git:qwen_agent", since: "2026-03-01", until: "2026-03-07"}
-  - {path: /home/frosty40/llm_research/sota_crawler,        label: "git:sota_crawler"}
-  - {path: /home/frosty40/llm_research/sota_nueral,         label: "git:sota_nueral"}
-  - {path: /home/frosty40/llm_research/SOTA_FINAL,          label: "git:SOTA_FINAL"}
-  - {path: /home/frosty40/llm_research/sota_rascal,         label: "git:sota_rascal"}
-  - {path: /home/frosty40/llm_research/pg_whale,            label: "git:pg_whale"}
-  - {path: /home/frosty40/llm_research/rascal-private,      label: "git:rascal-private"}
+  - {path: ~/llm_research/parameter-golf-lab, label: "git:parameter-golf-lab"}
+  - {path: ~/ml-lab,                          label: "git:ml-lab"}
+  - {path: ~/workspace/projects/dotagents-mono, label: "git:dotagents_mono", since: "2026-03-01", until: "2026-03-08"}
+  - {path: ~/workspace/projects/Qwen-Agent,     label: "git:qwen_agent", since: "2026-03-01", until: "2026-03-07"}
+  - {path: ~/llm_research/sota_crawler,        label: "git:sota_crawler"}
+  - {path: ~/llm_research/sota_nueral,         label: "git:sota_nueral"}
+  - {path: ~/llm_research/SOTA_FINAL,          label: "git:SOTA_FINAL"}
+  - {path: ~/llm_research/sota_rascal,         label: "git:sota_rascal"}
+  - {path: ~/llm_research/pg_whale,            label: "git:pg_whale"}
+  - {path: ~/llm_research/rascal-private,      label: "git:rascal-private"}
 
 # Claude Code session JSONLs — these capture the user-Claude collaboration
 # work-stream that mtime doesn't show.
-claude_projects_root: /home/frosty40/.claude/projects
+claude_projects_root: ~/.claude/projects
 
 # Codex session JSONLs (broader than just rollout_summaries we already have)
-codex_sessions_root: /home/frosty40/.codex/sessions
+codex_sessions_root: ~/.codex/sessions
 
 # Output
-sqlite_path: /home/frosty40/research_collator/index.sqlite
+sqlite_path: ~/research_collator/index.sqlite
 extraction_version: "stripper_v2"
 
 # Legacy field retained for old scripts. The daily renderer follows TEMPLATE.md:

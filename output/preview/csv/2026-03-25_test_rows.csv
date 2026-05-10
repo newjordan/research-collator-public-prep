@@ -1,0 +1,23 @@
+n,title,display_ablation,family,camp,time_iso,hardware,wallclock_seconds,val_bpb,val_bpb_source,kernel_fb_ratio,kernel_fb_ratio_source,n_runs,source_label
+1,f1_car02_t1_ve_spread_s1337_20260325_003137.log,,,experimental,2026-03-25T00:31:37+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+2,f1_car02_t2_rope24_s1337_20260325_005049.log,,,experimental,2026-03-25T00:50:49+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+3,f1_car02_t3_xsa3_speed_s1337_20260325_010936.log,,,experimental,2026-03-25T01:09:36+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+4,f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_012927.log,,,experimental,2026-03-25T01:29:27+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+5,f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_015359.log,,,experimental,2026-03-25T01:53:59+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+6,X-WING submission: 0.5641 BPB 2-seed mean (new world record),,,neural,2026-03-25T02:10:08+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+7,f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_022915.log,,,experimental,2026-03-25T02:29:15+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+8,X-WING: 0.5644 BPB 3-seed mean — new world record,,,experimental,2026-03-25T02:29:50+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+9,f1_car02_iso_var_t2_rope24_ngram5_s69_20260325_025034.log,,,experimental,2026-03-25T02:50:34+00:00,8×H100 (runpod),,,log_step_best,,,1,open_parameter_golf_junkyard
+10,f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_025620.log,,,experimental,2026-03-25T02:56:20+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+11,f1_car02_iso_var_t2_rope24_ngram5_s42_20260325_031357.log,,,experimental,2026-03-25T03:13:57+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+12,f1_car02_iso_var_t2_rope24_ngram5_s2045_20260325_033133.log,,,experimental,2026-03-25T03:31:33+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+13,X-WING Yellow II submission: 0.4896 BPB — 3D cubric + complementary training,,,neural,2026-03-25T04:22:15+00:00,,,,commit_message,,,2,git:parameter-golf-lab
+14,f1_car02_iso_var_t2_rope24_ngram5_s1337_20260325_164500.log,,,experimental,2026-03-25T16:45:00+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+15,f1_car02_iso_backoff_7gram_adaptive_s42_20260325_170429.log,,,experimental,2026-03-25T17:04:29+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+16,f1_car02_iso_backoff_7gram_adaptive_s2045_20260325_172241.log,,,experimental,2026-03-25T17:22:41+00:00,8×H100,,,log_final_eval,,,1,parameter-golf-lab
+17,f1_car02_iso_backoff_7gram_adaptive_s7_20260325_174208.log,,,experimental,2026-03-25T17:42:08+00:00,8×H100,,,log_final_eval,,,2,parameter-golf-lab
+18,"Podracing II: Electric Bugaloo — 0.9620 BPB (best seed), mean 0.9823",,,experimental,2026-03-25T17:52:41Z,,,,commit_message,,,2,git:parameter-golf-lab
+19,Podracing III submission prep: cubric lite 0.9362 BPB (seed 2045),,,neural,2026-03-25T22:23:46Z,,,,commit_message,,,2,git:parameter-golf-lab
+20,podracer_red_racing_cubric_s43_20260325_224138.log,,,experimental,2026-03-25T22:41:38+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+21,podracer_red_racing_cubric_s300_20260325_225926.log,,,experimental,2026-03-25T22:59:26+00:00,8×H100 (runpod),,,log_final_eval,,,1,open_parameter_golf_junkyard
+22,Podracing III: Cubric Lite — 0.9362 BPB (3-seed mean),,,neural,2026-03-25T23:21:08Z,,,,commit_message,,,2,git:parameter-golf-lab
