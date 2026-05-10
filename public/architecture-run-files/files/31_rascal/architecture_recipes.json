@@ -1,0 +1,394 @@
+{
+  "recipes": {
+    "Mockingbird": {
+      "display": "10K-VOCAB CASEOPS LOOP BODY",
+      "summary": "SP10240 CaseOps neural body: copy as an 11-layer, dim-512, looped GQA transformer with phased LoRA TTT packaging.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "num_layers=11",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "head_dim=64",
+            "mlp_mult=3.75"
+          ]
+        },
+        {
+          "label": "TOKENIZER / POSITION",
+          "items": [
+            "vocab_size=10240",
+            "SP10240 lossless-caps CaseOps tokenizer",
+            "tie_embeddings=1",
+            "rope_dims=16",
+            "rope_base=10000",
+            "train_seq_len=2048",
+            "eval_seq_len=2048"
+          ]
+        },
+        {
+          "label": "LOOP",
+          "items": [
+            "num_loops=2",
+            "loop_start=3",
+            "loop_end=5",
+            "enable_looping_at=0.45",
+            "warmdown_frac=0.85"
+          ]
+        },
+        {
+          "label": "QUANT / EVAL",
+          "items": [
+            "pergroup compression",
+            "embed int7",
+            "matrix int6",
+            "LQER asymmetric rank=4",
+            "phased LoRA TTT",
+            "prefix_docs=2500",
+            "phases=3",
+            "chunk=48",
+            "16 MB artifact cap"
+          ]
+        }
+      ]
+    },
+    "Whale": {
+      "display": "DIM-576 ATTENTION-KERNEL BODY",
+      "summary": "A 12-layer dim-576 model body plus the custom attention-kernel benchmark shape used against FA3.",
+      "sections": [
+        {
+          "label": "MODEL BODY",
+          "items": [
+            "num_layers=12",
+            "model_dim=576",
+            "embedding_dim=576",
+            "matrix_bits=5",
+            "xsa_last_n=11",
+            "parallel_residual_start=8",
+            "model_params=48551136"
+          ]
+        },
+        {
+          "label": "KERNEL SHAPE",
+          "items": [
+            "batch=2",
+            "seq_len=2048",
+            "q_heads=8",
+            "kv_heads=4",
+            "head_dim=64",
+            "custom attention path compared directly to FA3"
+          ]
+        },
+        {
+          "label": "PROMOTED KERNEL",
+          "items": [
+            "DQ=128,64,8,5",
+            "DKDV=128,64,8,3",
+            "DKDV_MAXNREG=256",
+            "QMR=1984 for 2x primary",
+            "QMR=1664 single-GPU anchor"
+          ]
+        }
+      ]
+    },
+    "Staged Hybrid Bench": {
+      "display": "STAGED HYBRID BENCH",
+      "summary": "Attention-kernel sweep comparing staged primary/fallback kernels against hybridA/hybridB variants.",
+      "sections": [
+        {
+          "label": "KERNEL SHAPE",
+          "items": [
+            "seq_len=2048",
+            "q_heads=8",
+            "kv_heads=4",
+            "head_dim=64",
+            "custom/FA3 fb ratio target"
+          ]
+        },
+        {
+          "label": "TILE SWEEP",
+          "items": [
+            "DQ=128,64,8,2",
+            "DQ=128,64,8,5",
+            "DKDV=128,64,8,3",
+            "DKDV=128,128,8,3",
+            "QMR sweep=768..2304"
+          ]
+        },
+        {
+          "label": "MODES",
+          "items": [
+            "staged_primary_vs_hybridB",
+            "staged_fallback_vs_hybridA",
+            "g0/g1 GPU lane split",
+            "kernel watchdog benchmark"
+          ]
+        }
+      ]
+    },
+    "Midnight": {
+      "display": "12L GQA MIXED-BIT TOWER",
+      "summary": "12-layer GQA tower: 8/4 GQA, RoPE-16, Bigram 2048, XSA on the last 11 layers, and mixed-bit packaging.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "num_layers=12",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "rope_dims=16",
+            "xsa_last_n=11",
+            "BigramHash vocab=2048"
+          ]
+        },
+        {
+          "label": "QUANT / EVAL",
+          "items": [
+            "attention int5",
+            "mlp int6",
+            "aux int6",
+            "embed int8",
+            "other int8",
+            "Brotli artifact",
+            "16 MB artifact cap"
+          ]
+        },
+        {
+          "label": "RUN SHAPE",
+          "items": [
+            "8xH100",
+            "train_seq_len=2048",
+            "eval_seq_len=2048",
+            "600s wallclock"
+          ]
+        }
+      ]
+    },
+    "SOTA Crawler": {
+      "display": "CRAWLER-SAFE TRAIN/EVAL SURFACE",
+      "summary": "Crawler-safe training/eval surface around a widened shared-crawler stack with final int6 and int8 checks.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "vocab_size=1024",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "shared crawler block",
+            "looped crawler passes"
+          ]
+        },
+        {
+          "label": "FEATURES",
+          "items": [
+            "BigramHash",
+            "XSA",
+            "RoPE",
+            "crawler loop rope scales",
+            "instruction bottleneck"
+          ]
+        },
+        {
+          "label": "QUANT / EVAL",
+          "items": [
+            "int6 roundtrip",
+            "int6 sliding-window eval",
+            "int8 zlib roundtrip",
+            "8xH100",
+            "600s wallclock"
+          ]
+        }
+      ]
+    },
+    "Rascal": {
+      "display": "11L GQA U-NET BODY",
+      "summary": "11-layer dim-512 GQA U-Net transformer base with XSA, BigramHash, value embedding, and SmearGate.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "vocab_size=1024",
+            "num_layers=11",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "head_dim=64",
+            "mlp_mult=3.0",
+            "tie_embeddings=1"
+          ]
+        },
+        {
+          "label": "STRUCTURE",
+          "items": [
+            "encoder_layers=5",
+            "decoder_layers=6",
+            "skip_weights=5",
+            "GQA attention",
+            "RMSNorm",
+            "relu_sq MLP",
+            "Muon matrix optimizer path"
+          ]
+        },
+        {
+          "label": "FEATURES",
+          "items": [
+            "BigramHash vocab=2048 dim=128",
+            "XSA last_n=11",
+            "rope_dims=16",
+            "VE dim=128 layers=9,10",
+            "SmearGate",
+            "logit_softcap=30"
+          ]
+        }
+      ]
+    },
+    "Medusa": {
+      "display": "LOOP-INSTRUCTED DELTANET CRAWLER BODY",
+      "summary": "Crawler-capable GQA body with loop instruction projection, optional DeltaNet memory, and loop-aware GPTQ experiments.",
+      "sections": [
+        {
+          "label": "BASE BODY",
+          "items": [
+            "vocab_size=1024",
+            "num_layers=11",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "mlp_mult=3.0",
+            "BigramHash 2048x128",
+            "XSA last_n=11",
+            "rope_dims=16"
+          ]
+        },
+        {
+          "label": "CRAWLER BODY",
+          "items": [
+            "flat transformer blocks around shared crawler block",
+            "crawler_mlp_mult=4.0 default",
+            "inst_dim=32",
+            "loop instruction projection",
+            "crawler_loop_rope_scales=1,1,1 default",
+            "optional DeltaNet memory"
+          ]
+        },
+        {
+          "label": "QUANT PATH",
+          "items": [
+            "loop-aware GPTQ option",
+            "crawler Hessian collection",
+            "EMA / no-EMA ablations",
+            "int6 sliding-window export path"
+          ]
+        }
+      ]
+    },
+    "ClownCar": {
+      "display": "CRAWLER-ONLY NGRAM EXPORT BODY",
+      "summary": "Crawler body with the fast ngram finish: crawler architecture retained, CPU-heavy phrase/regime paths removed.",
+      "sections": [
+        {
+          "label": "MODEL BODY",
+          "items": [
+            "crawler-only instructed-recurrence body",
+            "DELTA_NET_HEADS=0",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "int6+zstd target under 11 MB"
+          ]
+        },
+        {
+          "label": "EVAL FINISH",
+          "items": [
+            "ngram9 eval stack",
+            "NGRAM_DIRICHLET=1",
+            "remove NGRAM_CHUNK_TOKENS=65536",
+            "remove PHRASE_CACHE",
+            "remove REGIME_TRACKER"
+          ]
+        }
+      ]
+    },
+    "Nightcrawler": {
+      "display": "WIDENED CRAWLER BOTTLENECK",
+      "summary": "Widened crawler bottleneck body: 5 flat blocks, 1 shared crawler block, 5 flat blocks.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "MODEL_DIM=512",
+            "NUM_FLAT_LAYERS=5",
+            "NUM_CRAWLER_LAYERS=1",
+            "CRAWLER_LOOPS=3",
+            "USE_CRAWLER=1",
+            "num_heads=8",
+            "num_kv_heads=4"
+          ]
+        },
+        {
+          "label": "CRAWLER",
+          "items": [
+            "CRAWLER_MLP_MULT=6.0",
+            "INST_DIM=32",
+            "CRAWLER_QUANT_INT8=1",
+            "CRAWLER_LOOP_ROPE_SCALES=9,1,1",
+            "CRAWLER_TAP_DIM=32",
+            "CRAWLER_TAP_LAYERS=all"
+          ]
+        },
+        {
+          "label": "PACKAGING",
+          "items": [
+            "BIGRAM_VOCAB_SIZE=2048",
+            "XSA_LAST_N=11",
+            "ROPE_DIMS=16",
+            "SKIP_EMA=1",
+            "SKIP_GPTQ=1",
+            "MTP_NUM_HEADS=0"
+          ]
+        }
+      ]
+    },
+    "Ouroboros": {
+      "display": "9-FLAT + 1-CRAWLER LOOP BODY",
+      "summary": "9-flat plus 1-crawler loop body: flat U-Net context around a shared crawler block fired twice.",
+      "sections": [
+        {
+          "label": "BODY",
+          "items": [
+            "vocab_size=1024",
+            "model_dim=512",
+            "num_heads=8",
+            "num_kv_heads=4",
+            "NUM_FLAT_LAYERS=9",
+            "NUM_CRAWLER_LAYERS=1",
+            "CRAWLER_LOOPS=2",
+            "USE_CRAWLER=1"
+          ]
+        },
+        {
+          "label": "CRAWLER",
+          "items": [
+            "CRAWLER_MLP_MULT=6.0",
+            "INST_DIM=32",
+            "CRAWLER_MLP_CHOKE_DIM=0",
+            "CRAWLER_LOOP_ROPE_SCALES=9,1,1",
+            "CRAWLER_MLP_LEAKY_SLOPE=0.5"
+          ]
+        },
+        {
+          "label": "PACKAGING",
+          "items": [
+            "LOOP_AWARE_GPTQ=1",
+            "BigramHash 2048x128",
+            "XSA last_n=11",
+            "rope_dims=16",
+            "VE dim=128 layers=9,10"
+          ]
+        }
+      ]
+    }
+  }
+}

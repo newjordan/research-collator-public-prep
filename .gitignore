@@ -13,6 +13,7 @@ Research Day 2.0.html
 _pw_*.mjs
 incoming/
 workbench/
+.claude/
 
 # Python
 __pycache__/

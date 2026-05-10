@@ -8,11 +8,16 @@ not a decorative asset for the TOC or report pages.
 from __future__ import annotations
 
 import argparse
-import base64
 import json
 from pathlib import Path
 
-from render_day import HTML_DIR, OUT_ROOT, RESEARCH_END_DATE, RESEARCH_START_DATE
+from render_day import (
+    HTML_DIR,
+    OUT_ROOT,
+    RESEARCH_END_DATE,
+    RESEARCH_START_DATE,
+    preview_asset_src,
+)
 
 
 COVER_TEMPLATE_STANDARD = "cover-v1.0-first-page"
@@ -24,13 +29,6 @@ COVER_CANDIDATES = (
     Path("assets/cover_sheet_final.jpg"),
     Path("assets/cover_sheet_final.png"),
 )
-
-
-def image_data_uri(path: str | Path) -> str:
-    suffix = Path(path).suffix.lower()
-    mime = "image/png" if suffix == ".png" else "image/jpeg"
-    with open(path, "rb") as f:
-        return f"data:{mime};base64," + base64.b64encode(f.read()).decode("ascii")
 
 
 def find_cover_image() -> Path:
@@ -47,7 +45,7 @@ def render_cover_page() -> dict:
     cover_path = find_cover_image()
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     COVER_QMD_DIR.mkdir(parents=True, exist_ok=True)
-    cover_uri = image_data_uri(cover_path)
+    cover_uri = preview_asset_src(cover_path)
     html = f"""<!doctype html>
 <html>
 <head>
@@ -132,7 +130,7 @@ def render_cover_page() -> dict:
     </div>
     <div class="enter-row">
       <span>{RESEARCH_START_DATE} / {RESEARCH_END_DATE}</span>
-      <a href="toc.html">Enter Table of Contents</a>
+      <a href="intro.html">Enter</a>
     </div>
   </main>
 </body>
@@ -147,7 +145,7 @@ def render_cover_page() -> dict:
             "",
             f"Cover image: `{cover_path}`",
             "",
-            "[Enter Table of Contents](../preview/toc.html)",
+            "[Enter](../preview/intro.html)",
             "",
         ]),
         encoding="utf-8",

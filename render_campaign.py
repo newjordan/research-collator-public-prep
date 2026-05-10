@@ -12,7 +12,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import html
 import json
 import os
@@ -40,6 +39,7 @@ from render_day import (
     make_report_h1_html,
     make_report_header_html,
     metric_display_name,
+    preview_chart_src,
 )
 
 
@@ -51,11 +51,6 @@ CAMPAIGN_ASSETS_DIR = ASSETS_DIR / "campaign"
 
 def all_campaign_dates(conn: sqlite3.Connection) -> list[str]:
     return render_week.all_campaign_dates(conn)
-
-
-def image_data_uri(path: str | Path) -> str:
-    with open(path, "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
 
 
 def collect_category_points(conn: sqlite3.Connection,
@@ -326,9 +321,10 @@ def render_campaign_report(dates: list[str] | None = None,
     ]
     if chart_panels:
         for panel in chart_panels:
+            chart_src = preview_chart_src(panel["path"])
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(panel['path'])}' "
+                f"<img src='{html.escape(chart_src, quote=True)}' "
                 f"alt='Campaign classification overlay · "
                 f"{html.escape(panel['metric_display'])}'/>"
                 "</figure>"

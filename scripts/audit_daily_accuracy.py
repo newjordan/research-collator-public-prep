@@ -331,8 +331,8 @@ def audit_day(conn: sqlite3.Connection, audit: Audit, date: str) -> None:
             ]
             if missing_mockingbird:
                 audit.issue(
-                    "fatal", "final_submission_not_mockingbird", date,
-                    "final campaign day rendered a non-Mockingbird test row",
+                    "fatal", "final_submission_wrong_row", date,
+                    "final campaign day rendered a row outside the final submission evidence set",
                     row=missing_mockingbird[0],
                     detail={"expected": render_day.FINAL_SUBMISSION_NAME},
                 )
@@ -340,7 +340,7 @@ def audit_day(conn: sqlite3.Connection, audit: Audit, date: str) -> None:
     if date == render_day.RESEARCH_END_DATE and not rows:
         audit.issue(
             "fatal", "final_submission_missing", date,
-            "final campaign day has no rendered Mockingbird test rows",
+            "final campaign day has no rendered final-submission test rows",
         )
 
     audit.day_summaries.append({

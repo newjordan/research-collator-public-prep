@@ -15,16 +15,19 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import html
 import json
 import os
+import re
 import sqlite3
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
 import plot as plot_mod
 import render_day
@@ -33,6 +36,7 @@ from render_day import (
     ASSETS_DIR,
     DAILY_TEMPLATE_STANDARD,
     DB,
+    FRAGMENTS_DIR,
     HTML_DIR,
     KERNEL_CAMP,
     KERNEL_FB_RATIO_METRIC,
@@ -41,6 +45,7 @@ from render_day import (
     OUT_ROOT,
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
+    GITHUB_REMOTES,
     _daily_template_style,
     _embedded_log_script,
     compute_day_index,
@@ -54,7 +59,9 @@ from render_day import (
     make_report_h1_html,
     make_report_header_html,
     metric_display_name,
+    preview_chart_src,
     report_records_for_date,
+    sanitize_public_text,
 )
 
 
@@ -74,6 +81,29 @@ CATEGORY_QMD_DIR = OUT_ROOT / "categories"
 CATEGORY_HTML_DIR = HTML_DIR / "categories"
 CATEGORY_ASSETS_DIR = ASSETS_DIR / "categories"
 BIWEEKLY_WINDOW_WEEKS = 2
+LOCAL_TO_GIT_SOURCE = {
+    "parameter-golf-lab": "git:parameter-golf-lab",
+    "open_parameter_golf_junkyard": "git:parameter-golf-lab",
+    "parameter-golf-cross-repo": "git:parameter-golf-lab",
+    "sota_crawler": "git:sota_crawler",
+    "SOTA_FINAL": "git:SOTA_FINAL",
+    "sota_rascal": "git:sota_rascal",
+    "sota_nueral": "git:sota_nueral",
+    "pg_whale": "git:pg_whale",
+    "rascal-private": "git:rascal-private",
+}
+PUBLIC_SOURCE_ROOTS = {
+    "parameter-golf-lab": "/home/frosty40/llm_research/parameter-golf-lab",
+    "open_parameter_golf_junkyard": "/home/frosty40/llm_research/parameter-golf-lab",
+    "parameter-golf-cross-repo": "/home/frosty40/llm_research/parameter-golf-cross-repo",
+    "sota_crawler": "/home/frosty40/llm_research/sota_crawler",
+    "SOTA_FINAL": "/home/frosty40/llm_research/SOTA_FINAL",
+    "sota_rascal": "/home/frosty40/llm_research/sota_rascal",
+    "sota_nueral": "/home/frosty40/llm_research/sota_nueral",
+    "pg_whale": "/home/frosty40/llm_research/pg_whale",
+    "rascal-private": "/home/frosty40/llm_research/rascal-private",
+}
+PUBLIC_URL_CHECK_CACHE: dict[str, bool] = {}
 
 
 # ---------- data --------------------------------------------------------------
@@ -121,6 +151,166 @@ def window_slug(window: dict[str, Any], metric: str | None = None) -> str:
     return base
 
 
+def _repo_raw_root(github_base: str) -> str:
+    m = re.match(r"https://github\.com/([^/]+)/([^/]+)/?$", github_base)
+    if not m:
+        return ""
+    return f"https://raw.githubusercontent.com/{m.group(1)}/{m.group(2)}"
+
+
+def public_url_exists(url: str) -> bool:
+    if not url:
+        return False
+    if url in PUBLIC_URL_CHECK_CACHE:
+        return PUBLIC_URL_CHECK_CACHE[url]
+    req = Request(url, method="HEAD", headers={"User-Agent": "research-collator"})
+    try:
+        with urlopen(req, timeout=4) as resp:
+            ok = 200 <= int(resp.status) < 400
+    except Exception:
+        ok = False
+    PUBLIC_URL_CHECK_CACHE[url] = ok
+    return ok
+
+
+def _public_rel_path(source_label: str, abs_path: str, rel_path: str) -> str:
+    if rel_path:
+        return rel_path.strip("/")
+    root = PUBLIC_SOURCE_ROOTS.get(source_label)
+    if root and abs_path.startswith(root.rstrip("/") + "/"):
+        return abs_path[len(root.rstrip("/")) + 1:]
+    return ""
+
+
+def tracked_commit_for_path(source_label: str, public_rel: str) -> dict[str, str]:
+    root = PUBLIC_SOURCE_ROOTS.get(source_label)
+    git_label = LOCAL_TO_GIT_SOURCE.get(source_label)
+    base = GITHUB_REMOTES.get(git_label or "", "")
+    if not root or not git_label or not base or not public_rel:
+        return {}
+    try:
+        sha = subprocess.check_output(
+            ["git", "-C", root, "rev-list", "-n", "1", "--all", "--", public_rel],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        return {}
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        return {}
+    try:
+        title = subprocess.check_output(
+            ["git", "-C", root, "log", "-1", "--format=%s", sha],
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).strip()
+    except (OSError, subprocess.CalledProcessError):
+        title = ""
+    return {
+        "sha": sha,
+        "short_sha": sha[:7],
+        "title": title,
+        "url": f"{base}/commit/{sha}",
+        "base": base,
+        "rel_path": public_rel,
+    }
+
+
+def nearest_public_commit(conn: sqlite3.Connection,
+                          source_label: str,
+                          mtime_iso: str) -> dict[str, str]:
+    git_label = LOCAL_TO_GIT_SOURCE.get(source_label)
+    if not git_label or not mtime_iso:
+        return {}
+    row = conn.execute(
+        """
+        SELECT rel_path, title, mtime_iso
+        FROM artifacts
+        WHERE source_label = ?
+          AND file_kind = 'git_commit'
+          AND ABS(julianday(mtime_iso) - julianday(?)) <= 2.0
+        ORDER BY ABS(julianday(mtime_iso) - julianday(?)) ASC
+        LIMIT 1
+        """,
+        (git_label, mtime_iso, mtime_iso),
+    ).fetchone()
+    if not row:
+        return {}
+    sha = str(row["rel_path"] or "").strip()
+    base = GITHUB_REMOTES.get(git_label, "")
+    if not sha or not base:
+        return {}
+    return {
+        "sha": sha,
+        "short_sha": sha[:7],
+        "title": str(row["title"] or ""),
+        "time": str(row["mtime_iso"] or ""),
+        "url": f"{base}/commit/{sha}",
+        "base": base,
+    }
+
+
+def public_artifact_links(conn: sqlite3.Connection,
+                          source_label: str,
+                          abs_path: str,
+                          rel_path: str,
+                          mtime_iso: str) -> dict[str, str]:
+    if source_label.startswith("git:"):
+        sha = rel_path.strip() or abs_path.rsplit("/", 1)[-1].strip()
+        base = GITHUB_REMOTES.get(source_label, "")
+        if re.fullmatch(r"[0-9a-f]{40}", sha) and base:
+            return {
+                "sha": sha,
+                "short_sha": sha[:7],
+                "title": "",
+                "time": mtime_iso,
+                "url": f"{base}/commit/{sha}",
+                "base": base,
+            }
+        return {}
+    public_rel = _public_rel_path(source_label, abs_path, rel_path)
+    exact = tracked_commit_for_path(source_label, public_rel)
+    if exact:
+        encoded_path = quote(public_rel, safe="/")
+        raw_root = _repo_raw_root(exact["base"])
+        if raw_root:
+            raw_url = f"{raw_root}/{exact['sha']}/{encoded_path}"
+            if public_url_exists(raw_url):
+                exact["blob_url"] = f"{exact['base']}/blob/{exact['sha']}/{encoded_path}"
+                exact["raw_url"] = raw_url
+        return exact
+    commit = nearest_public_commit(conn, source_label, mtime_iso)
+    if not commit or not public_rel:
+        return commit
+    commit["rel_path"] = public_rel
+    return commit
+
+
+def condition_text_for_path(abs_path: str) -> str:
+    if not abs_path:
+        return ""
+    path = Path(abs_path)
+    search_dirs = [path.parent, *list(path.parents)[:6]]
+    seen: set[Path] = set()
+    for directory in search_dirs:
+        if directory in seen:
+            continue
+        seen.add(directory)
+        for name in ("RESOLVED_CONDITION.txt", "CONDITION.md"):
+            candidate = directory / name
+            if not candidate.exists() or not candidate.is_file():
+                continue
+            try:
+                text = candidate.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            text = sanitize_public_text(text)
+            text = re.sub(r"\s+", " ", text).strip()
+            if text:
+                return text[:420]
+    return ""
+
+
 def _category_rows_for_day(conn: sqlite3.Connection,
                            date: str,
                            category: str,
@@ -165,6 +355,15 @@ def build_category_datapoints(conn: sqlite3.Connection,
         metric, cat_rows = chosen
         cat_rows.sort(key=lambda r: r["value"])
         best = cat_rows[0]
+        source_records = best.get("source_records") or []
+        source_ref = source_records[0] if source_records else {}
+        public_source = public_artifact_links(
+            conn,
+            source_label=best.get("source_label") or "",
+            abs_path=best.get("abs_path") or "",
+            rel_path=source_ref.get("rel_path") or "",
+            mtime_iso=source_ref.get("mtime_iso") or "",
+        )
         win = window_for_date(windows, date)
         points.append({
             "date": date,
@@ -175,7 +374,10 @@ def build_category_datapoints(conn: sqlite3.Connection,
             "value_display": format_metric_value(metric, best["value"]),
             "title": (best.get("title") or "").strip(),
             "abs_path": best.get("abs_path") or "",
+            "rel_path": source_ref.get("rel_path") or "",
             "source_label": best.get("source_label") or "",
+            "public_source": public_source,
+            "condition_text": condition_text_for_path(best.get("abs_path") or ""),
             "n_category_rows": len(cat_rows),
             "n_runs": int(best.get("n_runs") or 1),
             "window": win["window"] if win else None,
@@ -185,11 +387,204 @@ def build_category_datapoints(conn: sqlite3.Connection,
     return points
 
 
+def family_of_row(row: dict[str, Any]) -> str:
+    title = row.get("title") or ""
+    path = row.get("abs_path") or ""
+    for fam_name, pat in render_day.ARCH_FAMILIES:
+        if render_day._arch_family_matches(pat, title, path):
+            return fam_name
+    return "Other"
+
+
+def category_family_rows(conn: sqlite3.Connection,
+                         dates: list[str],
+                         category: str) -> tuple[list[dict[str, Any]], str | None]:
+    """All valid measured rows for a category on each date's chosen metric.
+
+    This keeps the category report's scale contract: families are compared on
+    the same metric that the category datapoint would use for that date.
+    """
+    out: list[dict[str, Any]] = []
+    metric_counts: Counter[str] = Counter()
+    for date in dates:
+        chosen: tuple[str, list[dict[str, Any]]] | None = None
+        for metric in CATEGORY_METRIC_PRIORITY[category]:
+            rows = _category_rows_for_day(conn, date, category, metric)
+            if rows:
+                chosen = (metric, rows)
+                break
+        if not chosen:
+            continue
+        metric, rows = chosen
+        metric_counts[metric] += len(rows)
+        for row in rows:
+            item = dict(row)
+            item["date"] = date
+            item["metric"] = metric
+            item["family"] = family_of_row(item)
+            out.append(item)
+    primary_metric = metric_counts.most_common(1)[0][0] if metric_counts else None
+    return out, primary_metric
+
+
+def make_category_family_table_html(rows: list[dict[str, Any]],
+                                    primary_metric: str | None) -> str:
+    if not rows or not primary_metric:
+        return (
+            "<p class='muted'>NO ARCHITECTURE FAMILY ROWS WERE AVAILABLE "
+            "FOR THIS CATEGORY.</p>"
+        )
+    by_family: dict[str, list[dict[str, Any]]] = {}
+    for row in rows:
+        by_family.setdefault(str(row.get("family") or "Other"), []).append(row)
+
+    def family_sort(item: tuple[str, list[dict[str, Any]]]) -> tuple[int, str]:
+        name, fam_rows = item
+        return (-len(fam_rows), render_day.public_arch_label(name))
+
+    table = [
+        "<table class='bpb-table'><thead><tr>"
+        "<th>architecture / test surface</th><th>rows</th><th>days</th>"
+        f"<th>best {html.escape(metric_display_name(primary_metric))}</th>"
+        "<th>median</th><th>range</th><th>first</th><th>last</th>"
+        "</tr></thead><tbody>"
+    ]
+    for family, fam_rows in sorted(by_family.items(), key=family_sort):
+        metric_rows = [
+            r for r in fam_rows
+            if r.get("metric") == primary_metric
+            and is_valid_metric_value(primary_metric, r.get("value"))
+        ]
+        if not metric_rows:
+            continue
+        vals = sorted(float(r["value"]) for r in metric_rows)
+        n = len(vals)
+        med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2.0
+        dates = sorted({str(r.get("date") or "") for r in fam_rows if r.get("date")})
+        date_href = f"../{html.escape(dates[0])}.html" if dates else "#"
+        last_href = f"../{html.escape(dates[-1])}.html" if dates else "#"
+        table.append(
+            "<tr>"
+            f"<td>{html.escape(render_day.public_arch_label(family).upper())}</td>"
+            f"<td>{len(fam_rows)}</td>"
+            f"<td>{len(dates)}</td>"
+            f"<td>{format_metric_value(primary_metric, vals[0])}</td>"
+            f"<td>{format_metric_value(primary_metric, med)}</td>"
+            f"<td>{format_metric_value(primary_metric, vals[0])} - "
+            f"{format_metric_value(primary_metric, vals[-1])}</td>"
+            f"<td><a class='category-action' href='{date_href}'>{html.escape(dates[0]) if dates else '—'}</a></td>"
+            f"<td><a class='category-action' href='{last_href}'>{html.escape(dates[-1]) if dates else '—'}</a></td>"
+            "</tr>"
+        )
+    table.append("</tbody></table>")
+    return "\n".join(table)
+
+
 # ---------- rendering helpers -------------------------------------------------
 
-def image_data_uri(path: str | Path) -> str:
-    with open(path, "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+def category_action_style() -> str:
+    return """
+    .category-action,
+    .test-runs-table td a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 24px;
+        padding: 4px 8px;
+        border: 1px solid var(--rule-hi);
+        background: var(--rule-hi);
+        color: var(--bg);
+        cursor: pointer;
+        font-size: 10.5px;
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        white-space: nowrap;
+        user-select: none;
+        border-radius: 0;
+    }
+    .category-action::before,
+    .test-runs-table td a::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        flex: 0 0 auto;
+        background: var(--bg);
+    }
+    .category-action:hover,
+    .category-action:focus-visible,
+    .test-runs-table td a:hover,
+    .test-runs-table td a:focus-visible {
+        background: var(--rule-hi);
+        color: var(--bg);
+        border-bottom-color: var(--rule-hi);
+        outline: 1px solid var(--rule-hi);
+        outline-offset: 2px;
+    }
+    .log-panel a,
+    .log-panel a.category-action {
+        border-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+    }
+    .log-panel a::before,
+    .log-panel a.category-action::before {
+        background: var(--rule-hi);
+    }
+    .log-panel a:hover,
+    .log-panel a:focus-visible,
+    .log-panel a.category-action:hover,
+    .log-panel a.category-action:focus-visible {
+        border-bottom-color: var(--bg);
+        background: var(--bg);
+        color: var(--rule-hi);
+        outline: 1px solid var(--bg);
+        outline-offset: 2px;
+    }
+    """
+
+
+def public_source_buttons_html(point: dict[str, Any]) -> str:
+    source = point.get("public_source") or {}
+    buttons: list[str] = []
+    if source.get("raw_url"):
+        buttons.append(
+            f"<a class='category-action' href='{html.escape(source['raw_url'], quote=True)}' download>"
+            "download file</a>",
+        )
+    if not buttons:
+        return ""
+    return (
+        "<div class='log-meta'><strong>public evidence</strong>: "
+        + " ".join(buttons)
+        + "</div>"
+    )
+
+
+def public_source_meta_html(point: dict[str, Any]) -> str:
+    source = point.get("public_source") or {}
+    lines: list[str] = []
+    if source.get("short_sha"):
+        title = sanitize_public_text(source.get("title") or "")
+        lines.append(
+            f"<div class='log-meta'><strong>commit</strong>: "
+            f"<code>{html.escape(source['short_sha'])}</code>"
+            + (f" - {html.escape(title[:180])}" if title else "")
+            + "</div>"
+        )
+    if source.get("blob_url") and point.get("rel_path"):
+        lines.append(
+            f"<div class='log-meta'><strong>file path</strong>: "
+            f"<code>{html.escape(point['rel_path'])}</code></div>"
+        )
+    if point.get("condition_text"):
+        lines.append(
+            f"<div class='log-meta'><strong>condition</strong>: "
+            f"{html.escape(point['condition_text'])}</div>"
+        )
+    return "".join(lines)
 
 
 def points_for_window(points: list[dict[str, Any]],
@@ -245,6 +640,12 @@ def make_category_summary_html(category: str,
             f"same y-axis. Each window's chart panel covers at most two "
             f"research weeks so progress stays readable inside the panel.</p>"
         )
+        if category == "neural":
+            body += (
+                f"<p>Neural BPB validity convention: values below "
+                f"<strong>{render_day.INVALID_VAL_BPB_FLOOR:.2f}</strong> "
+                f"are treated as TTT test-data leakage readings.</p>"
+            )
     return (
         '<aside class="day-summary">'
         '<div class="ds-key">CATEGORY SUMMARY</div>'
@@ -270,7 +671,7 @@ def render_window_section(conn: sqlite3.Connection,
                 "date": p["date"],
                 "value": p["value"],
                 "camp": category,
-                "title": p["title"] or p["date"],
+                "title": sanitize_public_text(p["title"] or p["date"]),
                 "n": idx,
             })
         slug = window_slug(window, metric)
@@ -312,7 +713,7 @@ def make_window_table_html(category: str,
         "</tr></thead><tbody>"
     ]
     for idx, p in enumerate(window_points, start=1):
-        title = p["title"] or "(untitled)"
+        title = sanitize_public_text(p["title"] or "(untitled)")
         rows.append(
             "<tr>"
             f"<td><strong>{idx}</strong></td>"
@@ -336,7 +737,7 @@ def make_window_table_html(category: str,
             f"{html.escape(window['end'])}</div>"
             f"<div class='log-meta'><strong>date</strong>: "
             f"{html.escape(p['date'])} "
-            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"<a class='category-action' href='../{html.escape(p['date'])}.html'>open daily report</a>"
             f"</div>"
             f"<div class='log-meta'><strong>metric</strong>: "
             f"{html.escape(p['metric_display'])} "
@@ -346,11 +747,11 @@ def make_window_table_html(category: str,
             f"<div class='log-meta'><strong>category rows on date</strong>: "
             f"{int(p['n_category_rows'])} (best value shown above)</div>"
             f"<div class='log-meta'><strong>row title</strong>: "
-            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
-            f"<div class='log-meta'><strong>abs path</strong>: "
-            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
+            f"{public_source_buttons_html(p)}"
+            f"{public_source_meta_html(p)}"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
@@ -372,7 +773,7 @@ def make_full_table_html(category: str,
     ]
     for idx, p in enumerate(points, start=1):
         win_label = f"{p['window']:02d}" if p["window"] else "—"
-        title = p["title"] or "(untitled)"
+        title = sanitize_public_text(p["title"] or "(untitled)")
         rows.append(
             "<tr>"
             f"<td><strong>{idx}</strong></td>"
@@ -398,7 +799,7 @@ def make_full_table_html(category: str,
             f"{html.escape(p['window_end'] or '—')})</div>"
             f"<div class='log-meta'><strong>date</strong>: "
             f"{html.escape(p['date'])} "
-            f"(<a href='../{html.escape(p['date'])}.html'>open daily report</a>)"
+            f"<a class='category-action' href='../{html.escape(p['date'])}.html'>open daily report</a>"
             f"</div>"
             f"<div class='log-meta'><strong>metric</strong>: "
             f"{html.escape(p['metric_display'])} "
@@ -408,15 +809,36 @@ def make_full_table_html(category: str,
             f"<div class='log-meta'><strong>category rows on date</strong>: "
             f"{int(p['n_category_rows'])}</div>"
             f"<div class='log-meta'><strong>row title</strong>: "
-            f"{html.escape((p['title'] or '—')[:200])}</div>"
+            f"{html.escape(sanitize_public_text(p['title'] or '—')[:200])}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
             f"{html.escape(p['source_label'] or '—')}</div>"
-            f"<div class='log-meta'><strong>abs path</strong>: "
-            f"<code>{html.escape(p['abs_path'] or '—')}</code></div>"
+            f"{public_source_buttons_html(p)}"
+            f"{public_source_meta_html(p)}"
             "</div></td></tr>"
         )
     rows.append("</tbody></table>")
     return "\n".join(rows)
+
+
+def make_lazy_full_table_html(category: str,
+                              points: list[dict[str, Any]]) -> str:
+    if not points:
+        return make_full_table_html(category, points)
+    FRAGMENTS_DIR.mkdir(parents=True, exist_ok=True)
+    fragment_path = FRAGMENTS_DIR / f"category_{category}_full_table.html"
+    fragment_path.write_text(make_full_table_html(category, points), encoding="utf-8")
+    fragment_href = f"../fragments/{fragment_path.name}"
+    target_id = f"category-{category}-full-table"
+    return (
+        "<div class='lazy-test-shell'>"
+        "<button class='lazy-test-load' type='button' "
+        f"data-lazy-fragment='{html.escape(fragment_href, quote=True)}' "
+        f"data-target='{html.escape(target_id, quote=True)}' "
+        "data-load-label='load full table' data-hide-label='hide full table' "
+        "data-loading-label='loading full table' data-error-label='table load failed'>load full table</button>"
+        f"<div id='{html.escape(target_id, quote=True)}' class='lazy-test-target' hidden></div>"
+        "</div>"
+    )
 
 
 # ---------- per-category render ----------------------------------------------
@@ -435,6 +857,12 @@ def render_category(conn: sqlite3.Connection,
 
     points = build_category_datapoints(conn, dates, category, windows)
     points.sort(key=lambda p: p["date"])
+    family_rows, family_metric = category_family_rows(conn, dates, category)
+    family_counts = Counter(str(r.get("family") or "Other") for r in family_rows)
+    arch_families = sorted(family_counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    architecture_recipe_html, rendered_architecture_recipes = (
+        render_day.make_architecture_recipe_html(arch_families)
+    )
 
     summary_html = make_category_summary_html(category, points, windows)
 
@@ -473,6 +901,7 @@ def render_category(conn: sqlite3.Connection,
         f"{CATEGORY_LABEL[category]} RESEARCH REPORT",
         "CAMPAIGN",
         home_href="../index.html",
+        master_href=f"../report_144.html#reader=categories/{category}.html",
     )
 
     # ----- HTML body -----
@@ -491,24 +920,34 @@ def render_category(conn: sqlite3.Connection,
             f"TO {html.escape(win['end'])}</h3>"
         )
         for panel in section["chart_panels"]:
+            chart_src = preview_chart_src(panel["path"], "../index.html")
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(panel['path'])}' "
+                f"<img src='{html.escape(chart_src, quote=True)}' "
                 f"alt='{html.escape(CATEGORY_LABEL[category])} window "
                 f"{win['window']:02d} {panel['metric']}'/>"
                 "</figure>"
             )
         body_parts.append(section["table_html"])
 
+    if family_rows:
+        body_parts.extend([
+            "<h2>SECTION 1.5 — ARCHITECTURE / TEST SURFACES</h2>",
+            make_category_family_table_html(family_rows, family_metric),
+        ])
+        if architecture_recipe_html:
+            body_parts.append(architecture_recipe_html)
+
     body_parts.extend([
         "<h2>SECTION 2.0 — CATEGORY DAILY DATAPOINTS</h2>",
-        make_full_table_html(category, points),
+        make_lazy_full_table_html(category, points),
     ])
 
     full_html = (
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         f"<title>{CATEGORY_LABEL[category].title()} Research Report</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + "\n".join(body_parts)
         + _embedded_log_script()
         + "</body></html>"
@@ -548,6 +987,15 @@ def render_category(conn: sqlite3.Connection,
             qmd_lines.append("")
         qmd_lines.append(section["table_html"])
         qmd_lines.append("")
+    if family_rows:
+        qmd_lines += [
+            "## SECTION 1.5 — ARCHITECTURE / TEST SURFACES",
+            "",
+            make_category_family_table_html(family_rows, family_metric),
+            "",
+        ]
+        if architecture_recipe_html:
+            qmd_lines += [architecture_recipe_html, ""]
     qmd_lines += [
         "## SECTION 2.0 — CATEGORY DAILY DATAPOINTS",
         "",
@@ -569,6 +1017,11 @@ def render_category(conn: sqlite3.Connection,
         "windows_active": len(window_sections),
         "chart_panels": total_chart_panels,
         "metrics_used": list(metric_counter.keys()),
+        "architecture_recipes_rendered": rendered_architecture_recipes,
+        "architecture_families": [
+            {"name": name, "label": render_day.public_arch_label(name), "count": count}
+            for name, count in arch_families
+        ],
         "template_standard": CATEGORY_TEMPLATE_STANDARD,
         "daily_template_standard": DAILY_TEMPLATE_STANDARD,
         "template_style_sha256": LOCKED_TEMPLATE_STYLE_SHA256,
@@ -599,7 +1052,7 @@ def render_category_index(summaries: list[dict[str, Any]],
             f"<td>{int(s['windows_active'])} / {int(s['windows_total'])}</td>"
             f"<td>{int(s['chart_panels'])}</td>"
             f"<td>{html.escape(metric_blurb)}</td>"
-            f"<td><a href='{html.escape(Path(s['html_path']).name)}'>"
+            f"<td><a class='category-action' href='{html.escape(Path(s['html_path']).name)}'>"
             f"open category</a></td>"
             "</tr>"
         )
@@ -609,6 +1062,7 @@ def render_category_index(summaries: list[dict[str, Any]],
         "CATEGORY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
+        master_href="../report_144.html#reader=categories/index.html",
     )
     header_fields = [
         ("CATEGORIES", str(len(summaries))),
@@ -632,8 +1086,9 @@ def render_category_index(summaries: list[dict[str, Any]],
     html_path = CATEGORY_HTML_DIR / "index.html"
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Category Research Reports</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{category_action_style()}</style></head><body>"
         + body
         + "</body></html>",
         encoding="utf-8",

@@ -87,8 +87,8 @@ def verify_week(summary: dict) -> dict:
             f"figures={figures} chart_panels={summary['chart_panels']}"
         )
     if "2026-05-01" in summary["dates"]:
-        if "MOCKINGBIRD (×4)" not in text:
-            raise AssertionError(f"final week lost Mockingbird final-day marker: {html_path}")
+        if "10K-VOCAB CASEOPS LOOP BODY (×4)" not in text:
+            raise AssertionError(f"final week lost final-submission marker: {html_path}")
         if re.search(r"MIDNIGHT|open_parameter_golf_junkyard", text, re.IGNORECASE):
             raise AssertionError(f"final week contains stale final-day wrong attribution: {html_path}")
     return {

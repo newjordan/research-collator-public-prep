@@ -24,7 +24,7 @@ static-folder open starts on the cover too.
 Primary entry points after deploy:
 
 - `/cover.html` — cover page / first page
-- `/toc.html` — table of contents / second page
+- `/toc.html` — long-loader table of contents; starts with page 2 above the TOC
 - `/cumulative.html` — campaign cumulative report
 - `/categories/index.html` — category reports
 - `/weeks/index.html` — weekly reports

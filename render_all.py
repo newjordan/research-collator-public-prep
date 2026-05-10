@@ -4,7 +4,7 @@
   output/preview/index.html             — publication cover page alias
   output/preview/cover.html             — publication cover page
   output/preview/journey.html           — legacy journey chart + day list
-  output/preview/toc.html               — table of contents
+  output/preview/report_144.html        — table of contents
   output/preview/<DATE>.html            — one page per day
   output/preview/weeks/<WEEK>.html      — one page per 7-day research week
   output/preview/weeks/index.html       — weekly report index
@@ -40,6 +40,7 @@ import plot as plot_mod
 import render_campaign
 import render_category
 import render_cover
+import render_intro
 import render_toc
 import render_week
 from render_day import (
@@ -88,6 +89,24 @@ def per_day_best(conn: sqlite3.Connection, date: str, metric: str) -> dict | Non
     return {"date": date, "best": best_v, "camp": best_camp, "title": best_title}
 
 
+def minify_preview_html(root: Path = HTML_DIR) -> dict[str, int]:
+    """Conservatively minify generated HTML without touching text node content."""
+    before = 0
+    after = 0
+    count = 0
+    for path in root.rglob("*.html"):
+        raw = path.read_text(encoding="utf-8")
+        minified = re.sub(r">\s+<", "><", raw).strip()
+        if not minified:
+            continue
+        before += len(raw.encode("utf-8"))
+        after += len(minified.encode("utf-8"))
+        count += 1
+        if minified != raw:
+            path.write_text(minified, encoding="utf-8")
+    return {"files": count, "before": before, "after": after, "saved": before - after}
+
+
 def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
     """Remove date-named outputs no longer in the canonical campaign."""
     active = set(active_dates)
@@ -114,6 +133,17 @@ def remove_stale_campaign_outputs(active_dates: list[str]) -> int:
             removed += 1
 
     return removed
+
+
+def sync_architecture_run_files() -> None:
+    """Make repo-published run-file downloads available in the static output."""
+    src = Path(__file__).parent / "public" / "architecture-run-files"
+    if not src.exists():
+        return
+    dst = HTML_DIR / "architecture-run-files"
+    if dst.exists():
+        shutil.rmtree(dst)
+    shutil.copytree(src, dst)
 
 
 def render_index(dates_with_results: list[dict],
@@ -152,14 +182,15 @@ def render_index(dates_with_results: list[dict],
     code { background: rgba(5,6,5,0.10); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
     """
     lines = [
-        "<!doctype html><html><head><meta charset='utf-8'>",
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>",
         "<title>Research — Daily Reports</title>",
         f"<style>{style}</style>",
         "</head><body>",
         "<h1>Research — Daily Reports</h1>",
         f"<p class='muted'>Generated {dt.datetime.now(dt.timezone.utc).isoformat(timespec='minutes')} UTC. "
         f"Spans {len(days_summary)} research days from {RESEARCH_START_DATE} to {RESEARCH_END_DATE}. "
-        "Final submission: Mockingbird.</p>",
+        "Final submission: 10k-vocabulary CaseOps loop-body submission.</p>",
     ]
 
     # Headline stats
@@ -193,7 +224,7 @@ def render_index(dates_with_results: list[dict],
                 f"<td>{int(toc_summary.get('n_days') or 0)}</td>"
                 f"<td>{int(toc_summary.get('n_weeks') or 0)}</td>"
                 f"<td>{int(toc_summary.get('n_categories') or 0)}</td>"
-                "<td><a href='toc.html'>open TOC</a></td></tr>"
+                "<td><a href='report_144.html'>open report 144</a></td></tr>"
             )
             lines.append("</tbody></table>")
 
@@ -325,6 +356,7 @@ def main():
     stale_removed = remove_stale_campaign_outputs(dates)
     if stale_removed:
         print(f"      removed {stale_removed} stale date outputs outside campaign")
+    sync_architecture_run_files()
 
     print("[2/9] rendering each day...")
     days_summary: list[dict] = []
@@ -362,13 +394,15 @@ def main():
     print("[6/9] rendering publication cover...")
     cover_summary = render_cover.render_cover_page()
     print(f"      cover page: {cover_summary.get('html_path')}")
+    intro_summary = render_intro.render_intro_page()
+    print(f"      intro page: {intro_summary.get('html_path')}")
 
     print("[7/9] rendering table of contents...")
     toc_summary = render_toc.render_toc_report(
         dates, days_summary, week_summaries, category_summaries,
         campaign_summary,
     )
-    print(f"      toc page: {toc_summary.get('html_path')}")
+    print(f"      report 144 page: {toc_summary.get('html_path')}")
 
     print("[8/9] computing per-day bests for journey chart...")
     # Pick the metric with broadest coverage across the corpus.
@@ -407,6 +441,12 @@ def main():
     HTML_DIR.mkdir(parents=True, exist_ok=True)
     (HTML_DIR / "journey.html").write_text(journey_html)
 
+    minify_summary = minify_preview_html()
+    print(
+        f"      minified {minify_summary['files']} HTML files, "
+        f"saved {minify_summary['saved'] / 1024:.1f} KiB"
+    )
+
     # The legacy journey page points at the assets dir directly via relative URL.
     print(
         f"\ndone. {len(days_summary)} day pages, "
@@ -414,7 +454,7 @@ def main():
         f"{len(category_summaries)} category pages, "
         f"1 campaign cumulative page, "
         f"1 cover page, "
-        f"1 toc page, "
+        f"1 report 144 page, "
         f"{len(per_day)} on journey arc."
     )
     print(f"front page: {HTML_DIR / 'cover.html'}")

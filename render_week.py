@@ -12,7 +12,6 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import base64
 import datetime as dt
 import html
 import os
@@ -33,6 +32,7 @@ from render_day import (
     RESEARCH_END_DATE,
     RESEARCH_START_DATE,
     DAILY_TEMPLATE_STANDARD,
+    KERNEL_CAMP,
     compute_day_index,
     fetch_day,
     format_arch_families,
@@ -42,11 +42,16 @@ from render_day import (
     is_research_chronology_record,
     metric_display_name,
     render_one_day,
+    sanitize_public_text,
     _daily_template_style,
     _embedded_log_script,
+    architecture_reference_fragments,
+    architecture_summary_paragraphs_by_camp,
+    architecture_technique_terms,
     make_alloc_bar_html,
     make_report_h1_html,
     make_report_header_html,
+    preview_chart_src,
     best_date,
 )
 
@@ -156,9 +161,112 @@ def metric_counts_display(days: list[dict[str, Any]]) -> str:
     )
 
 
-def image_data_uri(path: str | Path) -> str:
-    with open(path, "rb") as f:
-        return "data:image/png;base64," + base64.b64encode(f.read()).decode("ascii")
+def weekly_action_style() -> str:
+    return """
+    .weekly-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      padding: 4px 9px;
+      border: 1px solid #8b3702;
+      border-radius: 0;
+      background: #050505;
+      color: #8b3702 !important;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0;
+      line-height: 1;
+      text-transform: uppercase;
+      text-decoration: none !important;
+      box-shadow: none;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .weekly-action::before {
+      content: "+";
+      display: inline-block;
+      margin-right: 6px;
+      color: #8b3702;
+      font-weight: 900;
+    }
+    .weekly-action:hover,
+    .weekly-action:focus-visible {
+      background: #8b3702;
+      color: #050505 !important;
+      outline: 1px solid #050505;
+      outline-offset: 1px;
+    }
+    .weekly-action:hover::before,
+    .weekly-action:focus-visible::before {
+      color: #050505;
+    }
+    .test-runs-table td a.weekly-action,
+    .log-panel a.weekly-action {
+      color: #050505 !important;
+      border-color: #050505;
+      border-bottom: 1px solid #050505;
+    }
+    .log-panel a.weekly-action::before {
+      color: #050505;
+    }
+    .test-runs-table td a.weekly-action:hover,
+    .test-runs-table td a.weekly-action:focus-visible,
+    .log-panel a.weekly-action:hover,
+    .log-panel a.weekly-action:focus-visible {
+      color: #050505 !important;
+      border-bottom-color: #050505;
+    }
+    """
+
+
+def weekly_arch_families(days: list[dict[str, Any]]) -> list[tuple[str, int]]:
+    counts: Counter[str] = Counter()
+    first_seen: dict[str, str] = {}
+    for day in days:
+        date = str(day.get("date") or "")
+        for item in day.get("arch_families") or []:
+            if not isinstance(item, dict):
+                continue
+            name = str(item.get("name") or "").strip()
+            if not name:
+                continue
+            count = int(item.get("count") or 0)
+            if count <= 0:
+                continue
+            counts[name] += count
+            first_seen.setdefault(name, date)
+    return sorted(
+        counts.items(),
+        key=lambda kv: (-kv[1], first_seen.get(kv[0], ""), kv[0]),
+    )
+
+
+def weekly_arch_families_by_camp(days: list[dict[str, Any]]) -> dict[str, list[tuple[str, int]]]:
+    out: dict[str, list[tuple[str, int]]] = {}
+    for camp in (KERNEL_CAMP, "experimental", "neural"):
+        counts: Counter[str] = Counter()
+        first_seen: dict[str, str] = {}
+        for day in days:
+            date = str(day.get("date") or "")
+            by_camp = day.get("arch_families_by_camp") or {}
+            items = by_camp.get(camp) or []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                name = str(item.get("name") or "").strip()
+                if not name:
+                    continue
+                count = int(item.get("count") or 0)
+                if count <= 0:
+                    continue
+                counts[name] += count
+                first_seen.setdefault(name, date)
+        out[camp] = sorted(
+            counts.items(),
+            key=lambda kv: (-kv[1], first_seen.get(kv[0], ""), kv[0]),
+        )
+    return out
 
 
 def make_week_summary_html(week_number: int,
@@ -168,18 +276,42 @@ def make_week_summary_html(week_number: int,
                            by_camp: dict[str, int]) -> str:
     measured_days = [d for d in days if d.get("headline_metric")]
     metric_text = metric_counts_display(days)
-    allocation = format_camp_counts(by_camp).lower()
+    arch_families = weekly_arch_families(days)
+    architecture_refs = architecture_reference_fragments(
+        arch_families,
+        max_families=4,
+        max_specs=5,
+    )
+    architecture_paragraphs = architecture_summary_paragraphs_by_camp(
+        weekly_arch_families_by_camp(days),
+        arch_families,
+        max_families=4,
+        max_specs=5,
+    )
+    technique_terms = architecture_technique_terms(arch_families, max_terms=10)
+    if not architecture_refs:
+        architecture_paragraphs = (
+            "<p><strong>Architectures tested:</strong> "
+            "No named architecture recipe was detected across the rendered daily rows.</p>"
+        )
+    technique_text = ""
+    if technique_terms:
+        technique_text = (
+            "<p>Techniques to copy/reference this week: "
+            f"<strong>{html.escape('; '.join(technique_terms))}</strong>.</p>"
+        )
     return (
         '<aside class="day-summary">'
         '<div class="ds-key">WEEK SUMMARY</div>'
         '<div class="ds-body">'
-        f"<p>Week {week_number:02d} rolls up <strong>{len(days)} daily reports</strong> "
+        f"{architecture_paragraphs}"
+        f"<p>Week {week_number:02d} covers "
+        f"<strong>{len(days)} daily reports</strong> "
         f"from <strong>{html.escape(week_dates[0])}</strong> through "
         f"<strong>{html.escape(week_dates[-1])}</strong>. "
-        f"It carries <strong>{len(measured_days)} measured daily datapoints</strong> "
+        f"Measured surfaces: <strong>{len(measured_days)} daily datapoints</strong> "
         f"across {html.escape(metric_text)}.</p>"
-        f"<p>Classification across the week: "
-        f"<strong>{html.escape(allocation)}</strong>.</p>"
+        f"{technique_text}"
         "</div></aside>"
     )
 
@@ -219,9 +351,9 @@ def make_week_daily_table_html(conn: sqlite3.Connection,
             "<div class='log-meta'><strong>daily report evidence</strong></div>"
             f"<div class='log-meta'><strong>week</strong>: {week_number:02d}</div>"
             f"<div class='log-meta'><strong>date</strong>: {html.escape(date)} "
-            f"(<a href='../{html.escape(date)}.html'>open daily report</a>)</div>"
+            f"<a class='weekly-action' href='../{html.escape(date)}.html'>open daily report</a></div>"
             f"<div class='log-meta'><strong>day source row</strong>: "
-            f"{html.escape(day.get('best_headline_title') or '—')}</div>"
+            f"{html.escape(sanitize_public_text(day.get('best_headline_title') or '—'))}</div>"
             f"<div class='log-meta'><strong>architecture family</strong>: "
             f"{html.escape(day.get('arch_families_display') or '—')}</div>"
             f"<div class='log-meta'><strong>source</strong>: "
@@ -302,6 +434,7 @@ def render_week(week_dates: list[str],
             "WEEKLY RESEARCH REPORT",
             f"WEEK {week_number:02d}",
             home_href="../index.html",
+            master_href=f"../report_144.html#reader=weeks/{slug}.html",
         )
         summary = make_week_summary_html(
             week_number, week_dates, days, primary_metric, by_camp
@@ -347,9 +480,10 @@ def render_week(week_dates: list[str],
         ]
         for panel in chart_panels:
             metric_label = metric_display_name(panel["metric"])
+            chart_src = preview_chart_src(panel["path"], "../index.html")
             body_parts.append(
                 "<figure>"
-                f"<img src='{image_data_uri(panel['path'])}' "
+                f"<img src='{html.escape(chart_src, quote=True)}' "
                 f"alt='Week {week_number:02d} daily trajectory · {html.escape(metric_label)}'/>"
                 "</figure>"
             )
@@ -362,8 +496,9 @@ def render_week(week_dates: list[str],
         html_path = WEEK_HTML_DIR / f"{slug}.html"
         full_html = (
             "<!doctype html><html><head><meta charset='utf-8'>"
+            "<meta name='viewport' content='width=device-width, initial-scale=1'>"
             f"<title>Week {week_number:02d} - Research Weekly</title>"
-            f"<style>{_daily_template_style()}</style></head><body>"
+            f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
             + "\n".join(body_parts)
             + _embedded_log_script()
             + "</body></html>"
@@ -399,6 +534,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
         "WEEKLY RESEARCH REPORTS",
         "INDEX",
         home_href="../index.html",
+        master_href="../report_144.html#reader=weeks/index.html",
     )
     rows = [
         "<table class='test-runs-table'><thead><tr>"
@@ -416,7 +552,7 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
             f"<td>{html.escape(w.get('primary_metric_display') or '—')}</td>"
             f"<td>{int(w.get('daily_datapoints') or 0)}</td>"
             f"<td>{html.escape(format_camp_counts(w.get('by_camp')))}</td>"
-            f"<td><a href='{html.escape(Path(w['html_path']).name)}'>open week</a></td>"
+            f"<td><a class='weekly-action' href='{html.escape(Path(w['html_path']).name)}'>open week</a></td>"
             "</tr>"
         )
     rows.append("</tbody></table>")
@@ -438,8 +574,9 @@ def render_week_index(week_summaries: list[dict[str, Any]]) -> str:
     html_path = WEEK_HTML_DIR / "index.html"
     html_path.write_text(
         "<!doctype html><html><head><meta charset='utf-8'>"
+        "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Weekly Research Reports</title>"
-        f"<style>{_daily_template_style()}</style></head><body>"
+        f"<style>{_daily_template_style()}{weekly_action_style()}</style></head><body>"
         + body
         + "</body></html>",
         encoding="utf-8",
