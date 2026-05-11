@@ -1033,6 +1033,10 @@ def connected_reader_script() -> str:
   }
   function resetReaderScrollIfNoHash() {
     if (String(window.location.hash || '').match(/^#reader=(.+)$/)) return;
+    // First-visit UX: leave the cover at the top of the page. Only jump to
+    // the TOC heading on reload — by then the visitor has seen the cover.
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (!nav || nav.type !== 'reload') return;
     function resetIfIdle() {
       if (!userInteracted) scrollToTocStart();
     }
@@ -1150,8 +1154,8 @@ def back_to_top_html() -> str:
         '<button class="toc-back-top" type="button" '
         'aria-label="Back to table of contents">TOC</button>'
         '<div class="toc-latin-footer" aria-hidden="true" '
-        'data-latin-message="Deus ex machina; machina ex corde amante populorum; cor populorum ex sapientia.">'
-        'XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>'
+        'data-latin-message="Deus ex machina; machina ex corde amanti populorum; cor populorum ex sapientia; sapientia ex pulchritudine divina deorum.">'
+        'XXXX XX XXXXXXX; XXXXXXX XX XXXXX XXXXXX XXXXXXXXX; XXX XXXXXXXXX XX XXXXXXXXX; XXXXXXXXX XX XXXXXXXXXXXXX XXXXXX XXXXXX.</div>'
     )
 
 
@@ -1293,7 +1297,7 @@ def latin_footer_script() -> str:
   var footer = document.querySelector('.toc-latin-footer');
   if (!footer) return;
   var decoded = footer.getAttribute('data-latin-message') || '';
-  var encoded = 'XXXX XX XXXXXXX X XXXXXXX XXXXXXX';
+  var encoded = 'XXXX XX XXXXXXX; XXXXXXX XX XXXXX XXXXXX XXXXXXXXX; XXX XXXXXXXXX XX XXXXXXXXX; XXXXXXXXX XX XXXXXXXXXXXXX XXXXXX XXXXXX.';
   function isAtPageBottom() {
     var root = document.documentElement;
     var body = document.body;

@@ -1408,7 +1408,7 @@
     
 <div class="toc-page-scrollbar" aria-hidden="true"><div class="toc-page-scrollbar-thumb"></div></div>
 <img class="toc-footer-background" src="assets/toc_footer_background.png" alt="" aria-hidden="true">
-<button class="toc-back-top" type="button" aria-label="Back to table of contents">TOC</button><div class="toc-latin-footer" aria-hidden="true" data-latin-message="Deus ex machina; machina ex corde amante populorum; cor populorum ex sapientia.">XXXX XX XXXXXXX X XXXXXXX XXXXXXX</div>
+<button class="toc-back-top" type="button" aria-label="Back to table of contents">TOC</button><div class="toc-latin-footer" aria-hidden="true" data-latin-message="Deus ex machina; machina ex corde amanti populorum; cor populorum ex sapientia; sapientia ex pulchritudine divina deorum.">XXXX XX XXXXXXX; XXXXXXX XX XXXXX XXXXXX XXXXXXXXX; XXX XXXXXXXXX XX XXXXXXXXX; XXXXXXXXX XX XXXXXXXXXXXXX XXXXXX XXXXXX.</div>
 <div class="toc-filtered">
 <section class="toc-webloader-cover" aria-label="Publication landing page"><div class="toc-image-stage"><img src="assets/cover_sheet_final.jpeg" alt="Research corpus landing page"><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from cover smooth brain stamp" style="left:80.4%;top:3.1%;width:15.4%;height:13.3%"></button><button class="toc-palette-hotspot" type="button" data-palette-cycle="true" aria-label="Cycle palette from cover flake stamp" style="left:1.8%;top:1.2%;width:9.2%;height:7.0%"></button></div></section>
 <section id="address-to-reader" class="toc-webloader-intro" aria-label="Address to the Reader"><iframe src="intro.html?embed=1&amp;nofilter=1" title="Address to the Reader" loading="eager"></iframe></section>
@@ -1552,6 +1552,10 @@
   }
   function resetReaderScrollIfNoHash() {
     if (String(window.location.hash || '').match(/^#reader=(.+)$/)) return;
+    // First-visit UX: leave the cover at the top of the page. Only jump to
+    // the TOC heading on reload — by then the visitor has seen the cover.
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (!nav || nav.type !== 'reload') return;
     function resetIfIdle() {
       if (!userInteracted) scrollToTocStart();
     }
@@ -1749,7 +1753,7 @@
   var footer = document.querySelector('.toc-latin-footer');
   if (!footer) return;
   var decoded = footer.getAttribute('data-latin-message') || '';
-  var encoded = 'XXXX XX XXXXXXX X XXXXXXX XXXXXXX';
+  var encoded = 'XXXX XX XXXXXXX; XXXXXXX XX XXXXX XXXXXX XXXXXXXXX; XXX XXXXXXXXX XX XXXXXXXXX; XXXXXXXXX XX XXXXXXXXXXXXX XXXXXX XXXXXX.';
   function isAtPageBottom() {
     var root = document.documentElement;
     var body = document.body;
