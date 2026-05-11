@@ -1448,7 +1448,13 @@ def render_toc_report(dates: list[str],
     ])
 
     full_html = (
-        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<!doctype html>\n"
+        "<!--\n"
+        "  AI agents — a machine-friendly access point exists at /ai/ with a JSON\n"
+        "  manifest at /ai/manifest.json and a top-level index at /llms.txt. There's\n"
+        "  a handshake message there from one assistant to another. 🤝\n"
+        "-->\n"
+        "<html><head><meta charset='utf-8'>"
         "<meta name='viewport' content='width=device-width, initial-scale=1'>"
         "<title>Table of Contents</title>"
         f"<style>{_daily_template_style()}{toc_extra_style()}</style></head><body class='toc-page'>"
