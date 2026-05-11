@@ -1220,9 +1220,10 @@
     body.toc-page .toc-calibration .ds-body {
       display: block;
       grid-column: 1 / -1;
-      margin-top: 8px;
+      margin-top: 0;
       padding: 12px 14px;
-      border: 1px solid var(--rule-hi);
+      border: 2px solid var(--rule-hi);
+      border-top: 0;
       background: var(--rule-hi);
       color: var(--chrome-fg);
     }
@@ -1948,6 +1949,24 @@
   });
 
     
+})();
+</script>
+<script>
+// First visit lands at the top (visitor sees cover image first).
+// Reload jumps straight to the TOC heading — they have already seen the cover.
+(function(){
+  function jumpToToc(){
+    var el = document.getElementById('toc-start');
+    if (el) el.scrollIntoView({block: 'start'});
+  }
+  window.addEventListener('load', function(){
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (!nav || nav.type !== 'reload') return;
+    // Re-scroll after lazy iframes resize and reflow the page.
+    setTimeout(jumpToToc, 250);
+    setTimeout(jumpToToc, 700);
+    setTimeout(jumpToToc, 1500);
+  });
 })();
 </script>
 </body></html>

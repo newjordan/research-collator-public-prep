@@ -37,11 +37,7 @@ Custom-kernel and FA3-related performance work focused on GPU behavior, hardware
 
 The record includes accessible run files and test results showing what was tried, what failed, what was preserved, and why.
 
-The claim is that this kind of research engineering can be repeated and expanded upon in novel directions: operating inside an underdefined problem, under deadline pressure, while producing results that survive inspection.
-
-A twenty-year background in 2D/3D game development also informs the work: systems thinking, optimization, geometry, simulations, visual reasoning, tooling, debugging, and building complex interactive systems under constraints. As AI systems become more capable and more multimodal, that background becomes increasingly relevant.
-
-This work is a signal for people building toward deeper systems: world models, novel architectures, simulation, compression, visual reasoning, and new forms of intelligence that can perceive, model, and generate richer realities. The long-term interest is not limited to solving narrow benchmarks, but to pushing the edge of what computational systems can become — especially where art, world building, and philosophy begin to converge."""
+A twenty-year background in 2D/3D game development informs the work: systems thinking, optimization, geometry, simulations, visual reasoning, tooling, debugging, and building complex interactive systems under constraints. As AI systems become more capable and more multimodal, that background becomes increasingly relevant."""
 
 
 def intro_copy_html(text: str) -> str:

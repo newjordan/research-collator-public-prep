@@ -496,9 +496,10 @@ def toc_extra_style() -> str:
     body.toc-page .toc-calibration .ds-body {{
       display: block;
       grid-column: 1 / -1;
-      margin-top: 8px;
+      margin-top: 0;
       padding: 12px 14px;
-      border: 1px solid var(--rule-hi);
+      border: 2px solid var(--rule-hi);
+      border-top: 0;
       background: var(--rule-hi);
       color: var(--chrome-fg);
     }}
@@ -1262,6 +1263,29 @@ def back_to_top_script() -> str:
 """
 
 
+def reload_jumps_to_toc_script() -> str:
+    return """
+<script>
+// First visit lands at the top (visitor sees cover image first).
+// Reload jumps straight to the TOC heading — they have already seen the cover.
+(function(){
+  function jumpToToc(){
+    var el = document.getElementById('toc-start');
+    if (el) el.scrollIntoView({block: 'start'});
+  }
+  window.addEventListener('load', function(){
+    var nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (!nav || nav.type !== 'reload') return;
+    // Re-scroll after lazy iframes resize and reflow the page.
+    setTimeout(jumpToToc, 250);
+    setTimeout(jumpToToc, 700);
+    setTimeout(jumpToToc, 1500);
+  });
+})();
+</script>
+"""
+
+
 def latin_footer_script() -> str:
     return """
 <script>
@@ -1435,6 +1459,7 @@ def render_toc_report(dates: list[str],
         + back_to_top_script()
         + latin_footer_script()
         + palette_easter_egg_script(include_stamp=False, include_wipe=True)
+        + reload_jumps_to_toc_script()
         + "</body></html>"
     )
     TOC_HTML_PATH.write_text(full_html, encoding="utf-8")
