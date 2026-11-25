@@ -22,6 +22,8 @@ __pycache__/
 venv/
 .pytest_cache/
 .mypy_cache/
+*.egg-info/
+.eggs/
 
 # OS / editor
 .DS_Store

@@ -1,31 +1,35 @@
-# Vercel Static Deploy
+# Vercel static deploy
 
-This report set is a static site once `output/preview/` is rendered.
+`vercel.json` publishes `output/preview` as a static site.
 
-## Important
+- `/` is rewritten to `/report_144.html`.
+- Every response sets `X-Robots-Tag: noindex`.
 
-`index.sqlite` and `output/` are intentionally ignored by git because they
-contain scraped local paths and large generated HTML. A GitHub-connected
-Vercel build will only work from an environment that has the local SQLite
-index and research corpus available.
+`output/preview` is already tracked so a connected Git deployment can serve
+the report set without the private research corpus. `.gitignore` ignores
+`output/` for newly generated files; it does not untrack pages that are
+already in git. `index.sqlite` is ignored and is not part of the deploy.
 
-The safest deployment path is local static deploy from this machine:
+Rebuild the pages locally when the corpus or renderers change:
 
 ```bash
-cd ~/research_collator
+python3 -m pip install -e .
+python3 stripper.py
+python3 enrich.py
+python3 classify.py
 python3 render_all.py
-npx vercel deploy --prod
 ```
 
-`vercel.json` serves `output/preview` and rewrites `/` to `/cover.html`.
-`output/preview/index.html` is also rendered as the cover page, so a direct
-static-folder open starts on the cover too.
+`stripper.py` skips configured roots that are not on this machine. A full
+rebuild needs those directories.
 
-Primary entry points after deploy:
+Primary URLs after deploy:
 
-- `/cover.html` — cover page / first page
-- `/toc.html` — long-loader table of contents; starts with page 2 above the TOC
-- `/cumulative.html` — campaign cumulative report
+- `/` and `/report_144.html` — table of contents and reader
+- `/cover.html` — cover
+- `/intro.html` — address to the reader
+- `/cumulative.html` — campaign report
 - `/categories/index.html` — category reports
 - `/weeks/index.html` — weekly reports
 - `/2026-03-18.html` through `/2026-05-01.html` — daily reports
+- `/ai/` — short machine-readable index

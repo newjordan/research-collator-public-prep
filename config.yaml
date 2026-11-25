@@ -227,8 +227,10 @@ claude_projects_root: ~/.claude/projects
 # Codex session JSONLs (broader than just rollout_summaries we already have)
 codex_sessions_root: ~/.codex/sessions
 
-# Output
-sqlite_path: ~/research_collator/index.sqlite
+# Output. Relative paths are resolved from this repository. "~" is expanded.
+# A legacy ~/research_collator/... location is used only when that file already
+# exists and this checkout does not have it yet.
+sqlite_path: index.sqlite
 extraction_version: "stripper_v2"
 
 # Legacy field retained for old scripts. The daily renderer follows TEMPLATE.md:

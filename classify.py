@@ -29,10 +29,10 @@ Run:
 
 from __future__ import annotations
 
+import argparse
 import sqlite3
-import sys
 
-DB = "~/research_collator/index.sqlite"
+import paths
 
 # STRONG experimental keywords — always pull experimental, even in competitive sources.
 # These are concrete experimental architecture/method names per user's rule:
@@ -192,16 +192,25 @@ def ensure_columns(conn: sqlite3.Connection):
 
 
 def main():
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    ap = argparse.ArgumentParser(
+        description="Tag every indexed artifact as experimental, neural, or daily_grind.",
+    )
+    ap.add_argument("--db", default=None, help="SQLite index. Defaults to config sqlite_path.")
+    ap.add_argument("--config", default=str(paths.CONFIG_PATH))
+    args = ap.parse_args()
+
+    cfg = paths.load_config(args.config)
+    db_path = paths.resolve_repo_path(args.db or cfg["sqlite_path"], "index.sqlite")
+    paths.announce("classify", db=db_path)
+    conn = paths.open_index(db_path)
     ensure_columns(conn)
 
     rows = list(conn.execute(
         "SELECT id, abs_path, title, summary, source_label, camp_override FROM artifacts"
     ))
-    print(f"classifying {len(rows)} artifacts")
+    print(f"artifacts={len(rows)}")
 
-    counters = {"experimental": 0, "neural": 0, "daily_grind": 0}
+    counters: dict[str, int] = {}
     rule_counts: dict[str, int] = {}
     overrides_kept = 0
 
@@ -220,14 +229,15 @@ def main():
                 (final, rule, r["id"]),
             )
 
-    print()
-    print("=== camp counts ===")
-    for k, n in sorted(counters.items()):
-        print(f"  {k:14s}  {n:6d}")
-    print(f"  manual_overrides kept: {overrides_kept}")
-    print()
-    print("=== rule frequency (top 20) ===")
-    for rule, n in sorted(rule_counts.items(), key=lambda x: -x[1])[:20]:
+    print("camps")
+    preferred = ("experimental", "neural", "daily_grind")
+    ordered = [name for name in preferred if name in counters]
+    ordered.extend(sorted(set(counters) - set(preferred)))
+    for name in ordered:
+        print(f"  {name:14s}  {counters[name]:6d}")
+    print(f"overrides_kept={overrides_kept}")
+    print("rules")
+    for rule, n in sorted(rule_counts.items(), key=lambda x: (-x[1], x[0]))[:20]:
         print(f"  {n:5d}  {rule}")
 
 

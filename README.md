@@ -1,199 +1,170 @@
 # research-collator
 
-Pure-Python deterministic scraper + Karpathy-style daily report renderer for
-parameter-golf research. Walks local research dirs + git history + agent
-session JSONLs, extracts metrics with strict regex (no LLM at scrape/render
-time), and renders one self-contained HTML report per work day in a late-80s
-lab-protocol aesthetic.
+Deterministic scraper and report renderer for a parameter-golf research corpus.
+It walks local research directories, git history, and agent session logs, stores
+structured records in SQLite, and renders a static HTML report set. Scraping
+and rendering do not call a language model.
 
-## What's here
+The configured research chronology is `2026-03-18` (day 001) through
+`2026-05-01`. Those bounds live in `render_day.py` as `RESEARCH_START_DATE`
+and `RESEARCH_END_DATE`.
 
-| File | Role |
-|---|---|
-| `stripper.py` | File walker → SQLite. Handlers for `.md`, `.json`, `.py`, `.csv`, `.tsv`, `.log`, `.out`, `.pt` (metadata only). Strict patterns; no LLM. |
-| `enrich.py` | Adds git commits + Claude session JSONLs + Codex session JSONLs to the index. Pulls val_bpb / val_loss out of commit messages with delta-vs-absolute classification + sanity floor. |
-| `classify.py` | Two-camp classifier (`experimental` vs `neural`) + a third `daily_grind` camp for codex rollouts. Path / source / keyword rules, no LLM. |
-| `render_day.py` | Builds one daily HTML report. Header dot-leader fields, classification bar, Karpathy-style time-axis chart, test-runs table with embedded training-log disclosures and clickable links. Kernel-heavy days can headline custom-kernel/FA3 timing ratios and render as their own kernel classification. Chat sessions are never rendered as supporting research files. |
-| `data/architecture_recipes.json` | Deterministic daily-page architecture recipe book. Active codenames render as copyable body/module/tokenizer/quant/eval specs under the daily header. No provenance text. |
-| `render_week.py` | Builds weekly HTML reports where each datapoint/row is one rendered daily report. Mixed-metric weeks render one trajectory panel per headline metric. |
-| `render_category.py` | Builds experimental, neural, and kernel cumulative category reports with two-week graph windows. |
-| `render_campaign.py` | Builds the campaign cumulative report. Classification tracks are overlaid only on homogeneous metric charts. |
-| `render_cover.py` | Builds the publication cover page. The cover sheet is rendered here only, and `index.html` mirrors this page. |
-| `render_toc.py` | Builds the long-scroll table-of-contents loader for the full static report set. It starts with the page 2 image, then the TOC, using a generated background and not the cover sheet. |
-| `render_all.py` | Batch-renders every date with activity, every 7-day weekly rollup, category reports, the campaign cumulative page, cover page, TOC loader, and legacy journey page. |
-| `plot.py` | Matplotlib helpers. `day_chart` (per-day trajectory), `week_chart` (per-week/category-window datapoints), `campaign_overlay_chart` (classification overlay), and `journey_chart` (50-day arc). |
-| `templates/daily_report_locked.html` | Locked base HTML/CSS template. `render_day.py` validates the style hash before rendering. |
-| `scripts/verify_scraper_contract.py` | Fail-closed scraper/index gate for template-critical fields, metrics, day attribution, training-log embeds, and retrieval indexes. |
-| `scripts/verify_daily_template.py` | Structural gate for the locked daily-page standard. Verifies the CSS lock, two-section layout, full-width log disclosures, and no Section 3 leakage. |
-| `scripts/verify_weekly_template.py` | Structural gate for the weekly rollup standard. Verifies weekly pages reuse the locked daily visual system, keep two sections, and expose one dropdown row per day. |
-| `scripts/verify_category_template.py` | Structural gate for the category cumulative standard. |
-| `scripts/verify_campaign_template.py` | Structural gate for the campaign cumulative overlay standard. |
-| `scripts/verify_cover_template.py` | Structural gate enforcing the cover as first-page-only. |
-| `scripts/verify_toc_template.py` | Structural gate for the table-of-contents standard. |
-| `vercel.json` | Static Vercel configuration serving `output/preview` with `/` rewritten to `/cover.html`. |
-| `VERCEL_DEPLOY.md` | Local static deploy notes for Vercel. |
-| `scripts/audit_daily_accuracy.py` | Row-level daily accuracy harness for wrong-test/wrong-day detection and evidence provenance. |
-| `ACCURACY_HARNESS.md` | Accuracy workflow: exact audit first, targeted grep review second, RAG only as a non-authoritative search layer. |
-| `chat_extract_local.py` | Separate, optional cumulative chat-log extractor. Uses only local Ollama Qwen and fails closed on cloud/non-Qwen models. Not part of scrape/render. |
-| `ablation_label_local.py` | Separate, optional Nemo3 ablation-label suggestion lane. Calls only local vLLM, writes review artifacts, and only approved JSONL labels affect rendering. |
-| `scripts/mine_conversation_architecture.py` | Deterministic Claude/Codex transcript miner for offline audit only. No LLM. Its artifacts are never rendered into daily report pages. |
-| `config.yaml` | Roots to walk, exclusion list, file-extension → handler map. |
+## Requirements
 
-## Template lock
+- Python 3.11 or newer
+- [PyYAML](https://pypi.org/project/PyYAML/) and [Matplotlib](https://matplotlib.org/)
 
-Daily pages are locked to the `daily-report-v2.6-architecture-recipes` standard:
+`adjustText` is optional. Charts render without it.
 
-- base visual lock: `templates/daily_report_locked.html`
-- architecture recipe source: `data/architecture_recipes.json`
-- executable spec: `TEMPLATE.md`
-- renderer gate: `LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`
-- verification gate: `python3 scripts/verify_daily_template.py --all`
+The automated suite in this checkout was run with Python 3.12.3: 35 tests
+passed.
 
-Weekly pages use `weekly-report-v1.0-daily-rollup` and reuse the same locked
-daily CSS hash. A weekly datapoint is a rendered daily report, not a training
-run. Weekly pages are generated in 7-day research windows from Day 001 onward
-and keep values local to that weekly sheet: no median table, no carried prior
-best line, and no separate "best day" headline.
-
-Category pages use `category-report-v1.0-biweekly-course`: one cumulative
-page each for experimental, neural, and kernel, split into two-week graph
-windows. The campaign page uses
-`campaign-cumulative-v1.0-classification-overlay`: it overlays classifications
-only when the metric/y-axis is shared, and keeps kernel ratio panels separate
-from BPB/loss panels.
-
-The publication cover uses `cover-v1.0-first-page` and is the intended site
-entry point at `output/preview/cover.html` and `output/preview/index.html`.
-The table of contents uses `toc-v1.2-page2-webloader` at
-`output/preview/report_144.html`; it starts with `assets/page_2_above_toc.jpeg` as
-the page above the TOC in the long loader, uses a generated background asset,
-keeps the cover sheet out of TOC, and lazy-loads the connected report reader.
-
-## Research chronology
-
-Daily numbering starts at the first proven personal parameter-golf research
-event: `2026-03-18 = DAY 001` and ends at the final submission afternoon on
-`2026-05-01`. Mockingbird is the final campaign submission. Earlier
-DGX/studio/agent/ml-lab bootstrap artifacts, public upstream competition launch
-records, and post-final-submission artifacts may still be indexed and rendered
-by explicit date, but they do not count toward the research-day ordinal.
-
-## Validity floor
-
-Project convention: any `val_bpb < 1.06` is a known eval error, plotted
-inside a quiet invalid zone on the chart and excluded from the running-min
-`BEST VALID` line. Marked `INVALID` in the test-runs table. This rule is
-BPB-only; custom-kernel/FA3 ratio charts do not render the invalid BPB zone.
-
-## Camp axis
-
-The scraper stores two top-level test camps plus a daily-grind narrative track:
-
-- **experimental** — crawler / megakernel / ouroboros / helix / clowncar /
-  jepa / shroud / hypothesis / ablation / etc.
-- **neural** — strict baselines, leaderboard submissions, racing legs,
-  competitive sources (SOTA_FINAL, sota_rascal).
-- **daily_grind** — codex rollouts (narrative summaries of session work).
-
-Daily rendering adds one presentation-only classification:
-
-- **kernel** — custom-kernel/FA3 timing work. When a day headlines
-  `CUSTOM/FA3 FB RATIO` or `CUSTOM/FA3 FWD RATIO`, its Test Runs and
-  classification bar render as kernel instead of burying that work under
-  experimental.
-
-The daily header classification bar is active-only: it does not print
-zero-count labels for classifications that were not worked on that day.
-
-Section 2.0 rows always use the locked dropdown pattern in `OPEN`: training-log
-rows expand to full log text, and non-log rows expand to recovered source/run
-metadata.
-
-Daily reports do not present Codex/Claude conversations as research evidence.
-There is no Section 3 in the canonical daily page. Conversation-derived
-artifacts may be indexed for offline audit, but they must never render in the
-daily HTML body.
-
-## How to run end-to-end
+## Setup
 
 ```bash
-python3 stripper.py            # walk research roots → index.sqlite
-python3 enrich.py              # +git commits, +claude/codex sessions
-python3 scripts/mine_conversation_architecture.py --start 2026-03-18 --end 2026-05-01 --index
-python3 classify.py            # tag every record with camp
-python3 scripts/verify_scraper_contract.py
-python3 render_day.py --day 1              # research DAY 001 = 2026-03-18
-python3 render_day.py --date 2026-03-28   # one day
-python3 render_week.py --week 1            # one 7-day weekly rollup
-python3 render_category.py --all           # category cumulative reports
-python3 render_campaign.py                 # campaign cumulative overlay
-python3 render_cover.py                    # first-page cover
-python3 render_toc.py                      # long loader + table of contents
-python3 render_all.py          # all days + all rollups + cover/TOC loader
-python3 scripts/verify_daily_template.py --all
-python3 scripts/verify_weekly_template.py --all
-python3 scripts/verify_category_template.py --all
-python3 scripts/verify_campaign_template.py
-python3 scripts/verify_cover_template.py
-python3 scripts/verify_toc_template.py
-python3 scripts/audit_daily_accuracy.py --all
+python3 -m pip install -e ".[dev]"
 ```
 
-Output lands in `output/preview/<DATE>.html` (self-contained, base64 PNGs
-embedded, with training logs in full-width disclosure rows — works offline).
-Weekly output lands in `output/preview/weeks/<WEEK>.html`, with the weekly
-index at `output/preview/weeks/index.html`. Category reports land in
-`output/preview/categories/`. The campaign cumulative report lands at
-`output/preview/cumulative.html`. The cover lands at
-`output/preview/cover.html` and `output/preview/index.html`. The long-loader
-table of contents lands at `output/preview/report_144.html`.
+`config.yaml` lists the research roots, git repos, session directories, and
+the SQLite path. `~` is expanded. Paths written as `~/research_collator/...`
+follow this checkout when that historical directory is not already on disk.
+Relative paths, including the default `sqlite_path: index.sqlite`, are
+resolved from the repository root.
 
-Optional local chat extraction, no paid API:
+Roots that are not present are skipped. A machine without the research
+corpus can still run the test suite.
+
+## Index and classify
+
+```bash
+python3 stripper.py            # walk roots into index.sqlite
+python3 enrich.py              # git commits and Claude/Codex session JSONLs
+python3 classify.py            # experimental, neural, or daily_grind
+```
+
+`stripper.py --smoke N` stops after N kept files. `enrich.py` and
+`classify.py` refuse to create an empty database; build the index with
+`stripper.py` first.
+
+Handlers cover Markdown, JSON, Python, CSV/TSV, text, training logs
+(`.log` and `.out`), and metadata-only checkpoints and media. Training-log
+`val_bpb` is accepted only from `step:N val_loss:X val_bpb:Y` and
+`final_* val_loss:X val_bpb:Y` lines.
+
+## Render
+
+```bash
+python3 render_day.py --date 2026-03-28
+python3 render_day.py --day 1
+python3 render_week.py --week 1
+python3 render_category.py --all
+python3 render_campaign.py
+python3 render_cover.py
+python3 render_toc.py
+python3 render_all.py
+```
+
+Rendered pages are written under `output/preview/`. The tracked tree there is
+the static site. `output/` is listed in `.gitignore` for new generated files;
+the preview pages already in git stay tracked so the site can be served
+without the private corpus.
+
+| Path | Page |
+|---|---|
+| `output/preview/report_144.html` | Table of contents and reader. Site entry. |
+| `output/preview/cover.html` | Cover |
+| `output/preview/intro.html` | Address to the reader |
+| `output/preview/<DATE>.html` | One research day |
+| `output/preview/weeks/` | Weekly rollups |
+| `output/preview/categories/` | Experimental, neural, and kernel rollups |
+| `output/preview/cumulative.html` | Campaign overlay |
+| `output/preview/ai/` | Machine-readable manifest and short index |
+
+`vercel.json` serves `output/preview`, rewrites `/` to `/report_144.html`,
+and sends `X-Robots-Tag: noindex`.
+
+## Classification and validity
+
+`classify.py` stores one camp per artifact:
+
+- **experimental** — architecture and exploration families such as crawler, megakernel, ouroboros, helix, and clowncar
+- **neural** — racing legs, submissions, baselines, and the competitive sources
+- **daily_grind** — Codex rollout narratives
+
+Daily pages can present a **kernel** classification when the headline metric
+is a custom-kernel/FA3 timing ratio. That label is display-only; it is not a
+fourth stored camp.
+
+`val_bpb` below `1.06` is treated as an invalid evaluation and is excluded
+from the running-best line. `val_bpb` above `3.0` is treated as a crash.
+Those thresholds are BPB-only.
+
+Chat sessions and conversation-mined architecture events can be indexed.
+They are not rendered in the daily report body.
+
+Day attribution uses a real calendar date from the filename or path, then
+the UTC `mtime` converted to `America/Chicago`. Central Standard Time and
+Central Daylight Time are both honored. Git commits are dated from the
+commit timestamp, not from hex that happens to look like a date.
+
+## Template
+
+Daily pages follow `daily-report-v2.6-architecture-recipes`. The locked CSS
+is `templates/daily_report_locked.html`, checked against
+`LOCKED_TEMPLATE_STYLE_SHA256` in `render_day.py`. `TEMPLATE.md` is the
+layout contract. Architecture recipes come from
+`data/architecture_recipes.json`.
+
+Weekly pages use `weekly-report-v1.0-daily-rollup`. Category pages use
+`category-report-v1.0-biweekly-course`. The campaign page uses
+`campaign-cumulative-v1.0-classification-overlay`. The cover uses
+`cover-v1.0-first-page`. The table of contents uses `toc-v1.2-page2-webloader`.
+
+Structural checks live in `scripts/verify_*_template.py`. They read the
+rendered HTML and, where noted, the SQLite index. `scripts/verify_scraper_contract.py`
+checks the index against `TEMPLATE.md`.
+
+## Optional local tools
+
+These are separate from scrape and render. They do not download model
+weights. Each one refuses a non-local or wrong-family model.
 
 ```bash
 python3 chat_extract_local.py --date 2026-03-28 --dry-run
-python3 chat_extract_local.py --date 2026-03-28 --model qwen3-coder:30b
-```
-
-Outputs land in `output/chat_extract/`. The first command writes only the
-chunk manifest; the second calls local Ollama Qwen. These raw extracts are
-inputs for a final research-oriented accuracy pass, not daily-report evidence.
-
-Optional local conversation architecture mining, no LLM:
-
-```bash
-python3 scripts/mine_conversation_architecture.py --date 2026-03-28
-python3 scripts/mine_conversation_architecture.py --start 2026-03-02 --end 2026-03-03
-```
-
-Outputs land in `output/conversation_architecture/` as JSONL, Markdown, and a
-summary JSON. This miner reads raw Claude/Codex JSONLs at message granularity,
-filters infra/UI chatter out, and emits only strict model-architecture-change
-signals. Add `--index` only when you want those signals in SQLite for offline
-audit. They are not rendered into daily pages.
-
-Optional local ablation-label suggestions, no paid API:
-
-```bash
 python3 ablation_label_local.py --date 2026-03-28 --dry-run
-python3 ablation_label_local.py --date 2026-03-28
-python3 ablation_label_local.py --promote-reviewed output/ablation_labels/<run>.review.jsonl
-python3 render_day.py --date 2026-03-28
+python3 scripts/mine_conversation_architecture.py --date 2026-03-28
 ```
 
-The labeler calls local Nemo3 through `http://127.0.0.1:8000/v1` with model
-`nemotron_3_nano_omni`. Suggestions land in `output/ablation_labels/` with
-`approved: false`; the renderer only uses rows promoted into
-`output/ablation_labels/approved.jsonl`, keyed by date, row number, and raw
-title hash.
+`chat_extract_local.py` talks only to local Ollama and only to a model
+whose name contains `qwen`. `ablation_label_local.py` talks only to a
+local vLLM server (`127.0.0.1`, `localhost`, or `::1`) and only to a
+Nemo or Nemotron model. Approved ablation labels are the only ones the
+renderer reads, from `output/ablation_labels/approved.jsonl`.
+`mine_conversation_architecture.py` is regex-only. Its output stays in
+`output/conversation_architecture/` unless `--index` is passed, and those
+rows are still not rendered into daily pages.
+
+## Tests
+
+```bash
+python3 -m pytest
+```
+
+GitHub Actions runs that command on Ubuntu with Python 3.12 (`.github/workflows/ci.yml`).
+The suite covers path expansion, camp rules, commit-message metrics,
+training-log parsing, Chicago day attribution, a temporary strip plus
+classify run, button colors, and a credential scan of the tree.
+
+`scripts/sanitize_audit.py` is a separate content scan of a directory
+(default `output/preview`) for home paths, private addresses, handles, and
+key shapes. A relative `--scan-dir` is resolved before it is reported.
+
+## Deploy
+
+See [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md). The static deploy uses the
+tracked `output/preview` tree. Rebuilding every page requires the local
+research roots and an index produced by the commands above.
 
 ## License
 
 Private working tree.
-
-## Master template
-
-[`TEMPLATE.md`](TEMPLATE.md) is the canonical specification: locked palette,
-layout, chart contract, scraper contract, invariants, and the current template
-standard id. Any change to the per-day report must update `TEMPLATE.md`, the
-locked template hash, and the verifier in the same patch.

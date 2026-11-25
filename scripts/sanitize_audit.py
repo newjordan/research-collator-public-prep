@@ -38,7 +38,7 @@ PATTERNS: list[tuple[str, re.Pattern, re.Pattern | None]] = [
     ("private_repo_paramgolf", re.compile(rb"parameter[-_]golf[-_]lab"), None),
     ("private_tool_mempalace", re.compile(rb"\bmempalace\b", re.IGNORECASE), None),
     ("email_specific", re.compile(rb"newjordan@gmail\.com", re.IGNORECASE), None),
-    ("email_generic", re.compile(rb"\b[\w.+-]+@[\w-]+\.[\w.-]+\b"), None),
+    ("email_generic", re.compile(rb"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), None),
     ("api_key_anthropic", re.compile(rb"\bsk-ant-[A-Za-z0-9_-]{20,}"), None),
     ("api_key_openai", re.compile(rb"\bsk-[A-Za-z0-9]{32,}"), None),
     ("api_key_github_pat", re.compile(rb"\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{20,}"), None),
@@ -55,47 +55,60 @@ def iter_files(scan_dir: Path) -> list[Path]:
     return sorted(p for p in scan_dir.rglob("*") if p.is_file())
 
 
-def audit_file(path: Path, max_examples_per_cat: int) -> dict[str, list[tuple[int, str]]]:
-    hits: dict[str, list[tuple[int, str]]] = {}
+def audit_file(path: Path, max_examples_per_cat: int
+               ) -> tuple[dict[str, int], dict[str, list[tuple[int, str]]]]:
+    """Return full hit counts plus up to N example snippets per category."""
+    counts: dict[str, int] = {}
+    examples: dict[str, list[tuple[int, str]]] = {}
     try:
         data = path.read_bytes()
     except (OSError, PermissionError):
-        return hits
+        return counts, examples
     if b"\x00" in data[:4096]:  # binary
-        return hits
+        return counts, examples
     lines = data.splitlines()
     for cat, pattern, allow in PATTERNS:
         for i, line in enumerate(lines, start=1):
             if pattern.search(line):
                 if allow and allow.search(line):
                     continue
-                snippet = line.strip().decode("utf-8", errors="replace")[:240]
-                hits.setdefault(cat, []).append((i, snippet))
-                if len(hits[cat]) >= max_examples_per_cat:
-                    break
-    return hits
+                counts[cat] = counts.get(cat, 0) + 1
+                slot = examples.setdefault(cat, [])
+                if len(slot) < max_examples_per_cat:
+                    snippet = line.strip().decode("utf-8", errors="replace")[:240]
+                    slot.append((i, snippet))
+    return counts, examples
+
+
+def _display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def run(scan_dir: Path, findings_path: Path, state_path: Path,
         max_examples: int = 3) -> dict:
+    scan_dir = scan_dir.expanduser()
+    if not scan_dir.is_absolute():
+        scan_dir = (Path.cwd() / scan_dir).resolve()
     files = iter_files(scan_dir)
     totals: dict[str, int] = {}
     examples: dict[str, list[tuple[str, int, str]]] = {}
     files_with_hits = 0
     for path in files:
-        hits = audit_file(path, max_examples)
-        if hits:
+        counts, found = audit_file(path, max_examples)
+        if counts:
             files_with_hits += 1
-        for cat, found in hits.items():
-            totals[cat] = totals.get(cat, 0) + len(found)
+        for cat, count in counts.items():
+            totals[cat] = totals.get(cat, 0) + count
             slot = examples.setdefault(cat, [])
-            for line_no, snippet in found:
+            for line_no, snippet in found.get(cat, []):
                 if len(slot) < max_examples:
-                    rel = str(path.relative_to(ROOT))
-                    slot.append((rel, line_no, snippet))
+                    slot.append((_display_path(path), line_no, snippet))
 
     summary = {
-        "scan_dir": str(scan_dir.relative_to(ROOT)),
+        "scan_dir": _display_path(scan_dir),
         "files_scanned": len(files),
         "files_with_hits": files_with_hits,
         "total_findings": sum(totals.values()),

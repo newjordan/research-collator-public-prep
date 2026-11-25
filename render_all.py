@@ -36,6 +36,7 @@ import time
 from collections import defaultdict
 from pathlib import Path
 
+import paths
 import plot as plot_mod
 import render_campaign
 import render_category
@@ -44,7 +45,7 @@ import render_intro
 import render_toc
 import render_week
 from render_day import (
-    DB, OUT_ROOT, HTML_DIR, ASSETS_DIR,
+    DB, OUT_ROOT, HTML_DIR, ASSETS_DIR, connect_index,
     RESEARCH_START_DATE, RESEARCH_END_DATE,
     best_date, fetch_day,
     extract_metric_for_record, render_one_day,
@@ -347,8 +348,8 @@ def render_index(dates_with_results: list[dict],
 
 
 def main():
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    paths.announce("render_all", db=DB, out=HTML_DIR)
+    conn = connect_index()
 
     print("[1/9] enumerating dates...")
     dates = all_dates_with_artifacts(conn)

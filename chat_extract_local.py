@@ -27,8 +27,11 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Iterable
 
-DB = Path("~/research_collator/index.sqlite")
-OUT_DIR = Path("~/research_collator/output/chat_extract")
+import paths
+
+_CFG = paths.load_config()
+DB = Path(_CFG["sqlite_path"])
+OUT_DIR = paths.resolve_repo_path("~/research_collator/output", "output") / "chat_extract"
 DEFAULT_OLLAMA_URL = "http://127.0.0.1:11434"
 DEFAULT_QWEN_MODEL = "qwen3-coder:30b"
 SESSION_KINDS = ("codex_session", "claude_session")
@@ -114,8 +117,7 @@ def select_sessions(db_path: Path,
         sql += " LIMIT ?"
         args.append(limit)
 
-    conn = sqlite3.connect(str(db_path))
-    conn.row_factory = sqlite3.Row
+    conn = paths.open_index(db_path)
     try:
         rows = conn.execute(sql, args).fetchall()
     finally:
@@ -247,6 +249,7 @@ def build_prompt(session: dict[str, Any], chunk: str, chunk_index: int, chunk_co
 
 
 def run_extraction(args: argparse.Namespace) -> int:
+    paths.announce("chat_extract_local", db=DB, out=OUT_DIR, model=args.model)
     sessions = select_sessions(DB, args.date, args.since, args.until, args.limit)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     run_label = args.run_label or utc_now_label()

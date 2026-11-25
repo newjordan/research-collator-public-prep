@@ -22,10 +22,11 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+import paths
 import render_day
 
 DB = Path(render_day.DB)
-OUT_DIR = Path("~/research_collator/output/ablation_labels")
+OUT_DIR = render_day.OUT_ROOT / "ablation_labels"
 DEFAULT_BASE_URL = "http://127.0.0.1:8000/v1"
 DEFAULT_MODEL = "nemotron_3_nano_omni"
 
@@ -338,8 +339,7 @@ def run(args: argparse.Namespace) -> int:
     prompt_path = OUT_DIR / f"{run_label}.prompt.txt"
     raw_response_path = OUT_DIR / f"{run_label}.raw_response.jsonl"
 
-    conn = sqlite3.connect(str(DB))
-    conn.row_factory = sqlite3.Row
+    conn = paths.open_index(DB)
     try:
         dates = dates_from_args(conn, args)
         all_labels: list[dict[str, Any]] = []
