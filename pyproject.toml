@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "research-collator"
+version = "1.0.0"
+description = "Deterministic research-corpus scraper and locked daily report renderer."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0.2",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+]
+
+[tool.setuptools]
+packages = []
+py-modules = [
+    "paths",
+    "stripper",
+    "enrich",
+    "classify",
+    "plot",
+    "render_day",
+    "render_week",
+    "render_category",
+    "render_campaign",
+    "render_all",
+    "render_cover",
+    "render_intro",
+    "render_toc",
+    "chat_extract_local",
+    "ablation_label_local",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

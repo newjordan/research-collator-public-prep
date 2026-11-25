@@ -25,14 +25,17 @@ import re
 import shutil
 import sqlite3
 import sys
-
 from collections import defaultdict
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
+import paths
 import plot as plot_mod
 
-DB = "~/research_collator/index.sqlite"
-OUT_ROOT = Path("~/research_collator/output")
+_RUNTIME_CONFIG = paths.load_config()
+DB = _RUNTIME_CONFIG["sqlite_path"]
+OUT_ROOT = paths.resolve_repo_path("~/research_collator/output", "output")
+LOCAL_TZ = ZoneInfo("America/Chicago")
 QMD_DIR = OUT_ROOT / "days"
 HTML_DIR = OUT_ROOT / "preview"
 ASSETS_DIR = OUT_ROOT / "assets"
@@ -230,6 +233,14 @@ def final_submission_records_for_day(date: str, records: list[dict]) -> list[dic
     return [r for r in records if is_final_submission_record(r)]
 
 
+def _validated_iso_date(year: str, month: str, day: str) -> str | None:
+    """Return YYYY-MM-DD only when the calendar day exists."""
+    try:
+        return dt.date(int(year), int(month), int(day)).isoformat()
+    except (TypeError, ValueError):
+        return None
+
+
 def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
     """Keep daily reports aligned with the research chronology contract.
 
@@ -242,10 +253,7 @@ def report_records_for_date(date: str, records: list[dict]) -> list[dict]:
         scoped = records
     else:
         scoped = [r for r in records if is_research_chronology_record(r)]
-    scoped = [r for r in scoped if r.get("file_kind") not in PRESENTATION_EXCLUDED_KINDS]
-    if date < RESEARCH_START_DATE:
-        return scoped
-    return scoped
+    return [r for r in scoped if r.get("file_kind") not in PRESENTATION_EXCLUDED_KINDS]
 
 
 def ablation_title_sha(title: str) -> str:
@@ -280,28 +288,22 @@ def best_date(rec: dict) -> str | None:
         fn = os.path.basename(src)
         m = DATE_FROM_FILENAME.search(fn)
         if m:
-            y, mo, d = m.group(1), m.group(2), m.group(3)
-            try:
-                if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 and 2024 <= int(y) <= 2030:
-                    return f"{y}-{mo}-{d}"
-            except ValueError:
-                pass
+            iso = _validated_iso_date(m.group(1), m.group(2), m.group(3))
+            if iso and 2024 <= int(iso[:4]) <= 2030:
+                return iso
 
     # 2. Full path (catches dir-named-by-date conventions like legs/2026-04-15_*)
     for src in (abs_path, rel_path):
         m = DATE_FROM_FILENAME.search(src)
         if m:
-            y, mo, d = m.group(1), m.group(2), m.group(3)
-            try:
-                if 1 <= int(mo) <= 12 and 1 <= int(d) <= 31 and 2024 <= int(y) <= 2030:
-                    return f"{y}-{mo}-{d}"
-            except ValueError:
-                pass
+            iso = _validated_iso_date(m.group(1), m.group(2), m.group(3))
+            if iso and 2024 <= int(iso[:4]) <= 2030:
+                return iso
 
-    # 3. mtime fallback — convert UTC mtime to user's local TZ before
-    # extracting the date. The stripper records mtime in UTC; the user
-    # thinks in CDT (UTC-5). Without this, late-evening runs roll into
-    # the next day's report (e.g. Apr 20 23:30 local → Apr 21 UTC).
+    # 3. mtime fallback — convert UTC mtime to America/Chicago before
+    # extracting the date. The stripper records mtime in UTC. A fixed
+    # UTC-5 offset mis-dates Central Standard Time evenings (for example
+    # 23:30 CST is 05:30 UTC the next day).
     return _mtime_local_date(rec)
 
 
@@ -310,24 +312,27 @@ def _mtime_local_date(rec: dict) -> str | None:
         return None
     try:
         utc = dt.datetime.fromisoformat(rec["mtime_iso"].replace("Z", "+00:00"))
-        local = utc - dt.timedelta(hours=5)  # CDT
-        return local.date().isoformat()
+        if utc.tzinfo is None:
+            utc = utc.replace(tzinfo=dt.timezone.utc)
+        return utc.astimezone(LOCAL_TZ).date().isoformat()
     except (ValueError, TypeError):
         return rec["mtime_iso"][:10]
 
 
 def fetch_day(conn: sqlite3.Connection, date: str) -> list[dict]:
-    """Records belonging to `date` in the user's local TZ (CDT).
+    """Records belonging to `date` in America/Chicago.
 
-    We over-fetch (date(mtime, '-5h') OR path-LIKE for date-named dirs)
-    then refine with best_date(). Dedup by content_sha256 so the same
-    training-log file copied across worktrees collapses to one record.
+    Over-fetch with both CST (UTC-6) and CDT (UTC-5), plus path-LIKE for
+    date-named dirs, then refine with best_date(). Dedup by content_sha256
+    so the same training-log file copied across worktrees collapses to one
+    record.
     """
     cur = conn.cursor()
     rows = cur.execute(
         "SELECT * FROM artifacts WHERE "
-        "date(mtime_iso, '-5 hours')=? OR rel_path LIKE ? OR abs_path LIKE ?",
-        (date, f"%{date.replace('-', '')}%", f"%{date}%"),
+        "date(mtime_iso, '-5 hours')=? OR date(mtime_iso, '-6 hours')=? "
+        "OR rel_path LIKE ? OR abs_path LIKE ?",
+        (date, date, f"%{date.replace('-', '')}%", f"%{date}%"),
     ).fetchall()
     out = []
     seen_sha: set[str] = set()
@@ -1466,7 +1471,7 @@ def format_arch_families(families: list[tuple[str, int]], cap: int = 6) -> str:
     return "  ·  ".join(parts)
 
 
-_FROSTED_FLAKE_PATH = "~/research_collator/assets/frosted_flake.png"
+_FROSTED_FLAKE_PATH = paths.REPO_ROOT / "assets" / "frosted_flake.png"
 
 
 def preview_asset_src(path: str | Path, home_href: str = "", asset_name: str | None = None) -> str:
@@ -1653,9 +1658,9 @@ def _embedded_log_style() -> str:
         gap: 8px;
         min-height: 24px;
         padding: 4px 8px;
-        border: 1px solid var(--bg);
-        background: var(--bg);
-        color: var(--rule-hi);
+        border: 1px solid #f4e8d8;
+        background: #f4e8d8;
+        color: #050605;
         cursor: pointer;
         font-size: 10.5px;
         font-weight: 700;
@@ -1673,13 +1678,19 @@ def _embedded_log_style() -> str:
         width: 8px;
         height: 8px;
         flex: 0 0 auto;
-        background: var(--rule-hi);
+        background: #050605;
     }
     .log-panel a:hover,
     .log-panel a:focus-visible {
-        border-bottom-color: var(--bg);
-        outline: 1px solid var(--bg);
+        background: #050605;
+        color: #f4e8d8;
+        border-color: #f4e8d8;
+        outline: 1px solid #f4e8d8;
         outline-offset: 2px;
+    }
+    .log-panel a:hover::before,
+    .log-panel a:focus-visible::before {
+        background: #f4e8d8;
     }
     .open-extra {
         margin-top: 6px;
@@ -3920,9 +3931,13 @@ def make_camp_test_tables_md(rows: list[dict], metric: str,
 
 # ---------- main render -----------------------------------------------------
 
+def connect_index() -> sqlite3.Connection:
+    """Open the configured index or exit with the build commands."""
+    return paths.open_index(DB)
+
+
 def render_one_day(date: str, metric_override: str | None = None) -> dict:
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = connect_index()
     clear_day_fragments(date)
     records = report_records_for_date(date, fetch_day(conn, date))
     if not records:
@@ -4332,7 +4347,7 @@ def render_one_day(date: str, metric_override: str | None = None) -> dict:
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Render one locked daily research report.")
     target = ap.add_mutually_exclusive_group(required=True)
     target.add_argument("--date", help="YYYY-MM-DD")
     target.add_argument("--day", type=int, help="1-based corpus day index, e.g. 22")
@@ -4340,12 +4355,12 @@ def main():
     args = ap.parse_args()
     date = args.date
     if args.day is not None:
-        conn = sqlite3.connect(DB)
-        conn.row_factory = sqlite3.Row
+        conn = connect_index()
         date = date_for_day_index(conn, args.day)
         conn.close()
         if date is None:
-            sys.exit(f"no artifact date found for DAY {args.day:03d}")
+            sys.exit(f"no artifact date found for DAY {args.day:03d} in {DB}")
+    paths.announce("render_day", db=DB, date=date, metric=args.metric or "auto")
     print(json.dumps(render_one_day(date, metric_override=args.metric), indent=2))
 
 

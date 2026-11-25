@@ -54,10 +54,13 @@ def main() -> int:
     ap.add_argument("--scan-dir", type=Path, default=DEFAULT_SCAN_DIR)
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+    scan_dir = args.scan_dir.expanduser()
+    if not scan_dir.is_absolute():
+        scan_dir = (Path.cwd() / scan_dir).resolve()
 
     totals: dict[str, int] = {}
     files_changed = 0
-    for path in sorted(args.scan_dir.rglob("*")):
+    for path in sorted(scan_dir.rglob("*")):
         if not path.is_file():
             continue
         per = sanitize_file(path, args.dry_run)
@@ -67,7 +70,11 @@ def main() -> int:
                 totals[k] = totals.get(k, 0) + v
 
     mode = "DRY-RUN" if args.dry_run else "APPLIED"
-    print(f"[{mode}] scan_dir={args.scan_dir.relative_to(ROOT)}")
+    try:
+        shown = scan_dir.resolve().relative_to(ROOT)
+    except ValueError:
+        shown = scan_dir
+    print(f"[{mode}] scan_dir={shown}")
     print(f"[{mode}] files_changed={files_changed}")
     for k, v in sorted(totals.items(), key=lambda kv: (-kv[1], kv[0])):
         print(f"[{mode}]   {k!r} → {v} replacements")

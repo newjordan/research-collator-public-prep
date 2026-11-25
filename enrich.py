@@ -25,7 +25,7 @@ import sys
 import time
 from pathlib import Path
 
-import yaml
+import paths
 
 EXTRACTION_VERSION = "enrich_v1"
 
@@ -58,6 +58,50 @@ DELTA_CONTEXT_WORDS = (
     "sub-", "below", "beat ", "beating", "above ", "less than",
     "aiming", "expected", "hope to", "should ",
 )
+
+
+SANITY_FLOOR = 0.1
+
+
+def metrics_from_commit_message(text: str) -> dict:
+    """Pull val_bpb / val_loss claims out of a commit message.
+
+    Sanity floor is 0.1: anything smaller is noise or a delta the context
+    window missed. An explicit ``val_bpb=X`` label wins over a bare ``X BPB``
+    mention. Delta-context numbers are stored separately and are not the
+    absolute measurement.
+    """
+    metrics: dict = {}
+    explicit_abs: list[float] = []
+    implicit_abs: list[float] = []
+    deltas: list[float] = []
+    for m in RE_BPB.finditer(text):
+        value = float(m.group(1))
+        if value < SANITY_FLOOR:
+            continue
+        if _classify_bpb_match(text, m) == "delta":
+            deltas.append(value)
+        else:
+            implicit_abs.append(value)
+    for m in RE_VAL_BPB.finditer(text):
+        value = float(m.group(1))
+        if value >= SANITY_FLOOR:
+            explicit_abs.append(value)
+    chosen = explicit_abs or implicit_abs
+    if chosen:
+        metrics["val_bpb"] = min(chosen)
+        # Commit messages are claims, not measurements. The renderer prefers
+        # log-derived numbers when both exist for the same test.
+        metrics["val_bpb_source"] = "commit_message"
+        if len(chosen) > 1:
+            metrics["val_bpb_n_measurements"] = len(chosen)
+            metrics["val_bpb_max"] = max(chosen)
+    if deltas:
+        metrics["val_bpb_delta"] = max(deltas, key=abs)
+    for m in RE_VAL_LOSS.finditer(text):
+        metrics["val_loss"] = float(m.group(1))
+        break
+    return metrics
 
 
 def _classify_bpb_match(text: str, m: re.Match) -> str:
@@ -95,6 +139,7 @@ def walk_git_repo(repo: dict) -> list[dict]:
     repo_path = repo["path"]
     label = repo["label"]
     if not os.path.isdir(os.path.join(repo_path, ".git")):
+        print(f"  {label:30s} skipped (no .git at {repo_path})")
         return []
 
     fmt = "%H%x1f%aI%x1f%an%x1f%ae%x1f%s%x1f%b%x1e"
@@ -140,45 +185,9 @@ def walk_git_repo(repo: dict) -> list[dict]:
         except subprocess.CalledProcessError:
             shortstat = ""
 
-        # Pull metrics from commit message. Sanity floor at 0.1: parameter-golf
-        # val_bpb has never gone below ~0.3 (Will DePue's championship-era
-        # numbers); anything <0.1 is noise / a delta the context-classifier
-        # missed.
-        # Prefer explicit `val_bpb=X` form over plain `X BPB` since the
-        # explicit-prefix form is unambiguously a labeled measurement.
-        metrics: dict[str, float] = {}
+        # Pull metrics from commit message. See metrics_from_commit_message.
         text = f"{subject}\n{body}"
-        SANITY_FLOOR = 0.1
-        explicit_abs: list[float] = []   # val_bpb=X
-        implicit_abs: list[float] = []   # "X BPB" without delta context
-        deltas: list[float] = []
-        for m in RE_BPB.finditer(text):
-            v = float(m.group(1))
-            if v < SANITY_FLOOR:
-                continue
-            if _classify_bpb_match(text, m) == "delta":
-                deltas.append(v)
-            else:
-                implicit_abs.append(v)
-        for m in RE_VAL_BPB.finditer(text):
-            v = float(m.group(1))
-            if v >= SANITY_FLOOR:
-                explicit_abs.append(v)
-        chosen = explicit_abs or implicit_abs
-        if chosen:
-            metrics["val_bpb"] = min(chosen)
-            # Source-of-truth tag: commit messages are claims, not measurements.
-            # The renderer prefers log-derived numbers when both exist for the
-            # same test (verification path).
-            metrics["val_bpb_source"] = "commit_message"
-            if len(chosen) > 1:
-                metrics["val_bpb_n_measurements"] = len(chosen)
-                metrics["val_bpb_max"] = max(chosen)
-        if deltas:
-            metrics["val_bpb_delta"] = max(deltas, key=abs)
-        for m in RE_VAL_LOSS.finditer(text):
-            metrics["val_loss"] = float(m.group(1))
-            break
+        metrics = metrics_from_commit_message(text)
         if not is_user_git_author(author_name, author_email):
             metrics["is_reference_baseline"] = True
 
@@ -470,9 +479,18 @@ def walk_codex_session(session_path: str) -> dict | None:
 # ---------- main -------------------------------------------------------------
 
 def main():
-    cfg = yaml.safe_load(open("~/research_collator/config.yaml"))
+    import argparse
+
+    ap = argparse.ArgumentParser(
+        description="Add git commits and local Codex/Claude session logs to the index.",
+    )
+    ap.add_argument("--config", default=str(paths.CONFIG_PATH),
+                    help="Path to config.yaml. ~ is expanded.")
+    args = ap.parse_args()
+    cfg = paths.load_config(args.config)
     db = cfg["sqlite_path"]
-    conn = sqlite3.connect(db)
+    paths.announce("enrich", db=db, config=cfg.get("_config_path"))
+    conn = paths.open_index(db)
 
     t0 = time.perf_counter()
 

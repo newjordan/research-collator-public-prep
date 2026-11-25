@@ -16,6 +16,7 @@ from render_day import (
     FRAGMENTS_DIR,
     HTML_DIR,
     INVALID_VAL_BPB_FLOOR,
+    connect_index,
     LOCKED_TEMPLATE_STYLE_SHA256,
     OUT_ROOT,
     RESEARCH_END_DATE,
@@ -1539,8 +1540,7 @@ def main() -> None:
     import render_campaign
     import render_category as render_category_mod
 
-    conn = render_all.sqlite3.connect(render_all.DB)
-    conn.row_factory = render_all.sqlite3.Row
+    conn = connect_index()
     try:
         dates = render_all.all_dates_with_artifacts(conn)
     finally:

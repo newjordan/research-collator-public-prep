@@ -23,11 +23,13 @@ from typing import Any
 import plot as plot_mod
 import render_category
 import render_week
+import paths
 from render_day import (
     ASSETS_DIR,
     DAILY_TEMPLATE_STANDARD,
     DB,
     HTML_DIR,
+    connect_index,
     LOCKED_TEMPLATE_STYLE_SHA256,
     OUT_ROOT,
     RESEARCH_END_DATE,
@@ -270,8 +272,7 @@ def make_campaign_index_table_html(dates: list[str],
 def render_campaign_report(dates: list[str] | None = None,
                            week_summaries: list[dict[str, Any]] | None = None,
                            category_summaries: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = connect_index()
     try:
         if dates is None:
             dates = all_campaign_dates(conn)
@@ -404,8 +405,9 @@ def render_campaign_report(dates: list[str] | None = None,
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Render the campaign cumulative report.")
     parser.parse_args()
+    paths.announce("render_campaign", db=DB)
     summary = render_campaign_report()
     print(json.dumps(summary, indent=2, sort_keys=True))
 

@@ -29,6 +29,7 @@ from typing import Any
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+import paths
 import plot as plot_mod
 import render_day
 import render_week
@@ -93,15 +94,18 @@ LOCAL_TO_GIT_SOURCE = {
     "rascal-private": "git:rascal-private",
 }
 PUBLIC_SOURCE_ROOTS = {
-    "parameter-golf-lab": "~/llm_research/parameter-golf-lab",
-    "open_parameter_golf_junkyard": "~/llm_research/parameter-golf-lab",
-    "parameter-golf-cross-repo": "~/llm_research/parameter-golf-cross-repo",
-    "sota_crawler": "~/llm_research/sota_crawler",
-    "SOTA_FINAL": "~/llm_research/SOTA_FINAL",
-    "sota_rascal": "~/llm_research/sota_rascal",
-    "sota_nueral": "~/llm_research/sota_nueral",
-    "pg_whale": "~/llm_research/pg_whale",
-    "rascal-private": "~/llm_research/rascal-private",
+    label: str(paths.expand_user_path(path))
+    for label, path in {
+        "parameter-golf-lab": "~/llm_research/parameter-golf-lab",
+        "open_parameter_golf_junkyard": "~/llm_research/parameter-golf-lab",
+        "parameter-golf-cross-repo": "~/llm_research/parameter-golf-cross-repo",
+        "sota_crawler": "~/llm_research/sota_crawler",
+        "SOTA_FINAL": "~/llm_research/SOTA_FINAL",
+        "sota_rascal": "~/llm_research/sota_rascal",
+        "sota_nueral": "~/llm_research/sota_nueral",
+        "pg_whale": "~/llm_research/pg_whale",
+        "rascal-private": "~/llm_research/rascal-private",
+    }.items()
 }
 PUBLIC_URL_CHECK_CACHE: dict[str, bool] = {}
 
@@ -491,9 +495,9 @@ def category_action_style() -> str:
         gap: 8px;
         min-height: 24px;
         padding: 4px 8px;
-        border: 1px solid var(--rule-hi);
-        background: var(--rule-hi);
-        color: var(--bg);
+        border: 1px solid #f4e8d8;
+        background: #050605;
+        color: #f4e8d8;
         cursor: pointer;
         font-size: 10.5px;
         font-weight: 700;
@@ -511,37 +515,49 @@ def category_action_style() -> str:
         width: 8px;
         height: 8px;
         flex: 0 0 auto;
-        background: var(--bg);
+        background: #f4e8d8;
     }
     .category-action:hover,
     .category-action:focus-visible,
     .test-runs-table td a:hover,
     .test-runs-table td a:focus-visible {
-        background: var(--rule-hi);
-        color: var(--bg);
-        border-bottom-color: var(--rule-hi);
-        outline: 1px solid var(--rule-hi);
+        background: #f4e8d8;
+        color: #050605;
+        border-color: #050605;
+        outline: 1px solid #050605;
         outline-offset: 2px;
+    }
+    .category-action:hover::before,
+    .category-action:focus-visible::before,
+    .test-runs-table td a:hover::before,
+    .test-runs-table td a:focus-visible::before {
+        background: #050605;
     }
     .log-panel a,
     .log-panel a.category-action {
-        border-color: var(--bg);
-        background: var(--bg);
-        color: var(--rule-hi);
+        border-color: #f4e8d8;
+        background: #f4e8d8;
+        color: #050605;
     }
     .log-panel a::before,
     .log-panel a.category-action::before {
-        background: var(--rule-hi);
+        background: #050605;
     }
     .log-panel a:hover,
     .log-panel a:focus-visible,
     .log-panel a.category-action:hover,
     .log-panel a.category-action:focus-visible {
-        border-bottom-color: var(--bg);
-        background: var(--bg);
-        color: var(--rule-hi);
-        outline: 1px solid var(--bg);
+        border-color: #f4e8d8;
+        background: #050605;
+        color: #f4e8d8;
+        outline: 1px solid #f4e8d8;
         outline-offset: 2px;
+    }
+    .log-panel a:hover::before,
+    .log-panel a:focus-visible::before,
+    .log-panel a.category-action:hover::before,
+    .log-panel a.category-action:focus-visible::before {
+        background: #f4e8d8;
     }
     """
 
@@ -1097,8 +1113,7 @@ def render_category_index(summaries: list[dict[str, Any]],
 
 
 def render_all_categories(dates: list[str]) -> list[dict[str, Any]]:
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = render_day.connect_index()
     try:
         windows = biweekly_windows(dates)
         summaries: list[dict[str, Any]] = []
@@ -1113,16 +1128,16 @@ def render_all_categories(dates: list[str]) -> list[dict[str, Any]]:
 # ---------- CLI ---------------------------------------------------------------
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Render category cumulative reports.")
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--category", choices=CATEGORIES,
                         help="render a single category")
     target.add_argument("--all", action="store_true",
                         help="render every category and refresh the index")
     args = parser.parse_args()
+    paths.announce("render_category", db=DB, target=args.category or "all")
 
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = render_day.connect_index()
     try:
         dates = all_campaign_dates(conn)
     finally:
@@ -1137,8 +1152,7 @@ def main() -> None:
         }, indent=2))
         return
 
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = render_day.connect_index()
     try:
         windows = biweekly_windows(dates)
         summary = render_category(conn, args.category, dates, windows)

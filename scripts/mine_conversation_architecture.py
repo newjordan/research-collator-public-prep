@@ -22,8 +22,6 @@ from pathlib import Path
 from typing import Any, Iterable
 from zoneinfo import ZoneInfo
 
-import yaml
-
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CONFIG = REPO_ROOT / "config.yaml"
 DEFAULT_OUT_DIR = REPO_ROOT / "output" / "conversation_architecture"
@@ -136,8 +134,8 @@ def date_window(args: argparse.Namespace) -> tuple[dt.date | None, dt.date | Non
 
 
 def load_config(path: Path) -> dict[str, Any]:
-    with path.open(encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+    import paths
+    return paths.load_config(path)
 
 
 def parse_ts(value: str | None) -> dt.datetime | None:
@@ -358,8 +356,9 @@ def iter_claude_entries(path: Path, include_tool_results: bool) -> Iterable[dict
 
 
 def transcript_paths(cfg: dict[str, Any]) -> tuple[list[Path], list[Path]]:
-    codex_root = Path(str(cfg.get("codex_sessions_root") or "~/.codex/sessions"))
-    claude_root = Path(str(cfg.get("claude_projects_root") or "~/.claude/projects"))
+    import paths
+    codex_root = paths.expand_user_path(str(cfg.get("codex_sessions_root") or "~/.codex/sessions"))
+    claude_root = paths.expand_user_path(str(cfg.get("claude_projects_root") or "~/.claude/projects"))
     codex = sorted(codex_root.rglob("*.jsonl")) if codex_root.is_dir() else []
     claude = sorted(claude_root.rglob("*.jsonl")) if claude_root.is_dir() else []
     return codex, claude
@@ -475,8 +474,9 @@ def _date_range(start: dt.date | None, end: dt.date | None) -> list[str] | None:
 
 def index_events(events: list[dict[str, Any]], cfg: dict[str, Any],
                  start: dt.date | None, end: dt.date | None) -> int:
-    db_path = Path(str(cfg.get("sqlite_path") or REPO_ROOT / "index.sqlite"))
-    conn = sqlite3.connect(str(db_path))
+    import paths
+    db_path = paths.resolve_repo_path(cfg.get("sqlite_path"), "index.sqlite")
+    conn = paths.open_index(db_path)
     now = dt.datetime.now(tz=dt.timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
     with conn:
         dates = _date_range(start, end)

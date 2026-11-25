@@ -26,6 +26,7 @@ from render_day import (
     ASSETS_DIR,
     DB,
     HTML_DIR,
+    connect_index,
     LOCKED_TEMPLATE_STYLE_SHA256,
     OUT_ROOT,
     QMD_DIR,
@@ -162,6 +163,8 @@ def metric_counts_display(days: list[dict[str, Any]]) -> str:
 
 
 def weekly_action_style() -> str:
+    # Cream on near-black is 16.80:1. The previous #8b3702 on #050505 pair
+    # measured 2.57:1, which made the control label hard to read.
     return """
     .weekly-action {
       display: inline-flex;
@@ -169,10 +172,10 @@ def weekly_action_style() -> str:
       justify-content: center;
       min-height: 26px;
       padding: 4px 9px;
-      border: 1px solid #8b3702;
+      border: 1px solid #f4e8d8;
       border-radius: 0;
-      background: #050505;
-      color: #8b3702 !important;
+      background: #050605 !important;
+      color: #f4e8d8 !important;
       font-size: 10px;
       font-weight: 900;
       letter-spacing: 0;
@@ -187,38 +190,39 @@ def weekly_action_style() -> str:
       content: "+";
       display: inline-block;
       margin-right: 6px;
-      color: #8b3702;
+      color: #f4e8d8;
       font-weight: 900;
     }
     .weekly-action:hover,
     .weekly-action:focus-visible {
-      background: #8b3702;
-      color: #050505 !important;
-      outline: 1px solid #050505;
+      background: #f4e8d8 !important;
+      color: #050605 !important;
+      border-color: #050605;
+      outline: 1px solid #050605;
       outline-offset: 1px;
     }
     .weekly-action:hover::before,
     .weekly-action:focus-visible::before {
-      color: #050505;
+      color: #050605;
     }
-    /* In test-runs-table cells the button sits on dark page chrome, so the
-       base weekly-action styling (dark bg + orange fg) is correct — no
-       override needed. */
-    /* In log-panel, .log-panel a wins over .weekly-action and flips the
-       button bg to var(--bg) (orange), so the text needs to flip dark to
-       stay readable. */
     .log-panel a.weekly-action {
-      color: #050505 !important;
-      border-color: #050505;
-      border-bottom: 1px solid #050505;
+      background: #050605 !important;
+      color: #f4e8d8 !important;
+      border-color: #f4e8d8;
+      border-bottom: 1px solid #f4e8d8;
     }
     .log-panel a.weekly-action::before {
-      color: #050505;
+      color: #f4e8d8;
     }
     .log-panel a.weekly-action:hover,
     .log-panel a.weekly-action:focus-visible {
-      color: #050505 !important;
-      border-bottom-color: #050505;
+      background: #f4e8d8 !important;
+      color: #050605 !important;
+      border-bottom-color: #050605;
+    }
+    .log-panel a.weekly-action:hover::before,
+    .log-panel a.weekly-action:focus-visible::before {
+      color: #050605;
     }
     """
 
@@ -385,8 +389,7 @@ def render_week(week_dates: list[str],
                 daily_summaries: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     if not week_dates:
         raise SystemExit("empty week")
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = connect_index()
     try:
         days = []
         daily_summaries = daily_summaries or {}
@@ -598,14 +601,14 @@ def render_all_weeks(dates: list[str],
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Render weekly rollup reports.")
     target = parser.add_mutually_exclusive_group(required=True)
     target.add_argument("--week", type=int, help="1-based research week")
     target.add_argument("--all", action="store_true", help="render every research week")
     args = parser.parse_args()
+    print(f"render_week · db={DB} · target={'all' if args.all else args.week}")
 
-    conn = sqlite3.connect(DB)
-    conn.row_factory = sqlite3.Row
+    conn = connect_index()
     try:
         dates = all_campaign_dates(conn)
     finally:

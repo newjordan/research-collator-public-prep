@@ -28,6 +28,8 @@ from typing import Any
 
 import yaml
 
+import paths
+
 EXTRACTION_VERSION = "stripper_v2"
 
 # Regexes used by the markdown handler — all anchored, all bounded.
@@ -67,15 +69,17 @@ def ensure_artifact_indexes(conn: sqlite3.Connection) -> None:
         conn.execute(ddl)
 
 
-def init_db(path: str) -> sqlite3.Connection:
-    new = not os.path.exists(path)
+def init_db(path: str | os.PathLike[str]) -> sqlite3.Connection:
+    path = os.fspath(path)
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     conn = sqlite3.connect(path)
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA synchronous=NORMAL")
-    if new:
-        conn.executescript(
-            """
-            CREATE TABLE artifacts (
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS artifacts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 source_root TEXT NOT NULL,
                 source_label TEXT NOT NULL,
@@ -108,7 +112,7 @@ def init_db(path: str) -> sqlite3.Connection:
                 extracted_at_iso TEXT NOT NULL
             );
 
-            CREATE TABLE walk_runs (
+        CREATE TABLE IF NOT EXISTS walk_runs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 started_at_iso TEXT NOT NULL,
                 finished_at_iso TEXT,
@@ -116,10 +120,10 @@ def init_db(path: str) -> sqlite3.Connection:
                 total_files_kept INTEGER,
                 wall_seconds REAL,
                 stripper_version TEXT NOT NULL,
-                config_snapshot TEXT
-            );
-            """
-        )
+            config_snapshot TEXT
+        );
+        """
+    )
     ensure_artifact_indexes(conn)
     conn.commit()
     return conn
@@ -928,14 +932,16 @@ def walk_root(root_cfg: dict[str, Any], cfg: dict[str, Any], smoke_remaining: in
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Deterministic research collator stripper.")
-    ap.add_argument("--config", default=str(Path(__file__).parent / "config.yaml"))
+    ap = argparse.ArgumentParser(
+        description="Walk research roots into a SQLite index. No model calls.",
+    )
+    ap.add_argument("--config", default=str(paths.CONFIG_PATH),
+                    help="Path to config.yaml. ~ is expanded.")
     ap.add_argument("--smoke", type=int, default=None,
                     help="Cap total files processed across all roots (testing).")
     args = ap.parse_args()
 
-    with open(args.config) as f:
-        cfg = yaml.safe_load(f)
+    cfg = paths.load_config(args.config)
 
     db_path = cfg["sqlite_path"]
     conn = init_db(db_path)
@@ -945,7 +951,8 @@ def main():
     t0 = time.perf_counter()
     smoke_remaining = args.smoke
 
-    print(f"stripper {EXTRACTION_VERSION} -> {db_path}")
+    paths.announce("stripper", version=EXTRACTION_VERSION, db=db_path,
+                   config=cfg.get("_config_path", args.config))
     if smoke_remaining is not None:
         print(f"smoke mode: cap {smoke_remaining} files")
 
@@ -982,6 +989,8 @@ def main():
 
     print(f"\ndone. scanned={counters['scanned']} kept={counters['kept']} wall={wall:.2f}s")
     print(f"index: {db_path}")
+    if counters["kept"] == 0:
+        print("no files kept. Config roots are skipped when the expanded path is not a directory.")
 
 
 if __name__ == "__main__":

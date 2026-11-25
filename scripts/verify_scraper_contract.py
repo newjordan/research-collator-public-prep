@@ -20,7 +20,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-import yaml
+import paths
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
@@ -107,12 +107,12 @@ def verify_config(config_path: Path, db_path: Path, report: ContractReport) -> N
     if not config_path.exists():
         report.fail(f"missing config file: {config_path}")
         return
-    with config_path.open(encoding="utf-8") as f:
-        cfg = yaml.safe_load(f) or {}
+    cfg = paths.load_config(config_path)
 
     configured_db = Path(str(cfg.get("sqlite_path", "")))
-    if configured_db and configured_db.resolve() != db_path.resolve():
-        report.fail(f"config sqlite_path {configured_db} does not match checked DB {db_path}")
+    checked_db = paths.resolve_repo_path(db_path, "index.sqlite")
+    if configured_db and configured_db.resolve() != checked_db.resolve():
+        report.fail(f"config sqlite_path {configured_db} does not match checked DB {checked_db}")
 
     roots = cfg.get("roots") or []
     if not roots:
